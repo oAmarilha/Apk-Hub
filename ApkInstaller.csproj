@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <PackageIcon>bobby.jpg</PackageIcon>
+    <ApplicationIcon>Images\bobby.ico</ApplicationIcon>
+    <Version>3.0.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\adventure.png" />
+    <None Remove="Images\browser.png" />
+    <None Remove="Images\call.png" />
+    <None Remove="Images\camera.png" />
+    <None Remove="Images\canvace.png" />
+    <None Remove="Images\gallery.png" />
+    <None Remove="Images\home.png" />
+    <None Remove="Images\lego.png" />
+    <None Remove="Images\musicband.png" />
+    <None Remove="Images\studio.png" />
+    <None Remove="Images\travel.png" />
+    <None Remove="Images\village.png" />
+    <None Remove="Images\voice.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\bobby.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\adventure.png" />
+    <Resource Include="Images\browser.png" />
+    <Resource Include="Images\call.png" />
+    <Resource Include="Images\camera.png" />
+    <Resource Include="Images\canvace.png" />
+    <Resource Include="Images\gallery.png" />
+    <Resource Include="Images\home.png" />
+    <Resource Include="Images\lego.png" />
+    <Resource Include="Images\musicband.png" />
+    <Resource Include="Images\studio.png" />
+    <Resource Include="Images\travel.png" />
+    <Resource Include="Images\village.png" />
+    <Resource Include="Images\voice.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Images\bobby.jpg">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,93 @@
+﻿<Window x:Class="ApkInstaller.AppWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:ApkInstaller" ResizeMode="CanMinimize" Height="350" Width="350">
+    <Grid Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <CheckBox Grid.Row="0" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/village.png" HorizontalAlignment="Left" Width="40" Height="40">
+                    <FrameworkElement.ToolTip>
+                        <ToolTip Content="Crocro's Friend Village" />
+                    </FrameworkElement.ToolTip>
+                </Image>
+                <TextBlock Text="Kids 3D" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="0" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/musicband.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Music 3D" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="0" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/voice.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Magic Voice" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="1" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/adventure.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Adventure" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="1" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/browser.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Browser" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="1" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/call.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Phone" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="2" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/camera.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Camera" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="2" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/gallery.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="My Gallery" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="2" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/lego.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Cooki's" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="3" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/studio.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Art Studio" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="3" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/travel.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Trav. Buddies" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <CheckBox Grid.Row="3" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+            <StackPanel Orientation="Vertical" Width="90">
+                <Image Source="Images/home.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <TextBlock Text="Kids Home" HorizontalAlignment="Left" />
+            </StackPanel>
+        </CheckBox>
+        <Button Name="Clear_Button" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Width="100" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,5" Click="ButtonSubmit_Click" />
+    </Grid>
+</Window>
