@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApkInstaller")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("3.0.1.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("3.0.1+e1397c4a803416ff210759da0d321b5814fef738")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("3.0.1+13b6dd39b237a0e3332f2dcbcf7ddb6b82e84d6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApkInstaller")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApkInstaller")]
 [assembly: System.Reflection.AssemblyVersionAttribute("3.0.1.0")]
