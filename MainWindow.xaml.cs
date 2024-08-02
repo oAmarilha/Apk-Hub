@@ -464,11 +464,6 @@ public partial class MainWindow : Window, IComponentConnector
 		StatusText.Foreground = Brushes.White;
 	}
 
-	private void MainWindow_Closing(object? sender, CancelEventArgs e)
-	{
-		RunAdbCommand("kill-server");
-	}
-
     private void Uninstall_Button_Click(object sender, RoutedEventArgs e)
     {
 		if ((uninstallWindow == null || !uninstallWindow.IsVisible) && DevicesComboBox.SelectedItem != null)
@@ -485,5 +480,9 @@ public partial class MainWindow : Window, IComponentConnector
             }
 			uninstallWindow.Show();
         }
+    }
+    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    {
+        //RunAdbCommand("kill-server");
     }
 }
