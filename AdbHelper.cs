@@ -1,9 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace ApkInstaller
 {
@@ -186,6 +189,60 @@ namespace ApkInstaller
                 }
                 processes.Clear();
             }
+        }
+
+        public async void UninstallFunction(MainWindow _mainWindow, string _selectedDevice,string appPkg)
+        {
+            _mainWindow.StatusText.Foreground = Brushes.White;
+            string result = "";
+            string apkFilePath = "";
+            string apkName = "";
+            string appName = "";
+            string outputCommand = "";
+            await AdbHelper.Instance.RunAdbCommandAsync($"pm list package -f {appPkg}", _selectedDevice, true, output =>
+            {
+                apkFilePath += output;
+            });
+            appName = AdbHelper.Instance.RegexFunction($@"package:(/data/app/~~.*?)/base\.apk={appPkg}", apkFilePath);
+            if (!string.IsNullOrEmpty(appName))
+            {
+                Directory.CreateDirectory("log/apk");
+                apkName = appName + "/base.apk";
+                await AdbHelper.Instance.RunAdbCommandAsync($"pull {apkName} log/apk/test.apk", _selectedDevice, false, output => { });
+                await AdbHelper.Instance.RunCommandAsync("aapt", $"d badging log/apk/test.apk", output => { outputCommand += output; });
+
+                appName = AdbHelper.Instance.RegexFunction(@"application-label-pt-BR:'([^']*)'", outputCommand);
+
+                Directory.Delete("log/apk", true);
+            }
+            await AdbHelper.Instance.RunAdbCommandAsync($"uninstall {appPkg}", _selectedDevice, false, output =>
+            {
+                _mainWindow.UpdateStatusText(output);
+                result += output;
+            });
+            if (result.Contains("Success"))
+            {
+                appName = Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(appName));
+                _mainWindow.UpdateStatusText($"The app {appName} was succesfully uninstalled");
+                _mainWindow.StatusText.Foreground = Brushes.Green;
+            }
+            else
+            {
+                _mainWindow.UpdateStatusText($"The app {appPkg} was not uninstalled, check the package's name and try again");
+                _mainWindow.StatusText.Foreground = Brushes.Red;
+            }
+        }
+
+        public string RegexFunction(string expression, string file)
+        {
+            string find = "";
+            Regex name = new Regex(expression);
+            Match findName = name.Match(file);
+            if (findName.Success)
+            {
+                find = findName.Groups[1].Value;
+            }
+            return find;
         }
     }
 }
