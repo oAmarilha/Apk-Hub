@@ -25,8 +25,6 @@ public partial class AppWindow : Window, IComponentConnector
 
 	private LogcatWindow _logcatWindow;
 
-	private CancellationTokenSource? _cancellationTokenSource;
-
 	private Dictionary<string, (string, string)> appStringMap = new Dictionary<string, (string, string)>
 	{
 		{
@@ -103,7 +101,7 @@ public partial class AppWindow : Window, IComponentConnector
 			Clear_Button.Content = "Logcat";
 		}
 		base.Title = _action;
-		base.Closing += Cancellation_Token_Action;
+		base.Closing += Closing_Window;
 	}
 
 	private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -165,8 +163,6 @@ public partial class AppWindow : Window, IComponentConnector
             bool success = true;
             try
             {
-                _cancellationTokenSource = new CancellationTokenSource();
-                CancellationToken cancellationToken = _cancellationTokenSource.Token;
                 Clear_Button.IsEnabled = false;
                 foreach (string app in list)
                 {
@@ -251,11 +247,14 @@ public partial class AppWindow : Window, IComponentConnector
     }
 
 
-    public void Cancellation_Token_Action(object? sender, CancelEventArgs e)
+    public void Closing_Window(object? sender, CancelEventArgs e)
 	{
-		_mainWindow.Kids_Button.IsEnabled = true;
-		_kidsWindow?.Show();
-		_cancellationTokenSource?.Cancel();
+		if (_mainWindow != null)
+        {
+            _mainWindow.Kids_Button.IsEnabled = true;
+            _kidsWindow?.Show();
+        }
+		AdbHelper.Instance.StopCommand();
 		if (_logcatWindow != null)
 		{
 			_logcatWindow.Close();

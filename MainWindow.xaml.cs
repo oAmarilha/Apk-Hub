@@ -483,6 +483,6 @@ public partial class MainWindow : Window, IComponentConnector
     }
     private void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
-        //RunAdbCommand("kill-server");
+        RunAdbCommand("kill-server");
     }
 }
