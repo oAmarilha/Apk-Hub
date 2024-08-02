@@ -191,31 +191,12 @@ namespace ApkInstaller
             }
         }
 
-        public async void UninstallFunction(MainWindow _mainWindow, string _selectedDevice,string appPkg)
+        public async Task UninstallFunction(MainWindow _mainWindow, string _selectedDevice,string appPkg)
         {
             _mainWindow.StatusText.Foreground = Brushes.White;
             string result = "";
-            string apkFilePath = "";
-            string apkName = "";
-            string appName = "";
-            string outputCommand = "";
-            await AdbHelper.Instance.RunAdbCommandAsync($"pm list package -f {appPkg}", _selectedDevice, true, output =>
-            {
-                apkFilePath += output;
-            });
-            appName = AdbHelper.Instance.RegexFunction($@"package:(/data/app/~~.*?)/base\.apk={appPkg}", apkFilePath);
-            if (!string.IsNullOrEmpty(appName))
-            {
-                Directory.CreateDirectory("log/apk");
-                apkName = appName + "/base.apk";
-                await AdbHelper.Instance.RunAdbCommandAsync($"pull {apkName} log/apk/test.apk", _selectedDevice, false, output => { });
-                await AdbHelper.Instance.RunCommandAsync("aapt", $"d badging log/apk/test.apk", output => { outputCommand += output; });
-
-                appName = AdbHelper.Instance.RegexFunction(@"application-label-pt-BR:'([^']*)'", outputCommand);
-
-                Directory.Delete("log/apk", true);
-            }
-            await AdbHelper.Instance.RunAdbCommandAsync($"uninstall {appPkg}", _selectedDevice, false, output =>
+            string appName = await GetAppName(appPkg, _selectedDevice);
+            await RunAdbCommandAsync($"uninstall {appPkg}", _selectedDevice, false, output =>
             {
                 _mainWindow.UpdateStatusText(output);
                 result += output;
@@ -231,6 +212,30 @@ namespace ApkInstaller
                 _mainWindow.UpdateStatusText($"The app {appPkg} was not uninstalled, check the package's name and try again");
                 _mainWindow.StatusText.Foreground = Brushes.Red;
             }
+            Directory.Delete("log/apk", true);
+        }
+
+        public async Task<string> GetAppName(string appPkg, string _selectedDevice)
+        {
+            Directory.CreateDirectory("log/apk");
+            string apkFilePath = "";
+            string apkName = "";
+            string appName = "";
+            string outputCommand = "";
+            await RunAdbCommandAsync($"pm list package -f {appPkg}", _selectedDevice, true, output =>
+            {
+                apkFilePath += output;
+            });
+            appName = RegexFunction($@"package:(/data/app/~~.*?)/base\.apk={appPkg}", apkFilePath);
+            if (!string.IsNullOrEmpty(appName))
+            {
+                apkName = appName + "/base.apk";
+                await RunAdbCommandAsync($"pull {apkName} log/apk/base.apk", _selectedDevice, false, output => { });
+                await RunCommandAsync("aapt", $"d badging log/apk/base.apk", output => { outputCommand += output; });
+
+                appName = RegexFunction(@"application-label-en(?:-[a-zA-Z]{2})*:'(.*?)'(?:application-label|$)", Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(outputCommand)));
+            }
+            return appName;
         }
 
         public string RegexFunction(string expression, string file)
@@ -240,7 +245,7 @@ namespace ApkInstaller
             Match findName = name.Match(file);
             if (findName.Success)
             {
-                find = findName.Groups[1].Value;
+                find = findName.Groups[1].Value.Replace("\\n", " ");
             }
             return find;
         }
