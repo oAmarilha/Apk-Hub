@@ -28,12 +28,12 @@ public partial class Kids : Window, IComponentConnector
 		_selectedDevice = selectedDevice;
 		_cancellationTokenSource = new CancellationTokenSource();
 		base.Owner = _mainWindow;
-		base.Closing += ClosingWindow;
+        base.Closing += ClosingWindow;
 	}
 
 	private void ClosingWindow(object? sender, CancelEventArgs e)
-	{
-		_mainWindow.ActivateDevicesBox();
+    {
+        _mainWindow.ActivateDevicesBox();
 		_cancellationTokenSource.Cancel();
 		_mainWindow.ParentalCare_Button.IsEnabled = true;
 		_mainWindow.Browse_Button.IsEnabled = true;
@@ -60,7 +60,7 @@ public partial class Kids : Window, IComponentConnector
 
 	public void AppWindow_Closing(object? sender, CancelEventArgs e)
 	{
-		_mainWindow.Kids_Button.IsEnabled = true;
+        _mainWindow.Kids_Button.IsEnabled = true;
 		Show();
 	}
 
@@ -76,25 +76,26 @@ public partial class Kids : Window, IComponentConnector
 
 	private async void LogcatClear_Button(object sender, RoutedEventArgs e)
 	{
-		_cancellationTokenSource = new CancellationTokenSource();
-		CancellationToken token = _cancellationTokenSource.Token;
+		string logcat = "";
 		try
 		{
 			await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", _selectedDevice, shell: true, output =>
 			{
-                if (string.IsNullOrEmpty(output))
-                {
-                    _mainWindow.StatusText.Text = "";
-                    _mainWindow.StatusText.Text = "Logcat cleared succesfully";
-                    _mainWindow.StatusText.Foreground = Brushes.Green;
-                }
-                else
-                {
-                    _mainWindow.StatusText.Text = "Logcat not clared";
-                    _mainWindow.StatusText.Foreground = Brushes.Red;
-                }
+				logcat += output;
             });
-		}
+
+            if (string.IsNullOrEmpty(logcat))
+            {
+                _mainWindow.StatusText.Text = "";
+                _mainWindow.StatusText.Text = "Logcat cleared succesfully";
+                _mainWindow.StatusText.Foreground = Brushes.Green;
+            }
+            else
+            {
+                _mainWindow.StatusText.Text = "Logcat not clared";
+                _mainWindow.StatusText.Foreground = Brushes.Red;
+            }
+        }
 		catch (Exception ex4)
 		{
 			Exception ex3 = ex4;

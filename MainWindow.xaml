@@ -13,8 +13,6 @@
     Width="600" 
     Background="White"
     WindowStartupLocation="CenterScreen"
-    WindowTitleBrush="#4B0AC6"
-    BorderBrush="#4B0AC6"
     Icon="bobby.ico"
     ShowIconOnTitleBar="True"
     >
@@ -47,7 +45,7 @@
         <Label Name="Title" Content="Select APK Files:" Margin="20" FontWeight="SemiBold" FontSize="16" Height="35" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
 
         <!-- Lista de APKs -->
-        <ListBox Name="ApkFilesList"  AllowDrop="True" FontSize="15" Padding="0,5" Margin="20,0,20,0" Height="160" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" DragOver="Grid_DragOver" Drop="Grid_Drop" d:ItemsSource="{d:SampleData ItemCount=5}" BorderThickness="1" BorderBrush="Gray">
+        <ListBox Name="ApkFilesList" AllowDrop="True" FontSize="15" Padding="0,5" Margin="20,0,20,0" Height="160" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" DragOver="Grid_DragOver" Drop="Grid_Drop" d:ItemsSource="{d:SampleData ItemCount=5}" BorderThickness="1" BorderBrush="Gray">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Template">
@@ -74,7 +72,7 @@
         <!-- Botões no Topo -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20" Grid.Row="0" Grid.Column="1">
             <Button Name="Browse_Button" Content="Browse..." Margin="0,0,10,0" Height="35" Padding="10,0" FontSize="15" Width="Auto" Click="BrowseButton_Click" />
-            <Button Name="Uninstall_Button" Content="More" Margin="0,0,10,0" Height="35" Padding="10,0" FontSize="15" Width="Auto" Click="Uninstall_Button_Click" />
+            <Button Name="More_Button" Content="More" Margin="0,0,10,0" Height="35" Padding="10,0" FontSize="15" Width="Auto" Click="More_Button_Click" />
             <Button Name="Kids_Button" Content="Kids" Margin="0,0,10,0" Height="35" Padding="10,0" FontSize="15" Width="Auto" Click="KidsWindow_Click" />
             <Button Name="ParentalCare_Button" Content="Parental Care" Margin="0,0,20,0" Padding="10,0" Height="35" FontSize="15" Width="Auto" Click="PCWindow_Click" />
         </StackPanel>

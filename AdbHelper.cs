@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ApkInstaller
@@ -48,10 +50,8 @@ namespace ApkInstaller
 
                     process.OutputDataReceived += (sender, e) =>
                     {
-                        if (!string.IsNullOrEmpty(e.Data))
-                        {
-                            outputHandler(e.Data);  // Notify UI with the output
-                        }
+                        
+                        outputHandler(e.Data);  // Notify UI with the output
                     };
 
                     process.ErrorDataReceived += (sender, e) =>

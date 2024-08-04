@@ -27,9 +27,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
 	private Uninstall? uninstallWindow;
 
-	private UsbDeviceNotifier usbDeviceNotifier;
-
-	private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+	private UsbDeviceNotifier? usbDeviceNotifier;
 
 	private bool loopCancelation = false;
 
@@ -38,6 +36,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	public MainWindow()
 	{
 		InitializeComponent();
+        this.WindowTitleBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
+        this.BorderBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
         base.Loaded += MainWindow_Loaded;
 		Install_Button.Content = "Install APKs";
 		base.Closing += MainWindow_Closing;
@@ -49,41 +49,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		Directory.CreateDirectory("./log/");
 		usbDeviceNotifier = new UsbDeviceNotifier(this);
 		usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged;
-        foreach (var control in FindVisualChildren<Button>(this))
-        {
-            control.Click += RemoveFocus;
-        }
-    }
-
-    private void RemoveFocus(object sender, RoutedEventArgs e)
-    {
-        // Remove focus from the button
-        var button = sender as Button;
-        if (button != null)
-        {
-            FocusManager.SetFocusedElement(this, this);
-            Keyboard.ClearFocus();
-        }
-    }
-
-    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
-    {
-        if (depObj != null)
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-                if (child != null && child is T)
-                {
-                    yield return (T)child;
-                }
-
-                foreach (T childOfChild in FindVisualChildren<T>(child))
-                {
-                    yield return childOfChild;
-                }
-            }
-        }
     }
 
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
@@ -464,7 +429,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	}
 
 	private void PCWindow_Click(object sender, RoutedEventArgs e)
-	{
+	{ 
 		if (DevicesComboBox.SelectedItem == null)
 		{
 			MessageBox.Show("Please select a device before opening Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -472,7 +437,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		else if (settingsWindow == null || !settingsWindow.IsVisible)
 		{
 			settingsWindow = new Settings(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
-			if (base.Left + base.Width + 240.0 >= SystemParameters.PrimaryScreenWidth)
+            if (base.Left + base.Width + 240.0 >= SystemParameters.PrimaryScreenWidth)
 			{
 				settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 			}
@@ -518,9 +483,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		StatusText.Foreground = Brushes.White;
 	}
 
-    private void Uninstall_Button_Click(object sender, RoutedEventArgs e)
+    private void More_Button_Click(object sender, RoutedEventArgs e)
     {
-		if ((uninstallWindow == null || !uninstallWindow.IsVisible) && DevicesComboBox.SelectedItem != null)
+
+        if ((uninstallWindow == null || !uninstallWindow.IsVisible) && DevicesComboBox.SelectedItem != null)
         {
             uninstallWindow = new Uninstall(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
             if (base.Left + base.Width + 500 >= SystemParameters.PrimaryScreenWidth)
@@ -533,6 +499,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 uninstallWindow.Top = base.Top;
             }
 			uninstallWindow.Show();
+		}
+		else
+		{
+            MessageBox.Show("Please select a device before opening continuing.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
     }
     private void MainWindow_Closing(object? sender, CancelEventArgs e)

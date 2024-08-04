@@ -12,9 +12,9 @@ public class UsbDeviceNotifier
 
 	private const int WmDeviceChange = 537;
 
-	private readonly Window _window;
+	private readonly Window? _window;
 
-	public event EventHandler UsbDeviceChanged;
+	public event EventHandler? UsbDeviceChanged;
 
 	public UsbDeviceNotifier(Window window)
 	{
