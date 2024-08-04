@@ -1,3 +1,4 @@
+using MahApps.Metro.Controls;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,10 +15,11 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using Microsoft.Win32;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Windows.Input;
 
 namespace ApkInstaller;
 
-public partial class MainWindow : Window, IComponentConnector
+public partial class MainWindow : MetroWindow, IComponentConnector
 {
 	private Settings? settingsWindow;
 
@@ -30,6 +32,8 @@ public partial class MainWindow : Window, IComponentConnector
 	private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
 	private bool loopCancelation = false;
+
+	private bool success;
 
 	public MainWindow()
 	{
@@ -45,10 +49,44 @@ public partial class MainWindow : Window, IComponentConnector
 		Directory.CreateDirectory("./log/");
 		usbDeviceNotifier = new UsbDeviceNotifier(this);
 		usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged;
-		cancellationTokenSource = new CancellationTokenSource();
-	}
+        foreach (var control in FindVisualChildren<Button>(this))
+        {
+            control.Click += RemoveFocus;
+        }
+    }
 
-	private async void OnUsbDeviceChanged(object sender, EventArgs e)
+    private void RemoveFocus(object sender, RoutedEventArgs e)
+    {
+        // Remove focus from the button
+        var button = sender as Button;
+        if (button != null)
+        {
+            FocusManager.SetFocusedElement(this, this);
+            Keyboard.ClearFocus();
+        }
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+    {
+        if (depObj != null)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                if (child != null && child is T)
+                {
+                    yield return (T)child;
+                }
+
+                foreach (T childOfChild in FindVisualChildren<T>(child))
+                {
+                    yield return childOfChild;
+                }
+            }
+        }
+    }
+
+    private async void OnUsbDeviceChanged(object sender, EventArgs e)
 	{
 		await Task.Delay(1000);
 		PopulateDevices();
@@ -115,7 +153,14 @@ public partial class MainWindow : Window, IComponentConnector
             if (error.Count > 0)
             {
                 string conteudo = string.Join(", ", error);
-                MessageBox.Show($"The file(s) {conteudo} is(are) already selected, please remove it and try again", "A file is(are) already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (error.Count == 1)
+                {
+                    MessageBox.Show($"The following file:\n{conteudo} is already selected, please remove it and try again", "A file is already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    MessageBox.Show($"The following files:\n{conteudo} are already selected, please remove them and try again", "Some files are already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
         }
 	}
@@ -154,7 +199,14 @@ public partial class MainWindow : Window, IComponentConnector
         if (error.Count > 0)
         {
             string conteudo = string.Join(", ", error);
-            MessageBox.Show($"The file(s) {conteudo} is(are) already selected, please remove it and try again", "A file is(are) already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+			if (error.Count == 1)
+			{
+				MessageBox.Show($"The following file:\n{conteudo} is already selected, please remove it and try again", "A file is already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+			}
+			else
+			{
+				MessageBox.Show($"The following files:\n{conteudo} are already selected, please remove them and try again", "Some files are already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 
@@ -244,6 +296,7 @@ public partial class MainWindow : Window, IComponentConnector
         else
         {
             loopCancelation = true;
+			success = false;
             AdbHelper.Instance.StopCommand();
             UpdateStatusText("Installation canceled");
             StatusText.Foreground = Brushes.Red;
@@ -264,7 +317,7 @@ public partial class MainWindow : Window, IComponentConnector
         });
         try
         {
-            bool success = true;
+            success = true;
 			foreach (string apkFile in apkFiles)
 			{
 				if (loopCancelation == false)
@@ -288,6 +341,7 @@ public partial class MainWindow : Window, IComponentConnector
                 }
 				else
                 {
+					success = false;
                     break;
 				}
 			}
