@@ -402,7 +402,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	{
 		if (DevicesComboBox.SelectedItem == null)
 		{
-			MessageBox.Show("Please select a device before opening Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			MessageBox.Show("Please select a device before to open Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 		else if (kidsWindow == null || !kidsWindow.IsVisible)
 		{
@@ -432,7 +432,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	{ 
 		if (DevicesComboBox.SelectedItem == null)
 		{
-			MessageBox.Show("Please select a device before opening Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			MessageBox.Show("Please select a device before to open Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 		else if (settingsWindow == null || !settingsWindow.IsVisible)
 		{
@@ -502,7 +502,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		}
 		else
 		{
-            MessageBox.Show("Please select a device before opening continuing.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            MessageBox.Show("Please select a device before to continue.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
     }
     private void MainWindow_Closing(object? sender, CancelEventArgs e)
