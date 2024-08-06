@@ -64,14 +64,14 @@ namespace ApkInstaller
             }
         }
 
-        private void Uninstall_Action()
+        private async void Uninstall_Action()
         {
             if (App_Pkg.Text != string.Empty && _mainWindow != null)
             {
                 _mainWindow.StatusText.Text = $"Uninstalling package {App_Pkg.Text}" + Environment.NewLine;
                 Send_Command.IsEnabled = false;
                 App_Pkg.IsEnabled = false;
-                AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice,App_Pkg.Text);
+                await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice,App_Pkg.Text);
             }
             else
             {

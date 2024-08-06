@@ -133,7 +133,7 @@ public partial class Settings : Window, IComponentConnector
 
 	private void RemoteScreen_Click(object sender, RoutedEventArgs e)
 	{
-		if (Share_Button.Content.ToString() == "Mirroring")
+		if (Share_Button.Content.ToString() == "Screen")
 		{
 			ScreenRecordButton.IsEnabled = false;
 			Share_Button.Content = "Stop";
@@ -143,8 +143,7 @@ public partial class Settings : Window, IComponentConnector
 		else
 		{
 			ScreenRecordButton.IsEnabled = true;
-			Share_Button.Content = "Mirroring";
-			Share_Button.Background = Brushes.LightGray;
+			Share_Button.Content = "Screen";
 			EndRealTimeScreen();
 		}
 	}
@@ -172,18 +171,21 @@ public partial class Settings : Window, IComponentConnector
 		{
 			_mainWindow.UpdateStatusText(output);
 		}, "scrcpy");
-	}
+        Share_Button.Content = "Screen";
+        Share_Button.Background = new SolidColorBrush(Color.FromRgb(247, 247, 247));
+        ScreenRecordButton.IsEnabled = true;
+    }
 
 	private void EndRealTimeScreen()
 	{
 		AdbHelper.Instance.StopCommand();
-	}
+    }
 
 	private void LogcatButton_Click(object sender, RoutedEventArgs e)
 	{
-		if (logcatWindow == null || !logcatWindow.IsVisible)
+		if ((logcatWindow == null || !logcatWindow.IsVisible) && _mainWindow != null)
 		{
-			logcatWindow = new LogcatWindow(_selectedDevice, "com.samsung.android.app.parentalcare");
+			logcatWindow = new LogcatWindow(_mainWindow ,this, _selectedDevice, "com.samsung.android.app.parentalcare");
 			logcatWindow.Owner = _mainWindow;
 			if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
 			{

@@ -110,6 +110,7 @@ public partial class AppWindow : Window, IComponentConnector
 		{
 			return;
 		}
+		Clear_Button.IsEnabled = true;
 		CheckBox checkBox = sender as CheckBox;
 		foreach (object child in MainGrid.Children)
 		{
@@ -126,6 +127,7 @@ public partial class AppWindow : Window, IComponentConnector
 		{
 			return;
 		}
+		Clear_Button.IsEnabled= false;
 		foreach (object child in MainGrid.Children)
 		{
 			if (child is CheckBox checkBox)
@@ -231,9 +233,9 @@ public partial class AppWindow : Window, IComponentConnector
                 MessageBox.Show("An error occurred while trying to execute the command, check the output and try again.", "An error occurred", MessageBoxButton.OK, MessageBoxImage.Hand);
             }
         }
-        else if (_logcatWindow == null || !_logcatWindow.IsVisible)
+        else if ((_logcatWindow == null || !_logcatWindow.IsVisible) && _mainWindow != null && list.Count > 0)
         {
-            _logcatWindow = new LogcatWindow(_selectedDevice, list[0] ?? "");
+            _logcatWindow = new LogcatWindow(_mainWindow, this , _selectedDevice, list[0] ?? "");
             _logcatWindow.Owner = _mainWindow;
             if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
             {
@@ -243,8 +245,12 @@ public partial class AppWindow : Window, IComponentConnector
             {
                 _logcatWindow.Top = _mainWindow.Top + _mainWindow.Height;
                 _logcatWindow.Left = _mainWindow.Left;
-            }
-            _logcatWindow.PC_Info.Visibility = Visibility.Hidden;
+			}
+			//_logcatWindow.PC_Info.Visibility = Visibility.Hidden;
+			Grid.SetRow(_logcatWindow.Buttons_StackPanel, 0);
+			_logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
+			_logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
+			_logcatWindow.logcatGrid.Children.Remove(_logcatWindow.PC_Info);
             _logcatWindow.Show();
         }
         else

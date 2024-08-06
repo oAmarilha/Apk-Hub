@@ -59,6 +59,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
 	public async void PopulateDevices()
 	{
+		DevicesComboBox.ItemsSource = "";
 		Install_Button.IsEnabled = false;
 		StatusText.Text = "Checking devices connected...\n";
 		StatusText.Foreground = Brushes.White;
@@ -75,9 +76,17 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 			{
 				DevicesComboBox.ItemsSource = deviceList;
 				int count = deviceList.Count;
+				if (count == 1)
+				{
+					DevicesComboBox.SelectedItem = deviceList[0];
+				}
 				StatusText.Text = ((count >= 1) ? (count + " Device(s) Connected\n") : "No Device Connected\n");
 				StatusText.Foreground = ((count >= 1) ? Brushes.Green : Brushes.Red);
-				Install_Button.IsEnabled = count >= 1;
+				//Install_Button.IsEnabled = count >= 1;
+				if (ApkFilesList.Items.Count > 0 && count > 0)
+				{
+					Install_Button.IsEnabled = true;
+				}
 				if (settingsWindow != null && DevicesComboBox.SelectedItem == null)
 				{
 					settingsWindow.Close();
@@ -95,8 +104,30 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		PopulateDevices();
 	}
 
+	private void ChangeButtonVisibility(bool change)
+	{
+        foreach (var child in MainWindowGrid.Children)
+        {
+            if (child is StackPanel stackPanel)
+            {
+                foreach (var stackChild in stackPanel.Children)
+                {
+                    if (stackChild is Button button)
+                    {
+                        button.IsEnabled = change;
+						if (DevicesComboBox.Items.Count == 0) 
+						{
+							Install_Button.IsEnabled = false;
+						}
+                    }
+                }
+            }
+        }
+    }
+
 	private void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
+		ChangeButtonVisibility(false);
         List<string> error = new List<string>();
         OpenFileDialog openFileDialog = new OpenFileDialog
 		{
@@ -105,6 +136,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		};
 		if (openFileDialog.ShowDialog() == true)
 		{
+			UpdateStatusText("Loading file(s) selected",clear:true);
 			string[] fileNames = openFileDialog.FileNames;
 			foreach (string filename in fileNames)
 			{
@@ -126,9 +158,16 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 {
                     MessageBox.Show($"The following files:\n{conteudo} are already selected, please remove them and try again", "Some files are already selected", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
+                ChangeButtonVisibility(true);
+				return;
             }
+            UpdateStatusText("Files loaded",clear:true);
         }
-	}
+		else
+		{
+            ChangeButtonVisibility(true);
+        }
+    }
 
     private void Grid_DragOver(object sender, DragEventArgs e)
 	{
@@ -199,6 +238,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 				}
             }
         }
+        ChangeButtonVisibility(true);
 
         TextBlock element = new TextBlock
 		{
@@ -402,7 +442,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	{
 		if (DevicesComboBox.SelectedItem == null)
 		{
-			MessageBox.Show("Please select a device before to open Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			MessageBox.Show("Please select a device before opening Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 		else if (kidsWindow == null || !kidsWindow.IsVisible)
 		{
@@ -432,7 +472,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	{ 
 		if (DevicesComboBox.SelectedItem == null)
 		{
-			MessageBox.Show("Please select a device before to open Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			MessageBox.Show("Please select a device before opening Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 		else if (settingsWindow == null || !settingsWindow.IsVisible)
 		{
@@ -465,9 +505,13 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		DevicesComboBox.IsEnabled = true;
 	}
 
-	public void UpdateStatusText(string message, bool isError = false)
+	public void UpdateStatusText(string message, bool isError = false, bool clear = false)
 	{
-		base.Dispatcher.Invoke(delegate
+        if (clear == true)
+        {
+			StatusText.Text = "";
+        }
+        base.Dispatcher.Invoke(delegate
 		{
 			TextBox statusText = StatusText;
 			statusText.Text = statusText.Text + message + Environment.NewLine;
@@ -502,7 +546,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		}
 		else
 		{
-            MessageBox.Show("Please select a device before to continue.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            MessageBox.Show("Please select a device before continuing.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
     }
     private void MainWindow_Closing(object? sender, CancelEventArgs e)

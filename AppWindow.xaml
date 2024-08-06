@@ -88,6 +88,6 @@
                 <TextBlock Text="Kids Home" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
-        <Button Name="Clear_Button" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Width="100" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,5" Click="ButtonSubmit_Click" />
+        <Button Name="Clear_Button" IsEnabled="False" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Width="100" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,5" Click="ButtonSubmit_Click" />
     </Grid>
 </Window>

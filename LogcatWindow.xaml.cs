@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -20,6 +21,8 @@ public partial class LogcatWindow : Window, IComponentConnector
 
 	private MainWindow _mainWindow;
 
+	private Window _calledWindow;
+
 	private string _accountToken;
 
 	private string _deviceId;
@@ -30,13 +33,18 @@ public partial class LogcatWindow : Window, IComponentConnector
 
 	private string _clientId;
 
-	public LogcatWindow(string selectedDevice, string filter)
+	public LogcatWindow(MainWindow mainWindow, Window calledWindow, string selectedDevice, string filter)
 	{
 		InitializeComponent();
+		_mainWindow = mainWindow;
 		_selectedDevice = selectedDevice;
+		_calledWindow = calledWindow;
 		_filter = filter;
 		ClearLogcat();
 		StartLogcat();
+		_mainWindow.Hide();
+		_calledWindow.Hide();
+		base.Closing += Closing_Window;
 	}
 
 	private async void ClearLogcat()
@@ -183,13 +191,28 @@ public partial class LogcatWindow : Window, IComponentConnector
 		try
 		{
 			string contents = LogcatTextBox.Text.ToString();
-			string text = $"{Directory.GetCurrentDirectory()}\\log\\Logcat\\{_filter}\\{value}\\{_filter}_{value}.txt";
-			File.WriteAllText(text, contents);
-			MessageBox.Show("File Saved, check on " + text, "File Saved", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+			string text = $"{Directory.GetCurrentDirectory()}\\log\\Logcat\\{_filter}\\{value}";
+			File.WriteAllText($"{text}\\{_filter}_{value}.txt", contents);
+			MessageBoxResult result = MessageBox.Show($"File Save in: {text}\\{_filter}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+			if (result == MessageBoxResult.Yes)
+			{
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = text,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
 		}
 		catch (Exception ex)
 		{
 			MessageBox.Show("Error saving the log file: " + ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
 		}
 	}
+
+    public void Closing_Window(object? sender, CancelEventArgs e)
+    {
+        _mainWindow.Show();
+		_calledWindow.Show();
+    }
 }

@@ -16,6 +16,9 @@
     <Compile Update="LogcatWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="More.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Settings.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -34,6 +37,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="More.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Settings.xaml">

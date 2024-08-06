@@ -29,6 +29,6 @@
         <Button Name="UninstallApps_Button" Grid.Row="0" Grid.Column="1" Content="Uninstall" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FFFF0000" Click="UninstallParental_Click" />
         <Button Name="Remount_Button" Grid.Row="1" Grid.Column="1" Content="Remount" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemountButton_Click" />
         <Button Name="ClearPKG_Button" Grid.Row="2" Grid.Column="1" Content="Clear APK" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ClearPackage_Click" />
-        <Button Name="Share_Button" Grid.Row="3" Grid.Column="1" Content="Mirroring" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
+        <Button Name="Share_Button" Grid.Row="3" Grid.Column="1" Content="Screen" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
     </Grid>
 </Window>

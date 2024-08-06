@@ -50,7 +50,6 @@ namespace ApkInstaller
 
                     process.OutputDataReceived += (sender, e) =>
                     {
-                        
                         outputHandler(e.Data);  // Notify UI with the output
                     };
 
@@ -116,7 +115,7 @@ namespace ApkInstaller
 
         public async void TransferRecordedFile(MainWindow mainWindow, string remoteFile, string deviceName, string selectedDevice)
         {
-            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "log\\ScreenRecords", deviceName);
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "log\\ScreenRecords", $"{deviceName}\\{remoteFile}");
             string fullPath = Path.Combine(directoryPath, remoteFile + ".mp4");
             string fileName =  remoteFile + ".mp4";
 
@@ -127,7 +126,16 @@ namespace ApkInstaller
                 {
                     mainWindow.UpdateStatusText(output);
                 });
-                MessageBox.Show($"Screen recording saved to: {fullPath}", "Success", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                MessageBoxResult result = MessageBox.Show($"Screen recording saved to: {fullPath}\nDo you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+                if (result == MessageBoxResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = directoryPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
             }
             catch (Exception ex)
             {
