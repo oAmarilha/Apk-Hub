@@ -25,9 +25,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
 	private Kids? kidsWindow;
 
-	private Uninstall? uninstallWindow;
-
 	private UsbDeviceNotifier? usbDeviceNotifier;
+
+	private More? moreWindow;
 
 	private bool loopCancelation = false;
 
@@ -530,19 +530,19 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     private void More_Button_Click(object sender, RoutedEventArgs e)
     {
 
-        if ((uninstallWindow == null || !uninstallWindow.IsVisible) && DevicesComboBox.SelectedItem != null)
+        if ((moreWindow == null || !moreWindow.IsVisible) && DevicesComboBox.SelectedItem != null)
         {
-            uninstallWindow = new Uninstall(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
-            if (base.Left + base.Width + 500 >= SystemParameters.PrimaryScreenWidth)
+            moreWindow = new More(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
+            if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth)
             {
-                uninstallWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                moreWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
             else
             {
-                uninstallWindow.Left = base.Left + base.Width;
-                uninstallWindow.Top = base.Top;
+                moreWindow.Left = base.Left + base.Width;
+                moreWindow.Top = base.Top;
             }
-			uninstallWindow.Show();
+			moreWindow.Show();
 		}
 		else
 		{

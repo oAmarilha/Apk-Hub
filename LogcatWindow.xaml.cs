@@ -40,7 +40,8 @@ public partial class LogcatWindow : Window, IComponentConnector
 		_selectedDevice = selectedDevice;
 		_calledWindow = calledWindow;
 		_filter = filter;
-		ClearLogcat();
+        Owner = _mainWindow;
+        ClearLogcat();
 		StartLogcat();
 		_mainWindow.Hide();
 		_calledWindow.Hide();

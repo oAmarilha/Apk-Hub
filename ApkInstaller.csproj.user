@@ -22,7 +22,7 @@
     <Compile Update="Settings.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Uninstall.xaml.cs">
+    <Compile Update="PkgAction.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -45,7 +45,7 @@
     <Page Update="Settings.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Uninstall.xaml">
+    <Page Update="PkgAction.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

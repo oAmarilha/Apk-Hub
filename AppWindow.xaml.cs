@@ -235,7 +235,7 @@ public partial class AppWindow : Window, IComponentConnector
         }
         else if ((_logcatWindow == null || !_logcatWindow.IsVisible) && _mainWindow != null && list.Count > 0)
         {
-            _logcatWindow = new LogcatWindow(_mainWindow, this , _selectedDevice, list[0] ?? "");
+            _logcatWindow = new LogcatWindow(_mainWindow, this , _selectedDevice, list[0]);
             _logcatWindow.Owner = _mainWindow;
             if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
             {

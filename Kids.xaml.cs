@@ -114,38 +114,4 @@ public partial class Kids : Window, IComponentConnector
 	{
 		OpenAppWindow("logcat", shell: false);
 	}
-
-	private async void RealTimeScreen()
-	{
-		await AdbHelper.Instance.RunCommandAsync("scrcpy", "-s \"" + _selectedDevice + "\"", delegate(string output)
-		{
-			base.Dispatcher.Invoke(delegate
-			{
-				_mainWindow.UpdateStatusText(output);
-			});
-		});
-	}
-
-	private void StopScreenRecording()
-	{
-		_cancellationTokenSource.Cancel();
-		_cancellationTokenSource = new CancellationTokenSource();
-	}
-
-	private async void ScreenRecord_Button(object sender, RoutedEventArgs e)
-	{
-		if (Record_Screen.Content.ToString() == "Record")
-		{
-			RealTimeScreen();
-			Record_Screen.Content = "Stop";
-			Record_Screen.Background = Brushes.Red;
-			await AdbHelper.Instance.StartScreenRecording(_mainWindow, _selectedDevice, localFile);
-		}
-		else
-		{
-			Record_Screen.Content = "Record";
-			Record_Screen.Background = Brushes.Green;
-			StopScreenRecording();
-		}
-	}
 }

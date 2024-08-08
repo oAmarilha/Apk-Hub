@@ -98,17 +98,15 @@ namespace ApkInstaller
             string remotefile = $"{deviceName}_{fileName}";
             try
             {
-
-                await RunAdbCommandAsync($"shell screenrecord /sdcard/{deviceName}_{fileName}.mp4", selectedDevice, false, output =>
-                {
-                    
-                });
+                await RunAdbCommandAsync($"shell screenrecord /sdcard/{deviceName}_{fileName}.mp4", selectedDevice, false, output =>{});
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error during screen recording, try again", "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
                 return;
             }
+
+            await Task.Delay(1500);
             TransferRecordedFile(mainWindow, remotefile, deviceName, selectedDevice);
 
         }
@@ -126,6 +124,7 @@ namespace ApkInstaller
                 {
                     mainWindow.UpdateStatusText(output);
                 });
+                await Task.Delay(500);
                 MessageBoxResult result = MessageBox.Show($"Screen recording saved to: {fullPath}\nDo you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
                 if (result == MessageBoxResult.Yes)
                 {
