@@ -43,6 +43,10 @@ namespace ApkInstaller
         private void PkgAction_Closing(object? sender, CancelEventArgs e)
         {
             _calledWindow.Show();
+            if (_mainWindow != null)
+            {
+                _mainWindow.Activate();
+            }
         }
 
         private void Action_Button_Click(object sender, RoutedEventArgs e)
@@ -82,7 +86,7 @@ namespace ApkInstaller
             string text = textBox.Text;
 
             // Convert the text to lowercase
-            textBox.Text = text.ToLower();
+            //textBox.Text = text.ToLower();
 
             // Set the caret index back to its original position
             textBox.CaretIndex = caretIndex;
@@ -137,6 +141,25 @@ namespace ApkInstaller
                 logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
                 logcatWindow.logcatGrid.Children.Remove(logcatWindow.PC_Info);
                 logcatWindow.Show();
+            }
+
+            Send_Command.IsEnabled = true;
+            App_Pkg.IsEnabled = true;
+            App_Pkg.Focus();
+        }
+
+        private async void ClearPkg_Action()
+        {
+            if (App_Pkg.Text != string.Empty && _mainWindow != null)
+            {
+                _mainWindow.StatusText.Text = $"Clearing package {App_Pkg.Text}" + Environment.NewLine;
+                Send_Command.IsEnabled = false;
+                App_Pkg.IsEnabled = false;
+                await AdbHelper.Instance.ClearAppFunction(_mainWindow, _selectedDevice, App_Pkg.Text);
+            }
+            else
+            {
+                MessageBox.Show("You need inform the package to be cleared", "App not informed", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             Send_Command.IsEnabled = true;

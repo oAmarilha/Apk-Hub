@@ -32,6 +32,19 @@ namespace ApkInstaller
             _mainWindow = mainWindow;
             _selectedDevice = selectedDevice;
             Owner = _mainWindow;
+            base.Closing += More_Closing;
+        }
+
+        private void More_Closing(object? sender, CancelEventArgs e)
+        {
+            if (_mainWindow != null)
+            {
+                _mainWindow.DevicesComboBox.IsEnabled = true;
+                _mainWindow.Browse_Button.IsEnabled = true;
+                _mainWindow.Kids_Button.IsEnabled = true;
+                _mainWindow.ParentalCare_Button.IsEnabled = true;
+                _mainWindow.Activate();
+            }
         }
 
         private async void ScreenRecordButton_Click(object sender, RoutedEventArgs e)
@@ -112,6 +125,18 @@ namespace ApkInstaller
                 pkgActionWindow.Title = "Logcat pkg";
                 pkgActionWindow.TextTitle.Text = "Get logcat:";
                 pkgActionWindow.Send_Command.Content = "Logcat";
+                pkgActionWindow.Show();
+            }
+        }
+
+        private void ClearAPK_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if ((pkgActionWindow == null || !pkgActionWindow.IsVisible) && _mainWindow.DevicesComboBox.SelectedItem != null)
+            {
+                pkgActionWindow = new PkgAction(_mainWindow, this, _selectedDevice);
+                pkgActionWindow.Title = "Clear app";
+                pkgActionWindow.TextTitle.Text = "Clear package:";
+                pkgActionWindow.Send_Command.Content = "ClearPkg";
                 pkgActionWindow.Show();
             }
         }

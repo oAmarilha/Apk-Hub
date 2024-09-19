@@ -95,6 +95,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 				{
 					kidsWindow.Close();
 				}
+				else if (moreWindow != null && DevicesComboBox.SelectedItem == null){
+					moreWindow.Close();
+				}
 			});
 		});
 	}
@@ -459,6 +462,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 			DevicesComboBox.IsEnabled = false;
 			ParentalCare_Button.IsEnabled = false;
 			Browse_Button.IsEnabled = false;
+			More_Button.IsEnabled = false;
 			kidsWindow.Show();
 		}
 		else
@@ -529,8 +533,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void More_Button_Click(object sender, RoutedEventArgs e)
     {
-
-        if ((moreWindow == null || !moreWindow.IsVisible) && DevicesComboBox.SelectedItem != null)
+        if (DevicesComboBox.SelectedItem == null)
+        {
+            MessageBox.Show("Please select a device before opening more options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+        }
+        else if (moreWindow == null || !moreWindow.IsVisible)
         {
             moreWindow = new More(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
             if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth)
@@ -542,11 +549,16 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 moreWindow.Left = base.Left + base.Width;
                 moreWindow.Top = base.Top;
             }
+			Browse_Button.IsEnabled = false;
+			Kids_Button.IsEnabled = false;
+			ParentalCare_Button.IsEnabled = false;
+			DevicesComboBox.IsEnabled = false;
 			moreWindow.Show();
 		}
 		else
 		{
-            MessageBox.Show("Please select a device before continuing.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            SystemSounds.Exclamation.Play();
+            moreWindow.Activate();
         }
     }
     private void MainWindow_Closing(object? sender, CancelEventArgs e)

@@ -57,7 +57,10 @@ public partial class Settings : Window, IComponentConnector
 		CancellationToken token = new CancellationTokenSource().Token;
 		await AdbHelper.Instance.RunAdbCommandAsync("getprop ro.build.characteristics", _selectedDevice, shell: true, output =>
         {
-            type = output;
+			base.Dispatcher.Invoke(() =>
+			{
+				type += output;
+			});
         });
 		string apkFile = (from stackPanel in _mainWindow.ApkFilesList.Items.OfType<StackPanel>()
 			select stackPanel.Tag.ToString()).FirstOrDefault((string filename) => Path.GetFileName(filename)?.StartsWith("Parental") ?? false) ?? string.Empty;
@@ -74,44 +77,45 @@ public partial class Settings : Window, IComponentConnector
 		await SendCommandButton("remount", shell: false);
 		await SendCommandButton("remount", shell: false);
 		string apkName = Path.GetFileName(apkFile);
-		if (!type.Contains("watch") && !type.Contains("default"))
+		if (!type.Contains("watch") || (!type.Contains("default")))
 		{
-			await SendCommandButton("shell rm -r /system/priv-app/ParentalCare", shell: true);
+			await SendCommandButton("rm -r /system/priv-app/ParentalCare", shell: true);
 			await SendCommandButton("push \"" + apkFile + "\" /system/priv-app/ParentalCare/" + apkName, shell: false);
 		}
 		else
 		{
-			await SendCommandButton("shell rm -r /system/priv-app/ParentalCareWatch/", shell: true);
+			await SendCommandButton("rm -r /system/priv-app/ParentalCareWatch/", shell: true);
 			await SendCommandButton("push \"" + apkFile + "\" /system/priv-app/ParentalCareWatch/" + apkName, shell: false);
 		}
 		_mainWindow.UpdateStatusText("\nParental pushed to system folder");
-		if (install)
-		{
-			await SendCommandButton("install -r -d \"" + apkFile + "\"", shell: false);
-			if (!string.IsNullOrEmpty(careSampleFile))
-			{
-				await SendCommandButton("install -r -d \"" + careSampleFile + "\"", shell: false);
-			}
-			else
-			{
-				_mainWindow.StatusText.Text = "";
-				_mainWindow.UpdateStatusText("No APK file starting with 'CareSample' found.\nPlease add a Care Sample apk and try again");
-				_mainWindow.StatusText.Foreground = Brushes.Red;
-			}
-			_mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
-		}
 		if (_mainWindow.StatusText.Text.Contains("1 file pushed"))
 		{
-			_mainWindow.StatusText.Foreground = Brushes.Green;
-			_mainWindow.StatusText.Text = "Success";
-		}
+			_mainWindow.UpdateStatusText("Success");
+            _mainWindow.StatusText.Foreground = Brushes.Green;
+        }
 		else
 		{
 			SystemSounds.Exclamation.Play();
-			_mainWindow.StatusText.Foreground = Brushes.Red;
-			_mainWindow.StatusText.Text = "Failed, check the device and try again";
-		}
-	}
+			_mainWindow.UpdateStatusText("Failed, check the device and try again");
+            _mainWindow.StatusText.Foreground = Brushes.Red;
+			return;
+        }
+        if (install)
+        {
+            await SendCommandButton("install -r -d \"" + apkFile + "\"", shell: false);
+            if (!string.IsNullOrEmpty(careSampleFile))
+            {
+                await SendCommandButton("install -r -d \"" + careSampleFile + "\"", shell: false);
+            }
+            else
+            {
+                _mainWindow.StatusText.Text = "";
+                _mainWindow.UpdateStatusText("No APK file starting with 'CareSample' found.\nPlease add a Care Sample apk and try again");
+                _mainWindow.StatusText.Foreground = Brushes.Red;
+            }
+            _mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
+        }
+    }
 
 	private async void PushParentalApk_Click(object sender, RoutedEventArgs e)
 	{

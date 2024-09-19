@@ -222,6 +222,30 @@ namespace ApkInstaller
             Directory.Delete("log/apk", true);
         }
 
+        public async Task ClearAppFunction(MainWindow _mainWindow, string _selectedDevice, string appPkg)
+        {
+            _mainWindow.StatusText.Foreground = Brushes.White;
+            string result = "";
+            string appName = await GetAppName(appPkg, _selectedDevice);
+            await RunAdbCommandAsync($"pm clear {appPkg}", _selectedDevice, true, output =>
+            {
+                _mainWindow.UpdateStatusText(output);
+                result += output;
+            });
+            if (result.Contains("Success"))
+            {
+                appName = Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(appName));
+                _mainWindow.UpdateStatusText($"The app {appName} was succesfully cleared");
+                _mainWindow.StatusText.Foreground = Brushes.Green;
+            }
+            else
+            {
+                _mainWindow.UpdateStatusText($"The app {appPkg} was not cleared, check the package's name and try again");
+                _mainWindow.StatusText.Foreground = Brushes.Red;
+            }
+            Directory.Delete("log/apk", true);
+        }
+
         public async Task<string> GetAppName(string appPkg, string _selectedDevice)
         {
             Directory.CreateDirectory("log/apk");

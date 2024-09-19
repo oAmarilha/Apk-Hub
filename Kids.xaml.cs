@@ -37,6 +37,7 @@ public partial class Kids : Window, IComponentConnector
 		_cancellationTokenSource.Cancel();
 		_mainWindow.ParentalCare_Button.IsEnabled = true;
 		_mainWindow.Browse_Button.IsEnabled = true;
+		_mainWindow.More_Button.IsEnabled = true;
 		_mainWindow.Activate();
 	}
 

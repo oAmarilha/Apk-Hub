@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +42,6 @@ public partial class LogcatWindow : Window, IComponentConnector
 		_calledWindow = calledWindow;
 		_filter = filter;
         Owner = _mainWindow;
-        ClearLogcat();
 		StartLogcat();
 		_mainWindow.Hide();
 		_calledWindow.Hide();
@@ -50,62 +50,28 @@ public partial class LogcatWindow : Window, IComponentConnector
 
 	private async void ClearLogcat()
 	{
-		try
-		{
-			await Task.Run(delegate
-			{
-				Process process = new Process();
-				process.StartInfo.FileName = "adb";
-				process.StartInfo.Arguments = "-s " + _selectedDevice + " logcat -c";
-				process.StartInfo.UseShellExecute = false;
-				process.StartInfo.CreateNoWindow = true;
-				process.Start();
-				process.WaitForExit();
-			});
-		}
-		catch (Exception ex)
-		{
-			MessageBox.Show("Error clearing logcat: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
-		}
-	}
+        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", _selectedDevice, shell: true, output => { });
+    }
 
 	private async void StartLogcat()
-	{
-		try
-		{
-			await Task.Run(delegate
-			{
-				_process = new Process();
-				_process.StartInfo.FileName = "adb";
-				_process.StartInfo.Arguments = "-s " + _selectedDevice + " logcat";
-				_process.StartInfo.RedirectStandardOutput = true;
-				_process.StartInfo.RedirectStandardError = true;
-				_process.StartInfo.UseShellExecute = false;
-				_process.StartInfo.CreateNoWindow = true;
-				_process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e)
-				{
-					if (e.Data != null)
-					{
-						ExtractValuesFromLog(e.Data);
-						if (e.Data.Contains(_filter))
-						{
-							base.Dispatcher.Invoke(delegate
-							{
-								LogcatTextBox.AppendText(e.Data + Environment.NewLine);
-								LogcatTextBox.ScrollToEnd();
-							});
-						}
-					}
-				};
-				_process.Start();
-				_process.BeginOutputReadLine();
-				_process.WaitForExit();
-			});
-		}
-		catch (Exception ex)
-		{
-			MessageBox.Show("Error starting logcat: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
-		}
+    {
+        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", _selectedDevice, shell: true, output =>{});
+        StringBuilder logBuilder = new StringBuilder();
+        DateTime lastUpdate = DateTime.Now;
+        await AdbHelper.Instance.RunAdbCommandAsync($"logcat *:I *:D *:W *:E *:V | grep \"{_filter}\"",_selectedDevice, shell: true, output =>{
+            logBuilder.AppendLine(output);
+            if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100) // Atualiza a UI a cada 100ms
+            {
+				string logText = logBuilder.ToString();
+                base.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    LogcatTextBox.AppendText(logText);
+                    LogcatTextBox.ScrollToEnd();
+                }));
+                logBuilder.Clear();
+                lastUpdate = DateTime.Now;
+            }
+        });
 	}
 
 	private void ExtractValuesFromLog(string logLine)
@@ -174,12 +140,7 @@ public partial class LogcatWindow : Window, IComponentConnector
 
 	private void StopLogcat()
 	{
-		if (_process != null && !_process.HasExited)
-		{
-			_process.Kill();
-			_process.Dispose();
-			_process = null;
-		}
+		AdbHelper.Instance.StopCommand();
 		StartStopButton.Content = "Start";
 		StartStopButton.Background = Brushes.Green;
 	}
