@@ -108,6 +108,7 @@ public partial class AppWindow : Window, IComponentConnector
 	{
 		if (!(_actionType == "logcat"))
 		{
+			Clear_Button.IsEnabled = true;
 			return;
 		}
 		Clear_Button.IsEnabled = true;
@@ -177,30 +178,38 @@ public partial class AppWindow : Window, IComponentConnector
                     }
 					if (_actionType != "uninstall")
 					{
+						string finaloutput = "";
 						await AdbHelper.Instance.RunAdbCommandAsync(_actionType + " " + app, _selectedDevice, _shell, output =>
 						{
 							Dispatcher.Invoke(() =>
 							{
-								if (output.Contains("Success"))
-								{
-									_mainWindow.StatusText.Text += $"\n{_action} executed on package {app}\n";
-									_mainWindow.UpdateStatusText(output);
-									_mainWindow.StatusText.Foreground = Brushes.Green;
-								}
-								else
-								{
-									_mainWindow.StatusText.Text += $"\n{_action} not executed on package {app}, check if the app is correctly installed.\n";
-									_mainWindow.UpdateStatusText(output);
-									_mainWindow.StatusText.Foreground = Brushes.Red;
-									success = false;
-								}
-								_mainWindow.StatusText.ScrollToEnd();
+								finaloutput += output;
 							});
 						});
-					}
+
+                        if (finaloutput != null && (finaloutput.Contains("Failed")))
+                        {
+                            _mainWindow.StatusText.Text += $"\n{_action} not executed on package {app}, check if the app is correctly installed.\n";
+                            _mainWindow.UpdateStatusText(finaloutput);
+                            _mainWindow.StatusText.Foreground = Brushes.Red;
+                            success = false;
+							break;
+                        }
+                        else if (finaloutput != null && finaloutput.Contains("Success"))
+                        {
+                            _mainWindow.StatusText.Text += $"\n{_action} executed on package {app}\n";
+                            _mainWindow.UpdateStatusText(finaloutput);
+                            _mainWindow.StatusText.Foreground = Brushes.Green;
+                        }
+                        _mainWindow.StatusText.ScrollToEnd();
+                    }
 					else
 					{
-						await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice, app);
+						success = await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice, app);
+						if (success == false)
+						{
+							break;
+						}
 					}               
 				}
                 Clear_Button.IsEnabled = true;

@@ -190,7 +190,6 @@ public partial class Settings : Window, IComponentConnector
 		_mainWindow.Browse_Button.IsEnabled = true;
 		_mainWindow.Kids_Button.IsEnabled = true;
 		_mainWindow.ApkFilesList.IsEnabled = true;
-		_mainWindow.Install_Button.IsEnabled = true;
 		_mainWindow.Activate();
 	}
 }

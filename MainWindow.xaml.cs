@@ -278,6 +278,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		obj.Tag.ToString();
 		StackPanel removeItem = (StackPanel)obj.Parent;
 		ApkFilesList.Items.Remove(removeItem);
+		if (ApkFilesList.Items.Count == 0)
+		{
+			Install_Button.IsEnabled = false;
+		}
 	}
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -472,6 +476,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 				kidsWindow.Left = base.Left + base.Width;
 				kidsWindow.Top = base.Top;
 			}
+			Install_Button.IsEnabled = false;
 			DevicesComboBox.IsEnabled = false;
 			ParentalCare_Button.IsEnabled = false;
 			Browse_Button.IsEnabled = false;
@@ -487,6 +492,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void KidsWindow_Closed(object? sender, EventArgs e)
     {
+		if (ApkFilesList.Items.Count > 0)
+		{
+			Install_Button.IsEnabled = true;
+		}
 		kidsWindow = null;
     }
 
@@ -526,7 +535,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void SettingsWindow_Closed(object? sender, EventArgs e)
     {
-		settingsWindow = null;
+        if (ApkFilesList.Items.Count > 0)
+        {
+            Install_Button.IsEnabled = true;
+        }
+        settingsWindow = null;
     }
 
     public void ActivateDevicesBox()
@@ -596,8 +609,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         else
         {
             this.Activate();
-            moreWindow = null;
         }
+        moreWindow = null;
     }
 
     private void MainWindow_Closing(object? sender, CancelEventArgs e)

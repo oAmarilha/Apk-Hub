@@ -195,14 +195,16 @@ namespace ApkInstaller
             }
         }
 
-        public async Task UninstallFunction(MainWindow _mainWindow, string _selectedDevice,string appPkg)
+        public async Task<bool> UninstallFunction(MainWindow _mainWindow, string _selectedDevice,string appPkg)
         {
             _mainWindow.StatusText.Foreground = Brushes.White;
             string result = "";
             string appName = await GetAppName(appPkg, _selectedDevice);
             await RunAdbCommandAsync($"uninstall {appPkg}", _selectedDevice, false, output =>
             {
+#if DEBUG
                 _mainWindow.UpdateStatusText(output);
+#endif
                 result += output;
             });
             if (result.Contains("Success"))
@@ -210,13 +212,16 @@ namespace ApkInstaller
                 appName = Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(appName));
                 _mainWindow.UpdateStatusText($"The app {appName} was succesfully uninstalled");
                 _mainWindow.StatusText.Foreground = Brushes.Green;
+                Directory.Delete($"{appPath}/apk", true);
+                return true;
             }
             else
             {
                 _mainWindow.UpdateStatusText($"The app {appPkg} was not uninstalled, check the package's name and try again");
                 _mainWindow.StatusText.Foreground = Brushes.Red;
+                Directory.Delete($"{appPath}/apk", true);
+                return false;
             }
-            Directory.Delete($"{appPath}/apk", true);
         }
 
         public async Task ClearAppFunction(MainWindow _mainWindow, string _selectedDevice, string appPkg)
