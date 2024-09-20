@@ -16,7 +16,6 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
@@ -24,11 +23,9 @@
         </Grid.ColumnDefinitions>
         <Button Name="Start_PC" Grid.Row="0" Grid.Column="0" Content="Install-PC" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="InstallPC_Click" />
         <Button Name="Push_Phone_Button" Grid.Row="1" Grid.Column="0" Content="Push PC" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="PushParentalApk_Click" />
-        <Button Name="ScreenRecordButton" Grid.Row="2" Grid.Column="0" Content="Record" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FF008000" Click="ScreenRecordButton_Click" />
-        <Button Name="Log_Button" Grid.Row="3" Grid.Column="0" Content="Log PC" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="LogcatButton_Click" />
+        <Button Name="Log_Button" Grid.Row="2" Grid.Column="0" Content="Log PC" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="LogcatButton_Click" />
         <Button Name="UninstallApps_Button" Grid.Row="0" Grid.Column="1" Content="Uninstall" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FFFF0000" Click="UninstallParental_Click" />
         <Button Name="Remount_Button" Grid.Row="1" Grid.Column="1" Content="Remount" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemountButton_Click" />
         <Button Name="ClearPKG_Button" Grid.Row="2" Grid.Column="1" Content="Clear APK" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ClearPackage_Click" />
-        <Button Name="Share_Button" Grid.Row="3" Grid.Column="1" Content="Screen" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
     </Grid>
 </Window>

@@ -20,9 +20,9 @@ public partial class LogcatWindow : Window, IComponentConnector
 
 	private string _filter;
 
-	private MainWindow _mainWindow;
+	private MainWindow? _mainWindow;
 
-	private Window _calledWindow;
+	private Window? _calledWindow;
 
 	private string _accountToken;
 
@@ -34,7 +34,10 @@ public partial class LogcatWindow : Window, IComponentConnector
 
 	private string _clientId;
 
-	public LogcatWindow(MainWindow mainWindow, Window calledWindow, string selectedDevice, string filter)
+	public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+
+
+    public LogcatWindow(MainWindow mainWindow, Window calledWindow, string selectedDevice, string filter)
 	{
 		InitializeComponent();
 		_mainWindow = mainWindow;
@@ -149,13 +152,13 @@ public partial class LogcatWindow : Window, IComponentConnector
 	{
 		string value = DateTime.Now.ToString().Replace("/", "-").Replace(":", "-")
 			.Replace(" ", "_");
-		Directory.CreateDirectory($"./log/Logcat/{_filter}/{value}/");
+		Directory.CreateDirectory($"{appPath}/Logcat/{_filter}/{value}/");
 		try
 		{
 			string contents = LogcatTextBox.Text.ToString();
-			string text = $"{Directory.GetCurrentDirectory()}\\log\\Logcat\\{_filter}\\{value}";
+			string text = $"{appPath}\\Logcat\\{_filter}\\{value}";
 			File.WriteAllText($"{text}\\{_filter}_{value}.txt", contents);
-			MessageBoxResult result = MessageBox.Show($"File Save in: {text}\\{_filter}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+			MessageBoxResult result = MessageBox.Show($"File Saved in: {text}\\{_filter}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
 			if (result == MessageBoxResult.Yes)
 			{
                 Process.Start(new ProcessStartInfo()

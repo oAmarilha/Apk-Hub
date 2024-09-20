@@ -33,6 +33,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
 	private bool success;
 
+	public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+
 	public MainWindow()
 	{
 		InitializeComponent();
@@ -46,9 +48,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 	{
 		PopulateDevices();
-		Directory.CreateDirectory("./log/");
+		Directory.CreateDirectory(appPath);
 		usbDeviceNotifier = new UsbDeviceNotifier(this);
-		usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged;
+		usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged!;
     }
 
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
@@ -100,6 +102,15 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 				}
 			});
 		});
+	}
+
+	private string? CheckDeviceComboBox()
+	{
+		if (DevicesComboBox.SelectedItem == null)
+		{
+			return null;
+		}
+		return DevicesComboBox.SelectedItem.ToString();
 	}
 
 	private void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -271,7 +282,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e)
     {
-        if (DevicesComboBox.SelectedItem == null)
+		string? device = CheckDeviceComboBox();
+        if (device == null)
         {
             StatusText.Text = "Please select a device.\n";
             StatusText.Foreground = Brushes.Red;
@@ -298,7 +310,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 string item = item2.Tag.ToString();
                 list.Add(item);
             }
-            string deviceSerialByName = GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString());
+            string deviceSerialByName = GetDeviceSerialByName(device);
             await InstallApks(deviceSerialByName, list);
         }
         else
@@ -418,11 +430,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 			{
 				if (item2.ToString() == name)
 				{
-					return item2.ToString().Split('(')[1].Trim(' ', ')');
+					return item2.ToString()!.Split('(')[1].Trim(' ', ')');
 				}
 			}
 		}
-		return null;
+		return null!;
 	}
 
 	private string RunAdbCommand(string arguments)
@@ -442,15 +454,16 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 	}
 
 	private void KidsWindow_Click(object sender, RoutedEventArgs e)
-	{
-		if (DevicesComboBox.SelectedItem == null)
+    {
+        string? device = CheckDeviceComboBox();
+        if (device == null)
 		{
 			MessageBox.Show("Please select a device before opening Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 		else if (kidsWindow == null || !kidsWindow.IsVisible)
 		{
-			kidsWindow = new Kids(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
-			if (base.Left + base.Width + 300.0 >= SystemParameters.PrimaryScreenWidth)
+			kidsWindow = new Kids(this, GetDeviceSerialByName(device));
+			if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth || moreWindow != null || settingsWindow != null)
 			{
 				kidsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 			}
@@ -462,8 +475,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 			DevicesComboBox.IsEnabled = false;
 			ParentalCare_Button.IsEnabled = false;
 			Browse_Button.IsEnabled = false;
-			More_Button.IsEnabled = false;
 			kidsWindow.Show();
+            kidsWindow.Closed += KidsWindow_Closed;
 		}
 		else
 		{
@@ -472,16 +485,22 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		}
 	}
 
-	private void PCWindow_Click(object sender, RoutedEventArgs e)
-	{ 
-		if (DevicesComboBox.SelectedItem == null)
+    private void KidsWindow_Closed(object? sender, EventArgs e)
+    {
+		kidsWindow = null;
+    }
+
+    private void PCWindow_Click(object sender, RoutedEventArgs e)
+    {
+        string? device = CheckDeviceComboBox();
+        if (device == null)
 		{
 			MessageBox.Show("Please select a device before opening Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
-		else if (settingsWindow == null || !settingsWindow.IsVisible)
+		else if ((settingsWindow == null || !settingsWindow.IsVisible))
 		{
-			settingsWindow = new Settings(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
-            if (base.Left + base.Width + 240.0 >= SystemParameters.PrimaryScreenWidth)
+			settingsWindow = new Settings(this, GetDeviceSerialByName(device));
+            if (base.Left + base.Width + 220 >= SystemParameters.PrimaryScreenWidth || moreWindow != null || kidsWindow != null)
 			{
 				settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 			}
@@ -496,6 +515,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 			Kids_Button.IsEnabled = false;
 			Browse_Button.IsEnabled = false;
 			settingsWindow.Show();
+            settingsWindow.Closed += SettingsWindow_Closed;
 		}
 		else
 		{
@@ -504,7 +524,12 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 		}
 	}
 
-	public void ActivateDevicesBox()
+    private void SettingsWindow_Closed(object? sender, EventArgs e)
+    {
+		settingsWindow = null;
+    }
+
+    public void ActivateDevicesBox()
 	{
 		DevicesComboBox.IsEnabled = true;
 	}
@@ -533,14 +558,15 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void More_Button_Click(object sender, RoutedEventArgs e)
     {
-        if (DevicesComboBox.SelectedItem == null)
+		string? device = CheckDeviceComboBox();
+        if (device == null)
         {
             MessageBox.Show("Please select a device before opening more options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
         else if (moreWindow == null || !moreWindow.IsVisible)
         {
-            moreWindow = new More(this, GetDeviceSerialByName(DevicesComboBox.SelectedItem.ToString()));
-            if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth)
+            moreWindow = new More(this, GetDeviceSerialByName(device), settingsWindow, kidsWindow);
+            if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth || settingsWindow != null || kidsWindow != null)
             {
                 moreWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
@@ -549,11 +575,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 moreWindow.Left = base.Left + base.Width;
                 moreWindow.Top = base.Top;
             }
-			Browse_Button.IsEnabled = false;
-			Kids_Button.IsEnabled = false;
-			ParentalCare_Button.IsEnabled = false;
 			DevicesComboBox.IsEnabled = false;
 			moreWindow.Show();
+            moreWindow.Closed += MoreWindow_Closed;
 		}
 		else
 		{
@@ -561,8 +585,25 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             moreWindow.Activate();
         }
     }
+
+    private void MoreWindow_Closed(object? sender, EventArgs e)
+    {
+        if (settingsWindow == null && kidsWindow == null)
+        {
+            this.DevicesComboBox.IsEnabled = true;
+            this.Activate();
+        }
+        else
+        {
+            this.Activate();
+            moreWindow = null;
+        }
+    }
+
     private void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
-        RunAdbCommand("kill-server");
+#if !DEBUG
+		RunAdbCommand("kill-server");
+#endif
     }
 }

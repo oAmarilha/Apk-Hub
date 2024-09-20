@@ -3,11 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ApkInstaller
@@ -16,6 +12,7 @@ namespace ApkInstaller
     {
         private static AdbHelper instance;
         private List<Process> processes;
+        public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
 
         private AdbHelper()
         {
@@ -113,7 +110,7 @@ namespace ApkInstaller
 
         public async void TransferRecordedFile(MainWindow mainWindow, string remoteFile, string deviceName, string selectedDevice)
         {
-            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "log\\ScreenRecords", $"{deviceName}\\{remoteFile}");
+            string directoryPath = $"{appPath}\\ScreenRecords\\{deviceName}\\{remoteFile}";
             string fullPath = Path.Combine(directoryPath, remoteFile + ".mp4");
             string fileName =  remoteFile + ".mp4";
 
@@ -219,7 +216,7 @@ namespace ApkInstaller
                 _mainWindow.UpdateStatusText($"The app {appPkg} was not uninstalled, check the package's name and try again");
                 _mainWindow.StatusText.Foreground = Brushes.Red;
             }
-            Directory.Delete("log/apk", true);
+            Directory.Delete($"{appPath}/apk", true);
         }
 
         public async Task ClearAppFunction(MainWindow _mainWindow, string _selectedDevice, string appPkg)
@@ -243,12 +240,12 @@ namespace ApkInstaller
                 _mainWindow.UpdateStatusText($"The app {appPkg} was not cleared, check the package's name and try again");
                 _mainWindow.StatusText.Foreground = Brushes.Red;
             }
-            Directory.Delete("log/apk", true);
+            Directory.Delete($"{appPath}/apk", true);
         }
 
         public async Task<string> GetAppName(string appPkg, string _selectedDevice)
         {
-            Directory.CreateDirectory("log/apk");
+            Directory.CreateDirectory($"{appPath}/apk");
             string apkFilePath = "";
             string apkName = "";
             string appName = "";
@@ -261,8 +258,8 @@ namespace ApkInstaller
             if (!string.IsNullOrEmpty(appName))
             {
                 apkName = appName + "/base.apk";
-                await RunAdbCommandAsync($"pull {apkName} log/apk/base.apk", _selectedDevice, false, output => { });
-                await RunCommandAsync("aapt", $"d badging log/apk/base.apk", output => { outputCommand += output; });
+                await RunAdbCommandAsync($"pull {apkName} {appPath}/apk/base.apk", _selectedDevice, false, output => { });
+                await RunCommandAsync("aapt", $"d badging {appPath}/apk/base.apk", output => { outputCommand += output; });
 
                 appName = RegexFunction(@"application-label-en(?:-[a-zA-Z]{2})*:'(.*?)'(?:application-label|$)", Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(outputCommand)));
             }

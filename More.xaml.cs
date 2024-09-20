@@ -1,12 +1,5 @@
-﻿using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Media;
-using System.Security.AccessControl;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
 
@@ -23,28 +16,21 @@ namespace ApkInstaller
 
         private PkgAction? pkgActionWindow;
 
+        private Settings? _pcWindow;
+
+        private Kids? _kidsWindow;
+
         private string _selectedDevice;
 
-        private string localFile = Directory.GetCurrentDirectory() + "\\log";
-        public More(MainWindow mainWindow, string selectedDevice)
+        private string localFile = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+        public More(MainWindow mainWindow, string selectedDevice, Settings? pcWindow, Kids? kidsWindow)
         {
             InitializeComponent();
             _mainWindow = mainWindow;
             _selectedDevice = selectedDevice;
+            _pcWindow = pcWindow;
+            _kidsWindow = kidsWindow;
             Owner = _mainWindow;
-            base.Closing += More_Closing;
-        }
-
-        private void More_Closing(object? sender, CancelEventArgs e)
-        {
-            if (_mainWindow != null)
-            {
-                _mainWindow.DevicesComboBox.IsEnabled = true;
-                _mainWindow.Browse_Button.IsEnabled = true;
-                _mainWindow.Kids_Button.IsEnabled = true;
-                _mainWindow.ParentalCare_Button.IsEnabled = true;
-                _mainWindow.Activate();
-            }
         }
 
         private async void ScreenRecordButton_Click(object sender, RoutedEventArgs e)

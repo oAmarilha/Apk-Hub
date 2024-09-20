@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -19,8 +18,6 @@ public partial class Kids : Window, IComponentConnector
 
 	private AppWindow? _appWindow;
 
-	private string localFile = Directory.GetCurrentDirectory() + "\\log";
-
 	public Kids(MainWindow mainWindow, string selectedDevice)
 	{
 		InitializeComponent();
@@ -37,7 +34,6 @@ public partial class Kids : Window, IComponentConnector
 		_cancellationTokenSource.Cancel();
 		_mainWindow.ParentalCare_Button.IsEnabled = true;
 		_mainWindow.Browse_Button.IsEnabled = true;
-		_mainWindow.More_Button.IsEnabled = true;
 		_mainWindow.Activate();
 	}
 

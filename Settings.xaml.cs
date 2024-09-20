@@ -1,10 +1,6 @@
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Media;
-using System.Security.AccessControl;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -14,15 +10,13 @@ namespace ApkInstaller;
 
 public partial class Settings : Window, IComponentConnector
 {
-	private MainWindow _mainWindow;
+	private MainWindow? _mainWindow;
 
-	private LogcatWindow logcatWindow;
+	private LogcatWindow? logcatWindow;
 
 	private string _selectedDevice;
 
-	private CancellationTokenSource _cancellationTokenSource;
-
-	private string localFile = Directory.GetCurrentDirectory() + "\\log";
+	private CancellationTokenSource? _cancellationTokenSource;
 
 	public Settings(MainWindow mainWindow, string selectedDevice)
 	{
@@ -135,23 +129,6 @@ public partial class Settings : Window, IComponentConnector
 		_mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
 	}
 
-	private void RemoteScreen_Click(object sender, RoutedEventArgs e)
-	{
-		if (Share_Button.Content.ToString() == "Screen")
-		{
-			ScreenRecordButton.IsEnabled = false;
-			Share_Button.Content = "Stop";
-			Share_Button.Background = Brushes.Red;
-			RealTimeScreen();
-		}
-		else
-		{
-			ScreenRecordButton.IsEnabled = true;
-			Share_Button.Content = "Screen";
-			EndRealTimeScreen();
-		}
-	}
-
 	private async void InstallPC_Click(object sender, RoutedEventArgs e)
 	{
 		_mainWindow.StatusText.Text = "";
@@ -168,17 +145,6 @@ public partial class Settings : Window, IComponentConnector
 		await SendCommandButton("pm clear com.samsung.android.app.caresample", shell: true);
 		_mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
 	}
-
-	private async void RealTimeScreen()
-	{
-		await AdbHelper.Instance.RunAdbCommandAsync("", _selectedDevice, false, output =>
-		{
-			_mainWindow.UpdateStatusText(output);
-		}, "scrcpy");
-        Share_Button.Content = "Screen";
-        Share_Button.Background = new SolidColorBrush(Color.FromRgb(247, 247, 247));
-        ScreenRecordButton.IsEnabled = true;
-    }
 
 	private void EndRealTimeScreen()
 	{
@@ -205,25 +171,6 @@ public partial class Settings : Window, IComponentConnector
 		else
 		{
 			logcatWindow.Focus();
-		}
-	}
-
-	private async void ScreenRecordButton_Click(object sender, RoutedEventArgs e)
-	{
-		if (ScreenRecordButton.Content.ToString() == "Record")
-		{
-			RealTimeScreen();
-			Share_Button.IsEnabled = false;
-			ScreenRecordButton.Content = "Stop";
-			ScreenRecordButton.Background = Brushes.Red;
-			await AdbHelper.Instance.StartScreenRecording(_mainWindow, _selectedDevice, localFile);
-		}
-		else
-		{
-			Share_Button.IsEnabled = true;
-			ScreenRecordButton.Content = "Record";
-			ScreenRecordButton.Background = Brushes.Green;
-			StopScreenRecording();
 		}
 	}
 
