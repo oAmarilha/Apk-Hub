@@ -9,6 +9,7 @@
     <PackageIcon>bobby.jpg</PackageIcon>
     <ApplicationIcon>bobby.ico</ApplicationIcon>
     <Version>3.0.1</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
