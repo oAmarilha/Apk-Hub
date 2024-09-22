@@ -83,14 +83,11 @@ public partial class Kids : Window, IComponentConnector
 
             if (string.IsNullOrEmpty(logcat))
             {
-                _mainWindow.StatusText.Text = "";
-                _mainWindow.StatusText.Text = "Logcat cleared succesfully";
-                _mainWindow.StatusText.Foreground = Brushes.Green;
+                _mainWindow.UpdateStatusText("Logcat cleared succesfully", isSuccess: true , clear: true);
             }
             else
             {
-                _mainWindow.StatusText.Text = "Logcat not clared";
-                _mainWindow.StatusText.Foreground = Brushes.Red;
+                _mainWindow.UpdateStatusText("Logcat not clared", isError: true);
             }
         }
 		catch (Exception ex4)
@@ -99,10 +96,7 @@ public partial class Kids : Window, IComponentConnector
 			Exception ex = ex3;
 			base.Dispatcher.Invoke(delegate
 			{
-				TextBox statusText = _mainWindow.StatusText;
-				statusText.Text = statusText.Text + "Error: " + ex.Message + "\n";
-				_mainWindow.StatusText.Foreground = Brushes.Red;
-				_mainWindow.StatusText.ScrollToEnd();
+				_mainWindow.UpdateStatusText($"Error: {ex.Message}", isError: true);
 			});
 		}
 	}

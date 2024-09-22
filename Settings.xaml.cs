@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Media;
 using System.Windows;
@@ -10,7 +11,7 @@ namespace ApkInstaller;
 
 public partial class Settings : Window, IComponentConnector
 {
-	private MainWindow? _mainWindow;
+	private MainWindow _mainWindow;
 
 	private LogcatWindow? logcatWindow;
 
@@ -29,8 +30,8 @@ public partial class Settings : Window, IComponentConnector
 	}
 
 	public async Task SendCommandButton(string command, bool shell)
-	{
-		await AdbHelper.Instance.RunAdbCommandAsync(command, _selectedDevice, shell, output =>
+    {
+        await AdbHelper.Instance.RunAdbCommandAsync(command, _selectedDevice, shell, output =>
         {
             _mainWindow.UpdateStatusText(output);
         });
@@ -38,14 +39,14 @@ public partial class Settings : Window, IComponentConnector
 
 	private async void RemountButton_Click(object sender, RoutedEventArgs e)
 	{
-		_mainWindow.StatusText.Text = "";
 		string command = "remount";
 		await SendCommandButton(command, shell: false);
 		await SendCommandButton(command, shell: false);
-		_mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Remount succeeded") ? Brushes.Green : Brushes.Red);
-	}
+		bool status = _mainWindow.StatusText.Text.Contains("Remount succeeded");
+        _mainWindow.UpdateStatusText(isError: !status, isSuccess: status);
+    }
 
-	private async Task PushParentalApk(bool install = false)
+    private async Task PushParentalApk(bool install = false)
 	{
 		string type = "";
 		CancellationToken token = new CancellationTokenSource().Token;
@@ -63,8 +64,7 @@ public partial class Settings : Window, IComponentConnector
 		if (string.IsNullOrEmpty(apkFile))
 		{
 			SystemSounds.Exclamation.Play();
-			_mainWindow.UpdateStatusText("No APK file starting with 'Parental' found.\nPlease add a Parental Care apk file and try again");
-			_mainWindow.StatusText.Foreground = Brushes.Red;
+			_mainWindow.UpdateStatusText("No APK file starting with 'Parental' found.\nPlease add a Parental Care apk file and try again", isError: true);
 			return;
 		}
 		await SendCommandButton("root", shell: false);
@@ -84,14 +84,12 @@ public partial class Settings : Window, IComponentConnector
 		_mainWindow.UpdateStatusText("\nParental pushed to system folder");
 		if (_mainWindow.StatusText.Text.Contains("1 file pushed"))
 		{
-			_mainWindow.UpdateStatusText("Success");
-            _mainWindow.StatusText.Foreground = Brushes.Green;
+			_mainWindow.UpdateStatusText("Success", isSuccess: true);
         }
 		else
 		{
 			SystemSounds.Exclamation.Play();
-			_mainWindow.UpdateStatusText("Failed, check the device and try again");
-            _mainWindow.StatusText.Foreground = Brushes.Red;
+			_mainWindow.UpdateStatusText("Failed, check the device and try again", isError: true);
 			return;
         }
         if (install)
@@ -103,53 +101,48 @@ public partial class Settings : Window, IComponentConnector
             }
             else
             {
-                _mainWindow.StatusText.Text = "";
-                _mainWindow.UpdateStatusText("No APK file starting with 'CareSample' found.\nPlease add a Care Sample apk and try again");
-                _mainWindow.StatusText.Foreground = Brushes.Red;
+                SystemSounds.Exclamation.Play();
+                _mainWindow.UpdateStatusText("No APK file starting with 'CareSample' found.\nPlease add a Care Sample apk and try again", isError: true, clear: true);
+				return;
             }
-            _mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
+            _mainWindow.UpdateStatusText(isSuccess: true);
         }
     }
 
 	private async void PushParentalApk_Click(object sender, RoutedEventArgs e)
 	{
-		_mainWindow.StatusText.Text = "";
+		_mainWindow.UpdateStatusText(clear : true);
 		await PushParentalApk();
 	}
 
 	private async void UninstallParental_Click(object sender, RoutedEventArgs e)
 	{
-		_mainWindow.StatusText.Text = "";
+		_mainWindow.UpdateStatusText(clear : true);
 		string command = "uninstall com.samsung.android.app.parentalcare";
 		string caresampleuninstall = "uninstall com.samsung.android.app.caresample";
 		_mainWindow.UpdateStatusText("Uninstalling Parental Care...");
 		await SendCommandButton(command, shell: false);
 		_mainWindow.UpdateStatusText("Uninstalling Care Sample...");
 		await SendCommandButton(caresampleuninstall, shell: false);
-		_mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
+		bool status = _mainWindow.StatusText.Text.Contains("Success");
+        _mainWindow.UpdateStatusText(isError: !status, isSuccess: status);
 	}
 
 	private async void InstallPC_Click(object sender, RoutedEventArgs e)
 	{
-		_mainWindow.StatusText.Text = "";
-		_mainWindow.UpdateStatusText("Initializing Parental Care full installation");
+		_mainWindow.UpdateStatusText("Initializing Parental Care full installation", clear : true);
 		await PushParentalApk(install: true);
 	}
 
 	private async void ClearPackage_Click(object sender, RoutedEventArgs e)
 	{
-		_mainWindow.StatusText.Text = "Initializing package data clear, waiting...\n";
+		_mainWindow.UpdateStatusText("Initializing package data clear, waiting...");
 		_mainWindow.UpdateStatusText("Clearing Parental Care app...");
 		await SendCommandButton("pm clear com.samsung.android.app.parentalcare", shell: true);
 		_mainWindow.UpdateStatusText("Clearing Care Sample app...");
 		await SendCommandButton("pm clear com.samsung.android.app.caresample", shell: true);
 		_mainWindow.StatusText.Foreground = (_mainWindow.StatusText.Text.Contains("Success") ? Brushes.Green : Brushes.Red);
 	}
-
-	private void EndRealTimeScreen()
-	{
-		AdbHelper.Instance.StopCommand();
-    }
 
 	private void LogcatButton_Click(object sender, RoutedEventArgs e)
 	{
@@ -172,11 +165,6 @@ public partial class Settings : Window, IComponentConnector
 		{
 			logcatWindow.Focus();
 		}
-	}
-
-	private void StopScreenRecording()
-	{
-		AdbHelper.Instance.StopCommand();
 	}
 
 	private void ClosingSettings(object? sender, CancelEventArgs e)

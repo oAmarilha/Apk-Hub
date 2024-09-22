@@ -10,7 +10,7 @@ namespace ApkInstaller
 {
     public class AdbHelper
     {
-        private static AdbHelper instance;
+        private static AdbHelper? instance;
         private List<Process> processes;
         public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
 

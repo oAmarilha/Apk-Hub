@@ -13,17 +13,17 @@ public partial class AppWindow : Window, IComponentConnector
 {
 	private Kids? _kidsWindow;
 
-	private MainWindow? _mainWindow;
+	private MainWindow _mainWindow;
 
-	private string _selectedDevice;
+	private string? _selectedDevice;
 
-	private string _actionType;
+	private string? _actionType;
 
 	private bool _shell;
 
-	private string _action;
+	private string? _action;
 
-	private LogcatWindow _logcatWindow;
+	private LogcatWindow? _logcatWindow;
 
 	private Dictionary<string, (string, string)> appStringMap = new Dictionary<string, (string, string)>
 	{
@@ -160,8 +160,7 @@ public partial class AppWindow : Window, IComponentConnector
         {
             Dispatcher.Invoke(() =>
             {
-                _mainWindow.StatusText.Text = "Trying to start " + _action + " on the apps selected\n";
-                _mainWindow.StatusText.Foreground = Brushes.White;
+                _mainWindow.UpdateStatusText($"Trying to start {_action} on the apps selected",clear: true);
             });
             bool success = true;
             try
@@ -189,19 +188,14 @@ public partial class AppWindow : Window, IComponentConnector
 
                         if (finaloutput != null && (finaloutput.Contains("Failed")))
                         {
-                            _mainWindow.StatusText.Text += $"\n{_action} not executed on package {app}, check if the app is correctly installed.\n";
-                            _mainWindow.UpdateStatusText(finaloutput);
-                            _mainWindow.StatusText.Foreground = Brushes.Red;
+                            _mainWindow.UpdateStatusText($"\n{_action} not executed on package {app}, check if the app is correctly installed.\n{finaloutput}", isError: true);
                             success = false;
 							break;
                         }
                         else if (finaloutput != null && finaloutput.Contains("Success"))
                         {
-                            _mainWindow.StatusText.Text += $"\n{_action} executed on package {app}\n";
-                            _mainWindow.UpdateStatusText(finaloutput);
-                            _mainWindow.StatusText.Foreground = Brushes.Green;
+                            _mainWindow.UpdateStatusText($"\n{_action} executed on package {app}\n{finaloutput}", isSuccess: true);
                         }
-                        _mainWindow.StatusText.ScrollToEnd();
                     }
 					else
 					{
@@ -228,9 +222,7 @@ public partial class AppWindow : Window, IComponentConnector
                 Dispatcher.Invoke(() =>
                 {
                     TextBox statusText = _mainWindow.StatusText;
-                    statusText.Text = statusText.Text + "Error: " + ex.Message + "\n";
-                    _mainWindow.StatusText.Foreground = Brushes.Red;
-                    _mainWindow.StatusText.ScrollToEnd();
+                    _mainWindow.UpdateStatusText($"Error: {ex.Message}", isError : true);
                 });
             }
             if (success)
