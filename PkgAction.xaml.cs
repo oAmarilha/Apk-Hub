@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ApkInstaller
 {
@@ -24,17 +13,17 @@ namespace ApkInstaller
     /// </summary>
     public partial class PkgAction : Window, IComponentConnector
     {
-        private MainWindow? _mainWindow;
+        private MainWindow _mainWindow;
         private string _selectedDevice;
         private Window _calledWindow;
-        public PkgAction(MainWindow mainWindow, Window calledWindow,string selectedDevice)
+        public PkgAction(MainWindow mainWindow, Window calledWindow, string selectedDevice)
         {
             InitializeComponent();
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
             _mainWindow = mainWindow;
+            Owner = mainWindow;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
             _selectedDevice = selectedDevice;
             _calledWindow = calledWindow;
-            Owner = mainWindow;
             App_Pkg.Focus();
             _calledWindow.Hide();
             base.Closing += PkgAction_Closing;
@@ -51,27 +40,27 @@ namespace ApkInstaller
 
         private void Action_Button_Click(object sender, RoutedEventArgs e)
         {
-            Action_Click(Send_Command.Content.ToString() + "_Action");         
+            Action_Click(Send_Command.Content.ToString() + "_Action");
         }
-        
+
         private void Action_Click(string methodname)
         {
-                MethodInfo function = this.GetType().GetMethod(methodname, BindingFlags.NonPublic | BindingFlags.Instance);
-                if (function != null)
+            MethodInfo? function = this.GetType().GetMethod(methodname, BindingFlags.NonPublic | BindingFlags.Instance);
+            if (function != null)
+            {
+                try
                 {
-                    try
-                    {
-                        function.Invoke(this, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error calling function {methodname}: {ex.Message}");
-                    }
+                    function.Invoke(this, null);
                 }
-                else
+                catch (Exception ex)
                 {
-                    MessageBox.Show($"Method {methodname} not found.");
+                    _mainWindow.ShowMessage($"Error calling function {methodname}: {ex.Message}");
                 }
+            }
+            else
+            {
+                _mainWindow.ShowMessage($"Method {methodname} not found.");
+            }
         }
 
         private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -102,16 +91,16 @@ namespace ApkInstaller
 
         private async void Uninstall_Action()
         {
-            if (App_Pkg.Text != string.Empty && _mainWindow != null)
+            if (App_Pkg.Text != string.Empty)
             {
                 _mainWindow.StatusText.Text = $"Uninstalling package {App_Pkg.Text}" + Environment.NewLine;
                 Send_Command.IsEnabled = false;
                 App_Pkg.IsEnabled = false;
-                await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice,App_Pkg.Text);
+                await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice, App_Pkg.Text);
             }
             else
             {
-                MessageBox.Show("You need inform the package to be uninstalled", "App not informed", MessageBoxButton.OK, MessageBoxImage.Information);
+                _mainWindow.ShowMessage("You need inform the package to be uninstalled", "App not informed", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             Send_Command.IsEnabled = true;
@@ -121,28 +110,24 @@ namespace ApkInstaller
 
         private void Logcat_Action()
         {
-            if (App_Pkg.Text != string.Empty && _mainWindow != null)
+            _mainWindow.StatusText.Text = $"Trying to get logcat from {App_Pkg.Text}" + Environment.NewLine;
+            Send_Command.IsEnabled = false;
+            App_Pkg.IsEnabled = false;
+            LogcatWindow logcatWindow = new LogcatWindow(_mainWindow, this, _selectedDevice, App_Pkg.Text);
+            if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
             {
-                _mainWindow.StatusText.Text = $"Trying to get logcat from {App_Pkg.Text}" + Environment.NewLine;
-                Send_Command.IsEnabled = false;
-                App_Pkg.IsEnabled = false;
-                LogcatWindow logcatWindow = new LogcatWindow(_mainWindow, this, _selectedDevice, App_Pkg.Text);
-                if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
-                {
-                    logcatWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                }
-                else
-                {
-                    logcatWindow.Top = _mainWindow.Top + _mainWindow.Height;
-                    logcatWindow.Left = _mainWindow.Left;
-                }
-                Grid.SetRow(logcatWindow.Buttons_StackPanel, 0);
-                logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
-                logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
-                logcatWindow.logcatGrid.Children.Remove(logcatWindow.PC_Info);
-                logcatWindow.Show();
+                logcatWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
-
+            else
+            {
+                logcatWindow.Top = _mainWindow.Top + _mainWindow.Height;
+                logcatWindow.Left = _mainWindow.Left;
+            }
+            Grid.SetRow(logcatWindow.Buttons_StackPanel, 0);
+            logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
+            logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
+            logcatWindow.logcatGrid.Children.Remove(logcatWindow.PC_Info);
+            logcatWindow.Show();
             Send_Command.IsEnabled = true;
             App_Pkg.IsEnabled = true;
             App_Pkg.Focus();
@@ -150,7 +135,7 @@ namespace ApkInstaller
 
         private async void ClearPkg_Action()
         {
-            if (App_Pkg.Text != string.Empty && _mainWindow != null)
+            if (App_Pkg.Text != string.Empty)
             {
                 _mainWindow.StatusText.Text = $"Clearing package {App_Pkg.Text}" + Environment.NewLine;
                 Send_Command.IsEnabled = false;
@@ -159,7 +144,7 @@ namespace ApkInstaller
             }
             else
             {
-                MessageBox.Show("You need inform the package to be cleared", "App not informed", MessageBoxButton.OK, MessageBoxImage.Information);
+                _mainWindow.ShowMessage("You need inform the package to be cleared", "App not informed", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             Send_Command.IsEnabled = true;

@@ -85,7 +85,7 @@
 
         <!-- Botões de Ação -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,20,20,10" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-            <ComboBox Name="DevicesComboBox" Margin="10,0,10,0" Padding="5,5,0,0" Width="170" Height="35" FontSize="14"/>
+            <ComboBox Name="DevicesComboBox" Margin="10,0,10,0" Padding="5,5,0,0" Width="170" Height="35" FontSize="14" IsEnabled="False"/>
             <Button Content="Refresh Devices" Margin="5,0,10,0" Height="35" FontSize="15" Padding="10,0,10,0" Width="Auto" Click="RefreshButton_Click" />
             <Button Content="Clear" Margin="5,0" Height="35" FontSize="15" Padding="10,0,10,0" Width="Auto" Click="EmptyOutput_Button" />
             <Button Name="Install_Button" Content="Install" Margin="5,0,10,0" Height="35" FontSize="15" Background="#FF008000" Padding="5,0,5,0" Width="130" Click="InstallButton_Click" />

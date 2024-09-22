@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
 
@@ -95,7 +95,7 @@ namespace ApkInstaller
 
             if ((pkgActionWindow == null || !pkgActionWindow.IsVisible) && _mainWindow.DevicesComboBox.SelectedItem != null)
             {
-                pkgActionWindow = new PkgAction(_mainWindow, this,_selectedDevice);
+                pkgActionWindow = new PkgAction(_mainWindow, this, _selectedDevice);
                 pkgActionWindow.Title = "Uninstall";
                 pkgActionWindow.Send_Command.Content = "Uninstall";
                 pkgActionWindow.TextTitle.Text = "Uninstall App:";
@@ -105,13 +105,34 @@ namespace ApkInstaller
 
         private void Logcat_Button_Click(object sender, RoutedEventArgs e)
         {
-            if ((pkgActionWindow == null || !pkgActionWindow.IsVisible) && _mainWindow.DevicesComboBox.SelectedItem != null)
+            if (_mainWindow.ShowMessage("Do you want to get the full device logcat?\nPress 'No' to choose a package name to get.", "Full device log will be catch", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
             {
-                pkgActionWindow = new PkgAction(_mainWindow, this, _selectedDevice);
-                pkgActionWindow.Title = "Logcat pkg";
-                pkgActionWindow.TextTitle.Text = "Get logcat:";
-                pkgActionWindow.Send_Command.Content = "Logcat";
-                pkgActionWindow.Show();
+                if (pkgActionWindow == null || !pkgActionWindow.IsVisible)
+                {
+                    pkgActionWindow = new PkgAction(_mainWindow, this, _selectedDevice);
+                    pkgActionWindow.Title = "Logcat pkg";
+                    pkgActionWindow.TextTitle.Text = "Get logcat:";
+                    pkgActionWindow.Send_Command.Content = "Logcat";
+                    pkgActionWindow.Show();
+                }
+            }
+            else
+            {
+                LogcatWindow logcatWindow = new LogcatWindow(_mainWindow, this, _selectedDevice, null);
+                if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
+                {
+                    logcatWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
+                else
+                {
+                    logcatWindow.Top = _mainWindow.Top + _mainWindow.Height;
+                    logcatWindow.Left = _mainWindow.Left;
+                }
+                Grid.SetRow(logcatWindow.Buttons_StackPanel, 0);
+                logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
+                logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
+                logcatWindow.logcatGrid.Children.Remove(logcatWindow.PC_Info);
+                logcatWindow.Show();
             }
         }
 

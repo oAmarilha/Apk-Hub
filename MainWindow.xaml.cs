@@ -1,64 +1,56 @@
 using MahApps.Metro.Controls;
-using System;
+using Microsoft.Win32;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Media;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
-using Microsoft.Win32;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Windows.Input;
-using System.Runtime;
 
 namespace ApkInstaller;
 
 public partial class MainWindow : MetroWindow, IComponentConnector
 {
-	private Settings? settingsWindow;
+    private Settings? settingsWindow;
 
-	private Kids? kidsWindow;
+    private Kids? kidsWindow;
 
-	private UsbDeviceNotifier? usbDeviceNotifier;
+    private UsbDeviceNotifier? usbDeviceNotifier;
 
-	private More? moreWindow;
+    private More? moreWindow;
 
-	private bool loopCancelation = false;
+    private bool loopCancelation = false;
 
-	private bool success;
+    private bool success;
 
-	public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+    public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
 
-	public MainWindow()
-	{
-		InitializeComponent();
+    public MainWindow()
+    {
+        InitializeComponent();
         this.WindowTitleBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
         this.BorderBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
         base.Loaded += MainWindow_Loaded;
-		Install_Button.Content = "Install APKs";
-		base.Closing += MainWindow_Closing;
-	}
+        Install_Button.Content = "Install APKs";
+        base.Closing += MainWindow_Closing;
+    }
 
-	private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-	{
-		PopulateDevices();
-		Directory.CreateDirectory(appPath);
-		usbDeviceNotifier = new UsbDeviceNotifier(this);
-		usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged!;
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        PopulateDevices();
+        Directory.CreateDirectory(appPath);
+        usbDeviceNotifier = new UsbDeviceNotifier(this);
+        usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged!;
     }
 
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
-	{
-		await Task.Delay(1000);
-		PopulateDevices();
-	}
+    {
+        await Task.Delay(1000);
+        PopulateDevices();
+    }
 
     public async void PopulateDevices()
     {
@@ -78,6 +70,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             UpdateStatusText(count > 0 ? $"{count} Device(s) Connected" : "No Device Connected", count == 0, count > 0, true);
 
             Install_Button.IsEnabled = ApkFilesList.Items.Count > 0 && count > 0;
+            DevicesComboBox.IsEnabled = count > 1;
 
             if (DevicesComboBox.SelectedItem == null)
             {
@@ -89,16 +82,15 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         });
     }
 
-
     private string? CheckDeviceComboBox()
-	{
-		return DevicesComboBox.SelectedItem?.ToString();
-	}
+    {
+        return DevicesComboBox.SelectedItem?.ToString();
+    }
 
-	private void RefreshButton_Click(object sender, RoutedEventArgs e)
-	{
-		PopulateDevices();
-	}
+    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        PopulateDevices();
+    }
 
     private void ChangeButtonVisibility(bool change)
     {
@@ -113,9 +105,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         Install_Button.IsEnabled = DevicesComboBox.Items.Count > 0 && change;
     }
 
-    private void ShowMessage(string message, string title, MessageBoxImage icon)
+    public MessageBoxResult ShowMessage(string message, string? title = null, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Warning)
     {
-        MessageBox.Show(message, title, MessageBoxButton.OK, icon);
+        return MessageBox.Show(message, title, button, icon);
     }
 
     private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -164,7 +156,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                     errorMessage += $"\n\n{addedMessage}";
                 }
 
-                ShowMessage(errorMessage, "File Selection Warning", MessageBoxImage.Warning);
+                ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 ChangeButtonVisibility(true);
                 return;
             }
@@ -230,54 +222,54 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                     errorMessage += $"\n\n{addedMessage}";
                 }
 
-                ShowMessage(errorMessage, "File Selection Warning", MessageBoxImage.Warning);
+                ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
 
     private string AddApkFile(string filename)
-	{
+    {
         string appError = "";
         string fileName = Path.GetFileName(filename);
-		StackPanel stackPanel = new StackPanel
-		{
-			Orientation = Orientation.Horizontal
-		};
+        StackPanel stackPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal
+        };
 
         foreach (StackPanel item in ApkFilesList.Items)
         {
             foreach (var child in item.Children)
             {
-				if (child is TextBlock itemText)
-				{
-					string text = itemText.Text;
-					if (Path.GetFileName(filename) == itemText.Text)
-					{
-						appError = (Path.GetFileName(filename));
-						return appError;
-					}
-				}
+                if (child is TextBlock itemText)
+                {
+                    string text = itemText.Text;
+                    if (Path.GetFileName(filename) == itemText.Text)
+                    {
+                        appError = (Path.GetFileName(filename));
+                        return appError;
+                    }
+                }
             }
         }
         ChangeButtonVisibility(true);
 
         TextBlock element = new TextBlock
-		{
-			Text = fileName,
-			Margin = new Thickness(0.0, 0.0, 10.0, 0.0)
-		};
-		Button button = new Button
-		{
-			Content = "Delete",
-			Tag = filename
-		};
-		button.Click += DeleteButton_Click;
-		stackPanel.Children.Add(element);
-		stackPanel.Children.Add(button);
-		stackPanel.Tag = filename;
+        {
+            Text = fileName,
+            Margin = new Thickness(0.0, 0.0, 10.0, 0.0)
+        };
+        Button button = new Button
+        {
+            Content = "Delete",
+            Tag = filename
+        };
+        button.Click += DeleteButton_Click;
+        stackPanel.Children.Add(element);
+        stackPanel.Children.Add(button);
+        stackPanel.Tag = filename;
         ApkFilesList.Items.Add(stackPanel);
-		return appError;
-	}
+        return appError;
+    }
 
     private void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
@@ -292,7 +284,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e)
     {
-		string? device = CheckDeviceComboBox();
+        string? device = CheckDeviceComboBox();
         if (device == null)
         {
             UpdateStatusText("Please select a device.", isError: true, clear: true);
@@ -314,7 +306,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         else
         {
             loopCancelation = true;
-			success = false;
+            success = false;
             AdbHelper.Instance.StopCommand();
             UpdateStatusText("Installation canceled", isError: true);
             ApkFilesList.IsEnabled = true;
@@ -326,45 +318,45 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private async Task InstallApks(string device, List<string> apkFiles)
     {
-		string outputResult = "";
+        string outputResult = "";
         Dispatcher.Invoke(() =>
         {
-            UpdateStatusText("Initializing the installation", clear:true);
+            UpdateStatusText("Initializing the installation", clear: true);
         });
         try
         {
             success = true;
-			foreach (string apkFile in apkFiles)
-			{
-				if (loopCancelation == false)
-				{
-					UpdateStatusText($"\nInstalling \"{apkFile}\"");
-					await AdbHelper.Instance.RunAdbCommandAsync($"install -r -d \"{apkFile}\"", device, shell: false, output =>
-					{
-						base.Dispatcher.Invoke(() =>
-						{
-							UpdateStatusText(output);
-							outputResult += output;
-						});
-					});
+            foreach (string apkFile in apkFiles)
+            {
+                if (loopCancelation == false)
+                {
+                    UpdateStatusText($"\nInstalling \"{apkFile}\"");
+                    await AdbHelper.Instance.RunAdbCommandAsync($"install -r -d \"{apkFile}\"", device, shell: false, output =>
+                    {
+                        base.Dispatcher.Invoke(() =>
+                        {
+                            UpdateStatusText(output);
+                            outputResult += output;
+                        });
+                    });
 
                     if (!outputResult.Contains("Success"))
                     {
-						loopCancelation = true;
-						success = false;
+                        loopCancelation = true;
+                        success = false;
                     }
                 }
-				else
+                else
                 {
-					success = false;
+                    success = false;
                     break;
-				}
-			}
+                }
+            }
             Dispatcher.Invoke(() =>
             {
                 if (success)
                 {
-                    UpdateStatusText("Installation complete", isSuccess : true);
+                    UpdateStatusText("Installation complete", isSuccess: true);
                 }
                 else
                 {
@@ -373,8 +365,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             });
             Install_Button.Content = "Install APKs";
             Install_Button.Background = Brushes.Green;
-			ApkFilesList.IsEnabled = true;
-			loopCancelation = false;
+            ApkFilesList.IsEnabled = true;
+            loopCancelation = false;
         }
         catch (Exception ex)
         {
@@ -387,151 +379,125 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
 
     private Dictionary<string, string> GetConnectedDevices()
-	{
-		Dictionary<string, string> dictionary = new Dictionary<string, string>();
-		using StringReader stringReader = new StringReader(RunAdbCommand("devices"));
-		string text;
-		while ((text = stringReader.ReadLine()) != null)
-		{
-			if (text.EndsWith("device"))
-			{
-				string text2 = text.Split('\t')[0];
-				string deviceName = GetDeviceName(text2);
-				dictionary.Add(text2, deviceName);
-			}
-		}
-		return dictionary;
-	}
+    {
+        Dictionary<string, string> dictionary = new Dictionary<string, string>();
+        using StringReader stringReader = new StringReader(RunAdbCommand("devices"));
+        string text;
+        while ((text = stringReader.ReadLine()) != null)
+        {
+            if (text.EndsWith("device"))
+            {
+                string text2 = text.Split('\t')[0];
+                string deviceName = GetDeviceName(text2);
+                dictionary.Add(text2, deviceName);
+            }
+        }
+        return dictionary;
+    }
 
-	public string GetDeviceName(string serial)
-	{
-		return RunAdbCommand("-s " + serial + " shell getprop ro.product.model").Split('\n')[0].Trim();
-	}
+    public string GetDeviceName(string serial)
+    {
+        return RunAdbCommand("-s " + serial + " shell getprop ro.product.model").Split('\n')[0].Trim();
+    }
 
-	public string GetDeviceSerialByName(string name)
-	{
-		foreach (object item3 in (IEnumerable)DevicesComboBox.Items)
-		{
-			if (!(item3.ToString() == name))
-			{
-				continue;
-			}
-			foreach (object item2 in DevicesComboBox.ItemsSource)
-			{
-				if (item2.ToString() == name)
-				{
-					return item2.ToString()!.Split('(')[1].Trim(' ', ')');
-				}
-			}
-		}
-		return null!;
-	}
+    public string GetDeviceSerialByName(string name)
+    {
+        foreach (object item3 in (IEnumerable)DevicesComboBox.Items)
+        {
+            if (!(item3.ToString() == name))
+            {
+                continue;
+            }
+            foreach (object item2 in DevicesComboBox.ItemsSource)
+            {
+                if (item2.ToString() == name)
+                {
+                    return item2.ToString()!.Split('(')[1].Trim(' ', ')');
+                }
+            }
+        }
+        return null!;
+    }
 
-	private string RunAdbCommand(string arguments)
-	{
-		Process process = new Process();
-		process.StartInfo.FileName = "adb";
-		process.StartInfo.Arguments = arguments;
-		process.StartInfo.RedirectStandardOutput = true;
-		process.StartInfo.RedirectStandardError = true;
-		process.StartInfo.UseShellExecute = false;
-		process.StartInfo.CreateNoWindow = true;
-		process.Start();
-		string text = process.StandardOutput.ReadToEnd();
-		string text2 = process.StandardError.ReadToEnd();
-		process.WaitForExit();
-		return text + text2;
-	}
+    private string RunAdbCommand(string arguments)
+    {
+        Process process = new Process();
+        process.StartInfo.FileName = "adb";
+        process.StartInfo.Arguments = arguments;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
+        process.Start();
+        string text = process.StandardOutput.ReadToEnd();
+        string text2 = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        return text + text2;
+    }
 
-	private void KidsWindow_Click(object sender, RoutedEventArgs e)
+    private void KidsWindow_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
         if (device == null)
-		{
-			MessageBox.Show("Please select a device before opening Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-		}
-		else if (kidsWindow == null || !kidsWindow.IsVisible)
-		{
-			kidsWindow = new Kids(this, GetDeviceSerialByName(device));
-			if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth || moreWindow != null || settingsWindow != null)
-			{
-				kidsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-			}
-			else
-			{
-				kidsWindow.Left = base.Left + base.Width;
-				kidsWindow.Top = base.Top;
-			}
-			Install_Button.IsEnabled = false;
-			DevicesComboBox.IsEnabled = false;
-			ParentalCare_Button.IsEnabled = false;
-			Browse_Button.IsEnabled = false;
-			kidsWindow.Show();
+        {
+            ShowMessage("Please select a device before opening Kids options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+        }
+        else if (kidsWindow == null || !kidsWindow.IsVisible)
+        {
+            kidsWindow = new Kids(this, GetDeviceSerialByName(device));
+            ShowWindow(kidsWindow, 250, moreWindow, settingsWindow);
+            Button_Status([Install_Button, ParentalCare_Button, Browse_Button], [false, false, false]);
+            DevicesComboBox.IsEnabled = false;
             kidsWindow.Closed += KidsWindow_Closed;
-		}
-		else
-		{
-			SystemSounds.Exclamation.Play();
-			kidsWindow.Activate();
-		}
-	}
+        }
+        else
+        {
+            SystemSounds.Exclamation.Play();
+            kidsWindow.Activate();
+        }
+    }
 
     private void KidsWindow_Closed(object? sender, EventArgs e)
     {
-		if (ApkFilesList.Items.Count > 0)
-		{
-			Install_Button.IsEnabled = true;
-		}
-		kidsWindow = null;
+        HandleWindowClosed(Install_Button);
+        kidsWindow = null;
     }
+
 
     private void PCWindow_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
         if (device == null)
-		{
-			MessageBox.Show("Please select a device before opening Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-		}
-		else if ((settingsWindow == null || !settingsWindow.IsVisible))
-		{
-			settingsWindow = new Settings(this, GetDeviceSerialByName(device));
-            if (base.Left + base.Width + 220 >= SystemParameters.PrimaryScreenWidth || moreWindow != null || kidsWindow != null)
-			{
-				settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-			}
-			else
-			{
-				settingsWindow.Left = base.Left + base.Width;
-				settingsWindow.Top = base.Top;
-			}
-			ApkFilesList.IsEnabled = false;
-			Install_Button.IsEnabled = false;
-			DevicesComboBox.IsEnabled = false;
-			Kids_Button.IsEnabled = false;
-			Browse_Button.IsEnabled = false;
-			settingsWindow.Show();
-            settingsWindow.Closed += SettingsWindow_Closed;
-		}
-		else
-		{
-			SystemSounds.Exclamation.Play();
-			settingsWindow.Activate();
-		}
-	}
-
-    private void SettingsWindow_Closed(object? sender, EventArgs e)
-    {
-        if (ApkFilesList.Items.Count > 0)
         {
-            Install_Button.IsEnabled = true;
+            ShowMessage("Please select a device before opening Parental Care options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
+        else if (settingsWindow == null || !settingsWindow.IsVisible)
+        {
+            settingsWindow = new Settings(this, GetDeviceSerialByName(device));
+            ShowWindow(settingsWindow, 220, moreWindow, kidsWindow);
+            ApkFilesList.IsEnabled = false;
+            Button_Status([Install_Button, Kids_Button, Browse_Button], [false, false, false]);
+            DevicesComboBox.IsEnabled = false;
+            settingsWindow.Closed += PcWindow_Closed;
+        }
+        else
+        {
+            SystemSounds.Exclamation.Play();
+            settingsWindow.Activate();
+        }
+    }
+
+    private void PcWindow_Closed(object? sender, EventArgs e)
+    {
+        HandleWindowClosed(ApkFilesList, Install_Button);
         settingsWindow = null;
     }
 
+
     public void ActivateDevicesBox()
-	{
-		DevicesComboBox.IsEnabled = true;
-	}
+    {
+        DevicesComboBox.IsEnabled = true;
+    }
 
     public void UpdateStatusText(string? message = null, bool isError = false, bool isSuccess = false, bool clear = false)
     {
@@ -542,7 +508,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             {
                 StatusText.Text = string.Empty;
             }
-            
+
             if (!string.IsNullOrEmpty(message))
             {
                 StatusText.Text += message + Environment.NewLine;
@@ -550,39 +516,30 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
             StatusText.ScrollToEnd();
         });
-	}
+    }
 
-	public void EmptyOutput_Button(object sender, RoutedEventArgs e)
-	{
-		ApkFilesList.Items.Clear();
+    public void EmptyOutput_Button(object sender, RoutedEventArgs e)
+    {
+        ApkFilesList.Items.Clear();
         UpdateStatusText(clear: true);
-	}
+    }
 
     private void More_Button_Click(object sender, RoutedEventArgs e)
     {
-		string? device = CheckDeviceComboBox();
+        string? device = CheckDeviceComboBox();
         if (device == null)
         {
-            MessageBox.Show("Please select a device before opening more options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            ShowMessage("Please select a device before opening more options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
         else if (moreWindow == null || !moreWindow.IsVisible)
         {
             moreWindow = new More(this, GetDeviceSerialByName(device), settingsWindow, kidsWindow);
-            if (base.Left + base.Width + 250 >= SystemParameters.PrimaryScreenWidth || settingsWindow != null || kidsWindow != null)
-            {
-                moreWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            }
-            else
-            {
-                moreWindow.Left = base.Left + base.Width;
-                moreWindow.Top = base.Top;
-            }
-			DevicesComboBox.IsEnabled = false;
-			moreWindow.Show();
+            ShowWindow(moreWindow, 250, settingsWindow, kidsWindow);
+            DevicesComboBox.IsEnabled = false;
             moreWindow.Closed += MoreWindow_Closed;
-		}
-		else
-		{
+        }
+        else
+        {
             SystemSounds.Exclamation.Play();
             moreWindow.Activate();
         }
@@ -590,16 +547,31 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void MoreWindow_Closed(object? sender, EventArgs e)
     {
-        if (settingsWindow == null && kidsWindow == null)
+        HandleWindowClosed(DevicesComboBox);
+        moreWindow = null;
+    }
+
+    private void ShowWindow(Window window, double extraWidth, Window? otherWindow1 = null, Window? otherWindow2 = null)
+    {
+        if (base.Left + base.Width + extraWidth >= SystemParameters.PrimaryScreenWidth || otherWindow1 != null || otherWindow2 != null)
         {
-            this.DevicesComboBox.IsEnabled = true;
-            this.Activate();
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         }
         else
         {
-            this.Activate();
+            window.Left = base.Left + base.Width;
+            window.Top = base.Top;
         }
-        moreWindow = null;
+        window.Show();
+    }
+
+    private void HandleWindowClosed(params Control[] controlsToEnable)
+    {
+        foreach (var control in controlsToEnable)
+        {
+            control.IsEnabled = true;
+        }
+        this.Activate();
     }
 
     private void MainWindow_Closing(object? sender, CancelEventArgs e)
@@ -609,9 +581,19 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 #endif
     }
 
-    //Activate or deactivate buttons
-    private void Button_Status(Button nameButton, bool status)
+    /// <summary>
+    /// Enable or disable buttons.
+    /// </summary>
+    /// <param name="nameButton">Button name that it will be changed.</param>
+    /// <param name="status">New button state true - activated, false - deactivated.</param>
+    private void Button_Status(List<Button> nameButton, List<bool> status)
     {
-        nameButton.IsEnabled = status;
+        foreach (var button in nameButton)
+        {
+            foreach (var action in status)
+            {
+                button.IsEnabled = action;
+            }
+        }
     }
 }

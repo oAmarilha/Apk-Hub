@@ -227,11 +227,11 @@ public partial class AppWindow : Window, IComponentConnector
             }
             if (success)
             {
-                MessageBox.Show(_action + " successfully executed on apps: " + string.Join(", ", appsName), "Action Executed", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                _mainWindow.ShowMessage(_action + " successfully executed on apps: " + string.Join(", ", appsName), "Action Executed", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
             else
             {
-                MessageBox.Show("An error occurred while trying to execute the command, check the output and try again.", "An error occurred", MessageBoxButton.OK, MessageBoxImage.Hand);
+                _mainWindow.ShowMessage("An error occurred while trying to execute the command, check the output and try again.", "An error occurred", MessageBoxButton.OK, MessageBoxImage.Hand);
             }
         }
         else if ((_logcatWindow == null || !_logcatWindow.IsVisible) && _mainWindow != null && list.Count > 0)
