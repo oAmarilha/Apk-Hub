@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 
-namespace ApkInstaller
+namespace ApkInstaller.Helper_classes
 {
     public class AdbHelper
     {
@@ -39,7 +39,7 @@ namespace ApkInstaller
                 {
                     Process process = new Process();
                     process.StartInfo.FileName = command;
-                    process.StartInfo.Arguments = (shell ? ("-s " + selectedDevice + " shell " + arguments) : ("-s " + selectedDevice + " " + arguments));
+                    process.StartInfo.Arguments = shell ? "-s " + selectedDevice + " shell " + arguments : "-s " + selectedDevice + " " + arguments;
                     process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo.RedirectStandardError = true;
                     process.StartInfo.UseShellExecute = false;
@@ -95,7 +95,7 @@ namespace ApkInstaller
             string remotefile = $"{deviceName}_{fileName}";
             try
             {
-                await RunAdbCommandAsync($"shell screenrecord /sdcard/{deviceName}_{fileName}.mp4", selectedDevice, false, output =>{});
+                await RunAdbCommandAsync($"shell screenrecord /sdcard/{deviceName}_{fileName}.mp4", selectedDevice, false, output => { });
             }
             catch (Exception ex)
             {
@@ -112,7 +112,7 @@ namespace ApkInstaller
         {
             string directoryPath = $"{appPath}\\ScreenRecords\\{deviceName}\\{remoteFile}";
             string fullPath = Path.Combine(directoryPath, remoteFile + ".mp4");
-            string fileName =  remoteFile + ".mp4";
+            string fileName = remoteFile + ".mp4";
 
             try
             {
@@ -195,7 +195,7 @@ namespace ApkInstaller
             }
         }
 
-        public async Task<bool> UninstallFunction(MainWindow _mainWindow, string _selectedDevice,string appPkg)
+        public async Task<bool> UninstallFunction(MainWindow _mainWindow, string _selectedDevice, string appPkg)
         {
             _mainWindow.StatusText.Foreground = Brushes.White;
             string result = "";

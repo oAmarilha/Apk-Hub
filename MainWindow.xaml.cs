@@ -1,3 +1,4 @@
+using ApkInstaller.Helper_classes;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using System.Collections;

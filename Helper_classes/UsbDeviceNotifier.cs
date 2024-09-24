@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace ApkInstaller;
+namespace ApkInstaller.Helper_classes;
 
 public class UsbDeviceNotifier
 {
@@ -15,7 +15,7 @@ public class UsbDeviceNotifier
     private static readonly Guid GuidDevinterfaceUsbDevice = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
     private readonly Window _window;
-    private IntPtr _notificationHandle;
+    private nint _notificationHandle;
 
     public event EventHandler? UsbDeviceChanged;
 
@@ -41,10 +41,10 @@ public class UsbDeviceNotifier
                     break;
             }
         }
-        return IntPtr.Zero;
+        return nint.Zero;
     }
 
-    private void RegisterForUsbEvents(IntPtr windowHandle)
+    private void RegisterForUsbEvents(nint windowHandle)
     {
         var deviceInterface = new DevBroadcastDeviceinterface
         {
@@ -53,12 +53,12 @@ public class UsbDeviceNotifier
             dbcc_classguid = GuidDevinterfaceUsbDevice
         };
 
-        IntPtr buffer = Marshal.AllocHGlobal(deviceInterface.dbcc_size);
+        nint buffer = Marshal.AllocHGlobal(deviceInterface.dbcc_size);
         Marshal.StructureToPtr(deviceInterface, buffer, true);
 
         _notificationHandle = RegisterDeviceNotification(windowHandle, buffer, 0);
 
-        if (_notificationHandle == IntPtr.Zero)
+        if (_notificationHandle == nint.Zero)
         {
             throw new Exception("Failed to register for USB device notifications.");
         }
@@ -66,18 +66,18 @@ public class UsbDeviceNotifier
 
     public void UnregisterDeviceNotification()
     {
-        if (_notificationHandle != IntPtr.Zero)
+        if (_notificationHandle != nint.Zero)
         {
             UnregisterDeviceNotification(_notificationHandle);
-            _notificationHandle = IntPtr.Zero;
+            _notificationHandle = nint.Zero;
         }
     }
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern IntPtr RegisterDeviceNotification(IntPtr hRecipient, IntPtr notificationFilter, uint flags);
+    private static extern nint RegisterDeviceNotification(nint hRecipient, nint notificationFilter, uint flags);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern bool UnregisterDeviceNotification(IntPtr handle);
+    private static extern bool UnregisterDeviceNotification(nint handle);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct DevBroadcastDeviceinterface

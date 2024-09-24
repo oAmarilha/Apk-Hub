@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
+using ApkInstaller.Helper_classes;
 
 namespace ApkInstaller
 {
