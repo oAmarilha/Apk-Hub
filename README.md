@@ -7,7 +7,7 @@
 # Installing:
 To install the application, get the [APK Hub Setup.msi](https://github.com/oAmarilha/Apk-Hub/releases) and execute it (Maybe Smart Screen will appear, this occurs because this tool hasn't a paid Microsoft Certificate, if appears, make sure to click on ``More Information`` and ``Run Anyway``). After installing, try to run the app (a shortcut is created on desktop or in start menu), you may need to install .Net Desktop 8.
 
-You also have to set up ``adb`` and ``scrcpy`` to your Windows environment path, only with this you will be able to execute without any problems, maybe in further updates I will solve this issue.
+You also have to set up ``adb`` and [scrcpy](https://github.com/Genymobile/scrcpy/blob/master/doc/windows.md) to your Windows environment path, only with this you will be able to execute without any problems, maybe in further updates I will solve this issue.
 
 <p align="center">
 <img src="https://github.com/user-attachments/assets/bff58bf1-c87d-4827-b8cf-16f0bd2b5986" alt="Apk Hub" width="400"/>
