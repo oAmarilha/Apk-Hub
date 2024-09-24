@@ -5,7 +5,7 @@
 </p>
 
 # Installing:
-To install the application, get the [APK Hub Setup.msi](https://github.com/oAmarilha/Apk-Hub/tree/99e229e94497f45a941d5fff33b7e3389a53d01b/Msi_Installer) and execute it (Maybe Smart Screen will appear, this occurs because this tool hasn't a paid Microsoft Certificate, if appears, make sure to click on ``More Information`` and ``Run Anyway``). After installing, try to run the app (a shortcut is created on desktop or in start menu), you may need to install .Net Desktop 8.
+To install the application, get the [APK Hub Setup.msi](https://github.com/oAmarilha/Apk-Hub/releases) and execute it (Maybe Smart Screen will appear, this occurs because this tool hasn't a paid Microsoft Certificate, if appears, make sure to click on ``More Information`` and ``Run Anyway``). After installing, try to run the app (a shortcut is created on desktop or in start menu), you may need to install .Net Desktop 8.
 
 You also have to set up ``adb`` and ``scrcpy`` to your Windows environment path, only with this you will be able to execute without any problems, maybe in further updates I will solve this issue.
 
