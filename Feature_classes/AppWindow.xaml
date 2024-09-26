@@ -14,7 +14,7 @@
         </Grid.ColumnDefinitions>
         <CheckBox Grid.Row="0" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/village.png" HorizontalAlignment="Left" Width="40" Height="40">
+                <Image Source="pack://application:,,,/Images/village.png" HorizontalAlignment="Left" Width="40" Height="40">
                     <FrameworkElement.ToolTip>
                         <ToolTip Content="Crocro's Friend Village" />
                     </FrameworkElement.ToolTip>
@@ -24,67 +24,67 @@
         </CheckBox>
         <CheckBox Grid.Row="0" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/musicband.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/musicband.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Music 3D" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="0" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/voice.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/voice.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Magic Voice" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="1" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/adventure.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/adventure.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Adventure" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="1" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/browser.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/browser.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Browser" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="1" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/call.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/call.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Phone" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="2" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/camera.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/camera.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Camera" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="2" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/gallery.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/gallery.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="My Gallery" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="2" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/lego.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/lego.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Cooki's" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="3" Grid.Column="0" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/studio.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/studio.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Art Studio" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="3" Grid.Column="1" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/travel.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/travel.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Trav. Buddies" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>
         <CheckBox Grid.Row="3" Grid.Column="2" Margin="5" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
             <StackPanel Orientation="Vertical" Width="90">
-                <Image Source="Images/home.png" HorizontalAlignment="Left" Width="40" Height="40" />
+                <Image Source="pack://application:,,,/Images/home.png" HorizontalAlignment="Left" Width="40" Height="40" />
                 <TextBlock Text="Kids Home" HorizontalAlignment="Left" />
             </StackPanel>
         </CheckBox>

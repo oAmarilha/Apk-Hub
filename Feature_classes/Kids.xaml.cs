@@ -77,10 +77,10 @@ public partial class Kids : Window, IComponentConnector
 		string logcat = "";
 		try
 		{
-			await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", _selectedDevice, shell: true, output =>
+			await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output =>
 			{
 				logcat += output;
-            });
+            }, _selectedDevice, shell: true);
 
             if (string.IsNullOrEmpty(logcat))
             {

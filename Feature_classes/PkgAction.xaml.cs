@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
+﻿using ApkInstaller.Helper_classes;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
-using ApkInstaller.Helper_classes;
 
 namespace ApkInstaller
 {
@@ -97,7 +97,7 @@ namespace ApkInstaller
                 _mainWindow.StatusText.Text = $"Uninstalling package {App_Pkg.Text}" + Environment.NewLine;
                 Send_Command.IsEnabled = false;
                 App_Pkg.IsEnabled = false;
-                await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice, App_Pkg.Text);
+                await AdbHelper.Instance.UninstallFunction(_selectedDevice, App_Pkg.Text);
             }
             else
             {
@@ -141,7 +141,7 @@ namespace ApkInstaller
                 _mainWindow.StatusText.Text = $"Clearing package {App_Pkg.Text}" + Environment.NewLine;
                 Send_Command.IsEnabled = false;
                 App_Pkg.IsEnabled = false;
-                await AdbHelper.Instance.ClearAppFunction(_mainWindow, _selectedDevice, App_Pkg.Text);
+                await AdbHelper.Instance.ClearAppFunction(_selectedDevice, App_Pkg.Text);
             }
             else
             {

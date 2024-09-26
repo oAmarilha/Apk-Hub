@@ -26,7 +26,7 @@ namespace ApkInstaller
             DispatcherUnhandledException += App_DispatcherUnhandledException;
 
             // Registrar manipulação de exceções não tratadas para tarefas em segundo plano
-            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException!;
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

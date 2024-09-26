@@ -1,8 +1,8 @@
-﻿using System.Windows;
+﻿using ApkInstaller.Helper_classes;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
-using ApkInstaller.Helper_classes;
 
 namespace ApkInstaller
 {
@@ -42,7 +42,7 @@ namespace ApkInstaller
                 Share_Button.IsEnabled = false;
                 ScreenRecordButton.Content = "Stop";
                 ScreenRecordButton.Background = Brushes.Red;
-                await AdbHelper.Instance.StartScreenRecording(_mainWindow, _selectedDevice, localFile);
+                await AdbHelper.Instance.StartScreenRecording(_selectedDevice, localFile);
             }
             else
             {
@@ -60,10 +60,7 @@ namespace ApkInstaller
 
         private async void RealTimeScreen()
         {
-            await AdbHelper.Instance.RunAdbCommandAsync("", _selectedDevice, false, output =>
-            {
-                _mainWindow.UpdateStatusText(output);
-            }, "scrcpy");
+            await AdbHelper.Instance.RealTimeScreen(_selectedDevice);
             Share_Button.Content = "Screen";
             Share_Button.Background = new SolidColorBrush(Color.FromRgb(247, 247, 247));
             ScreenRecordButton.IsEnabled = true;
@@ -119,22 +116,31 @@ namespace ApkInstaller
             }
             else
             {
-                LogcatWindow logcatWindow = new LogcatWindow(_mainWindow, this, _selectedDevice, null);
-                if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
+                if (logcatWindow == null)
                 {
-                    logcatWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    logcatWindow = new LogcatWindow(_mainWindow, this, _selectedDevice, null);
+                    if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
+                    {
+                        logcatWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    }
+                    else
+                    {
+                        logcatWindow.Top = _mainWindow.Top + _mainWindow.Height;
+                        logcatWindow.Left = _mainWindow.Left;
+                    }
+                    Grid.SetRow(logcatWindow.Buttons_StackPanel, 0);
+                    logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
+                    logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
+                    logcatWindow.logcatGrid.Children.Remove(logcatWindow.PC_Info);
+                    logcatWindow.Show();
+                    logcatWindow.Closing += LogcatWindow_Closing;
                 }
-                else
-                {
-                    logcatWindow.Top = _mainWindow.Top + _mainWindow.Height;
-                    logcatWindow.Left = _mainWindow.Left;
-                }
-                Grid.SetRow(logcatWindow.Buttons_StackPanel, 0);
-                logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
-                logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
-                logcatWindow.logcatGrid.Children.Remove(logcatWindow.PC_Info);
-                logcatWindow.Show();
             }
+        }
+
+        private void LogcatWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            logcatWindow = null;
         }
 
         private void ClearAPK_Button_Click(object sender, RoutedEventArgs e)

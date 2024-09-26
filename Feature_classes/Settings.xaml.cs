@@ -32,10 +32,10 @@ public partial class Settings : Window, IComponentConnector
 
 	public async Task SendCommandButton(string command, bool shell)
     {
-        await AdbHelper.Instance.RunAdbCommandAsync(command, _selectedDevice, shell, output =>
+        await AdbHelper.Instance.RunAdbCommandAsync(command, output =>
         {
             _mainWindow.UpdateStatusText(output);
-        });
+        }, _selectedDevice, shell);
 	}
 
 	private async void RemountButton_Click(object sender, RoutedEventArgs e)
@@ -51,13 +51,13 @@ public partial class Settings : Window, IComponentConnector
 	{
 		string type = "";
 		CancellationToken token = new CancellationTokenSource().Token;
-		await AdbHelper.Instance.RunAdbCommandAsync("getprop ro.build.characteristics", _selectedDevice, shell: true, output =>
+		await AdbHelper.Instance.RunAdbCommandAsync("getprop ro.build.characteristics", output =>
         {
 			base.Dispatcher.Invoke(() =>
 			{
 				type += output;
 			});
-        });
+        }, _selectedDevice, shell: true);
 		string apkFile = (from stackPanel in _mainWindow.ApkFilesList.Items.OfType<StackPanel>()
 			select stackPanel.Tag.ToString()).FirstOrDefault((string filename) => Path.GetFileName(filename)?.StartsWith("Parental") ?? false) ?? string.Empty;
 		string careSampleFile = (from stackPanel in _mainWindow.ApkFilesList.Items.OfType<StackPanel>()
@@ -147,7 +147,7 @@ public partial class Settings : Window, IComponentConnector
 
 	private void LogcatButton_Click(object sender, RoutedEventArgs e)
 	{
-		if ((logcatWindow == null || !logcatWindow.IsVisible) && _mainWindow != null)
+		if (logcatWindow == null)
 		{
 			logcatWindow = new LogcatWindow(_mainWindow ,this, _selectedDevice, "com.samsung.android.app.parentalcare");
 			logcatWindow.Owner = _mainWindow;
@@ -161,6 +161,7 @@ public partial class Settings : Window, IComponentConnector
 				logcatWindow.Left = _mainWindow.Left;
 			}
 			logcatWindow.Show();
+            logcatWindow.Closing += LogcatWindow_Closing;
 		}
 		else
 		{
@@ -168,7 +169,12 @@ public partial class Settings : Window, IComponentConnector
 		}
 	}
 
-	private void ClosingSettings(object? sender, CancelEventArgs e)
+    private void LogcatWindow_Closing(object? sender, CancelEventArgs e)
+    {
+		logcatWindow = null;
+    }
+
+    private void ClosingSettings(object? sender, CancelEventArgs e)
 	{
 		if (logcatWindow != null)
 		{

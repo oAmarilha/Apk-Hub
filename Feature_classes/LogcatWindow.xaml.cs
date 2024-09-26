@@ -1,3 +1,4 @@
+using ApkInstaller.Helper_classes;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -6,15 +7,12 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Media;
-using ApkInstaller.Helper_classes;
 
 namespace ApkInstaller;
 
 public partial class LogcatWindow : Window, IComponentConnector
 {
     private string _selectedDevice;
-
-    private Process? _process;
 
     private string? _filter;
 
@@ -51,17 +49,17 @@ public partial class LogcatWindow : Window, IComponentConnector
 
     private async void ClearLogcat()
     {
-        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", _selectedDevice, shell: true, output => { });
+        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output => { }, _selectedDevice, shell: true);
     }
 
     private async void StartLogcat()
     {
-        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", _selectedDevice, shell: true, output => { });
+        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output => { }, _selectedDevice, shell: true);
         StringBuilder logBuilder = new StringBuilder();
         DateTime lastUpdate = DateTime.Now;
         string logcatCommand = !string.IsNullOrEmpty(_filter) ? $"logcat *:I *:D *:W *:E *:V | grep \"{_filter}\"" : "logcat *:I *:D *:W *:E *:V";
 
-        await AdbHelper.Instance.RunAdbCommandAsync(logcatCommand, _selectedDevice, shell: true, output =>
+        await AdbHelper.Instance.RunAdbCommandAsync(logcatCommand, output =>
         {
             logBuilder.AppendLine(output);
             if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100) // Atualiza a UI a cada 100ms
@@ -75,7 +73,7 @@ public partial class LogcatWindow : Window, IComponentConnector
                 logBuilder.Clear();
                 lastUpdate = DateTime.Now;
             }
-        });
+        }, _selectedDevice, shell: true);
     }
 
     private void ExtractValuesFromLog(string logLine)

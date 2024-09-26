@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <PackageIcon>bobby.jpg</PackageIcon>
     <ApplicationIcon>bobby.ico</ApplicationIcon>
-    <Version>3.0.4</Version>
+    <Version>3.0.6</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
@@ -42,6 +42,13 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+	<None Update="adb\**\*">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="adb\" />
   </ItemGroup>
 
 </Project>

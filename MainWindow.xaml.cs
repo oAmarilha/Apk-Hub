@@ -3,7 +3,6 @@ using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using System.Collections;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Media;
 using System.Windows;
@@ -28,6 +27,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     private bool success;
 
     public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+    public static MainWindow Instance { get; private set; } = null!;
 
     public MainWindow()
     {
@@ -35,8 +35,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         this.WindowTitleBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
         this.BorderBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
         base.Loaded += MainWindow_Loaded;
+        Instance = this;
         Install_Button.Content = "Install APKs";
+#if !DEBUG
         base.Closing += MainWindow_Closing;
+#endif
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -103,12 +106,37 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             }
         }
 
-        Install_Button.IsEnabled = DevicesComboBox.Items.Count > 0 && change;
+        Install_Button.IsEnabled = DevicesComboBox.Items.Count > 0 && change && ApkFilesList.Items.Count > 0;
     }
 
     public MessageBoxResult ShowMessage(string message, string? title = null, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Warning)
     {
         return MessageBox.Show(message, title, button, icon);
+    }
+
+    private void CheckDuplicatedFiles(List<string> errorMessages, List<string> addedFiles)
+    {
+        if (errorMessages.Any())
+        {
+            string errorMessage = errorMessages.Count() == 1
+                ? $"The following file:\n'{string.Join("', '", errorMessages)}' is already selected, please remove it and try again."
+                : $"The following files:\n'{string.Join("', '", errorMessages)}' are already selected, please remove them and try again.";
+
+            if (addedFiles.Any())
+            {
+                string addedMessage = addedFiles.Count() == 1
+                    ? $"Additionally, the following file was successfully added:\n'{string.Join("', '", addedFiles)}'"
+                    : $"Additionally, the following files were successfully added:\n'{string.Join("', '", addedFiles)}'";
+
+                errorMessage += $"\n\n{addedMessage}";
+            }
+
+            UpdateStatusText("Duplicated file(s)", clear: true, isError: true);
+            ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            ChangeButtonVisibility(true);
+            return;
+        }
+        UpdateStatusText("Files loaded", clear: true);
     }
 
     private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -141,28 +169,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                     addedFiles.Add(fileNameOnly); // Adiciona apenas o nome do arquivo
                 }
             }
-
-            if (errorMessages.Any())
-            {
-                string errorMessage = errorMessages.Count() == 1
-                    ? $"The following file:\n'{string.Join("', '", errorMessages)}' is already selected, please remove it and try again."
-                    : $"The following files:\n'{string.Join("', '", errorMessages)}' are already selected, please remove them and try again.";
-
-                if (addedFiles.Any())
-                {
-                    string addedMessage = addedFiles.Count() == 1
-                        ? $"Additionally, the following file was successfully added:\n'{string.Join("', '", addedFiles)}'"
-                        : $"Additionally, the following files were successfully added:\n'{string.Join("', '", addedFiles)}'";
-
-                    errorMessage += $"\n\n{addedMessage}";
-                }
-
-                ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                ChangeButtonVisibility(true);
-                return;
-            }
-
-            UpdateStatusText("Files loaded", clear: true);
+            CheckDuplicatedFiles(errorMessages, addedFiles);
         }
         ChangeButtonVisibility(true);
     }
@@ -206,25 +213,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                     }
                 }
             }
-
-            // Mostrando a mensagem de erro ou sucesso
-            if (errorMessages.Any())
-            {
-                string errorMessage = errorMessages.Count == 1
-                    ? $"The following file:\n'{string.Join("', '", errorMessages)}' is already selected, please remove it and try again."
-                    : $"The following files:\n'{string.Join("', '", errorMessages)}' are already selected, please remove them and try again.";
-
-                if (addedFiles.Any())
-                {
-                    string addedMessage = addedFiles.Count == 1
-                        ? $"Additionally, the following file was successfully added:\n'{string.Join("', '", addedFiles)}'"
-                        : $"Additionally, the following files were successfully added:\n'{string.Join("', '", addedFiles)}'";
-
-                    errorMessage += $"\n\n{addedMessage}";
-                }
-
-                ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            CheckDuplicatedFiles(errorMessages, addedFiles);
         }
     }
 
@@ -332,14 +321,14 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 if (loopCancelation == false)
                 {
                     UpdateStatusText($"\nInstalling \"{apkFile}\"");
-                    await AdbHelper.Instance.RunAdbCommandAsync($"install -r -d \"{apkFile}\"", device, shell: false, output =>
+                    await AdbHelper.Instance.RunAdbCommandAsync($"install -r -d \"{apkFile}\"", output =>
                     {
                         base.Dispatcher.Invoke(() =>
                         {
                             UpdateStatusText(output);
                             outputResult += output;
                         });
-                    });
+                    }, device, shell: false);
 
                     if (!outputResult.Contains("Success"))
                     {
@@ -379,26 +368,33 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     }
 
 
-    private Dictionary<string, string> GetConnectedDevices()
+    private async Task<Dictionary<string, string>> GetConnectedDevices()
     {
+        string? devices = null;
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
-        using StringReader stringReader = new StringReader(RunAdbCommand("devices"));
-        string text;
+        await AdbHelper.Instance.RunAdbCommandAsync("devices", output => { devices += $"\n{output}"; }, generalCommand: true);
+        using StringReader stringReader = new StringReader(devices);
+        string? text;
         while ((text = stringReader.ReadLine()) != null)
         {
             if (text.EndsWith("device"))
             {
                 string text2 = text.Split('\t')[0];
-                string deviceName = GetDeviceName(text2);
+                string deviceName = await GetDeviceName(text2);
                 dictionary.Add(text2, deviceName);
             }
         }
         return dictionary;
     }
 
-    public string GetDeviceName(string serial)
+    public async Task<string> GetDeviceName(string serial)
     {
-        return RunAdbCommand("-s " + serial + " shell getprop ro.product.model").Split('\n')[0].Trim();
+        string name = "";
+        await AdbHelper.Instance.RunAdbCommandAsync("getprop ro.product.model", output =>
+        {
+            name += output;
+        }, serial, true);
+        return name.Split('\n')[0].Trim();
     }
 
     public string GetDeviceSerialByName(string name)
@@ -418,22 +414,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             }
         }
         return null!;
-    }
-
-    private string RunAdbCommand(string arguments)
-    {
-        Process process = new Process();
-        process.StartInfo.FileName = "adb";
-        process.StartInfo.Arguments = arguments;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = true;
-        process.Start();
-        string text = process.StandardOutput.ReadToEnd();
-        string text2 = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-        return text + text2;
     }
 
     private void KidsWindow_Click(object sender, RoutedEventArgs e)
@@ -460,7 +440,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void KidsWindow_Closed(object? sender, EventArgs e)
     {
-        HandleWindowClosed(Install_Button);
+        if (ApkFilesList.Items.Count > 0)
+        {
+            HandleWindowClosed(Install_Button);
+        }
+        AdbHelper.Instance.StopCommand();
         kidsWindow = null;
     }
 
@@ -490,14 +474,21 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void PcWindow_Closed(object? sender, EventArgs e)
     {
-        HandleWindowClosed(ApkFilesList, Install_Button);
+        if (ApkFilesList.Items.Count > 0)
+        {
+            HandleWindowClosed(ApkFilesList, Install_Button);
+        }
+        AdbHelper.Instance.StopCommand();
         settingsWindow = null;
     }
 
 
     public void ActivateDevicesBox()
     {
-        DevicesComboBox.IsEnabled = true;
+        if (DevicesComboBox.Items.Count > 1)
+        {
+            DevicesComboBox.IsEnabled = true;
+        }
     }
 
     public void UpdateStatusText(string? message = null, bool isError = false, bool isSuccess = false, bool clear = false)
@@ -532,7 +523,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         {
             ShowMessage("Please select a device before opening more options.", "No Device Selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
-        else if (moreWindow == null || !moreWindow.IsVisible)
+        else if (moreWindow == null)
         {
             moreWindow = new More(this, GetDeviceSerialByName(device), settingsWindow, kidsWindow);
             ShowWindow(moreWindow, 250, settingsWindow, kidsWindow);
@@ -548,8 +539,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void MoreWindow_Closed(object? sender, EventArgs e)
     {
-        HandleWindowClosed(DevicesComboBox);
+        ActivateDevicesBox();
         moreWindow = null;
+        AdbHelper.Instance.StopCommand();
+        this.Activate();
     }
 
     private void ShowWindow(Window window, double extraWidth, Window? otherWindow1 = null, Window? otherWindow2 = null)
@@ -575,11 +568,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         this.Activate();
     }
 
-    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    private async void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
-#if !DEBUG
-		RunAdbCommand("kill-server");
-#endif
+        await AdbHelper.Instance.RunAdbCommandAsync("kill-server", output => { }, generalCommand: true);
     }
 
     /// <summary>

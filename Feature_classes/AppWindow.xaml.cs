@@ -16,7 +16,7 @@ public partial class AppWindow : Window, IComponentConnector
 
 	private MainWindow _mainWindow;
 
-	private string? _selectedDevice;
+	private string _selectedDevice;
 
 	private string? _actionType;
 
@@ -113,7 +113,7 @@ public partial class AppWindow : Window, IComponentConnector
 			return;
 		}
 		Clear_Button.IsEnabled = true;
-		CheckBox checkBox = sender as CheckBox;
+		CheckBox? checkBox = sender as CheckBox;
 		foreach (object child in MainGrid.Children)
 		{
 			if (child is CheckBox checkBox2 && checkBox2 != checkBox)
@@ -179,13 +179,13 @@ public partial class AppWindow : Window, IComponentConnector
 					if (_actionType != "uninstall")
 					{
 						string finaloutput = "";
-						await AdbHelper.Instance.RunAdbCommandAsync(_actionType + " " + app, _selectedDevice, _shell, output =>
+						await AdbHelper.Instance.RunAdbCommandAsync(_actionType + " " + app, output =>
 						{
 							Dispatcher.Invoke(() =>
 							{
 								finaloutput += output;
 							});
-						});
+						}, _selectedDevice, _shell);
 
                         if (finaloutput != null && (finaloutput.Contains("Failed")))
                         {
@@ -200,7 +200,7 @@ public partial class AppWindow : Window, IComponentConnector
                     }
 					else
 					{
-						success = await AdbHelper.Instance.UninstallFunction(_mainWindow, _selectedDevice, app);
+						success = await AdbHelper.Instance.UninstallFunction(_selectedDevice, app);
 						if (success == false)
 						{
 							break;
@@ -235,7 +235,7 @@ public partial class AppWindow : Window, IComponentConnector
                 _mainWindow.ShowMessage("An error occurred while trying to execute the command, check the output and try again.", "An error occurred", MessageBoxButton.OK, MessageBoxImage.Hand);
             }
         }
-        else if ((_logcatWindow == null || !_logcatWindow.IsVisible) && _mainWindow != null && list.Count > 0)
+        else if (_logcatWindow == null)
         {
             _logcatWindow = new LogcatWindow(_mainWindow, this , _selectedDevice, list[0]);
             _logcatWindow.Owner = _mainWindow;
@@ -253,14 +253,19 @@ public partial class AppWindow : Window, IComponentConnector
 			_logcatWindow.StartStopButton.Margin = new Thickness(0, 0, 0, 5);
 			_logcatWindow.Buttons_StackPanel.Orientation = Orientation.Vertical;
 			_logcatWindow.logcatGrid.Children.Remove(_logcatWindow.PC_Info);
-            _logcatWindow.Show();
-        }
-        else
+			_logcatWindow.Show();
+            _logcatWindow.Closing += _logcatWindow_Closing;
+		}
+		else
         {
             _logcatWindow.Focus();
         }
     }
 
+    private void _logcatWindow_Closing(object? sender, CancelEventArgs e)
+    {
+		_logcatWindow = null;
+    }
 
     public void Closing_Window(object? sender, CancelEventArgs e)
 	{

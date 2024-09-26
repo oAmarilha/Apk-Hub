@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -13,10 +12,29 @@ namespace ApkInstaller.Helper_classes
         private static AdbHelper? instance;
         private List<Process> processes;
         public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+        private string adbExecutablePath;
+        private string scrcpyExecutablePath;
+        private string aaptExecutablePath;
+        string? androidHome;
+        MainWindow mainWindow = MainWindow.Instance;
 
         private AdbHelper()
         {
             processes = new List<Process>();
+            androidHome = Environment.GetEnvironmentVariable("ANDROID_HOME");
+            string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "adb");
+            aaptExecutablePath = Path.Combine(localPath, "aapt.exe");
+            if (AreExecutablesInAndroidHome())
+            {
+                adbExecutablePath = Path.Combine(androidHome!, "platform-tools", "adb.exe");
+                scrcpyExecutablePath = Path.Combine(androidHome!, "platform-tools", "scrcpy.exe");
+            }
+            else
+            {
+                // Caso contrário, usa os executáveis da pasta local (adb/adb.exe e adb/scrcpy.exe)
+                adbExecutablePath = Path.Combine(localPath, "adb.exe");
+                scrcpyExecutablePath = Path.Combine(localPath, "scrcpy.exe");
+            }
         }
 
         public static AdbHelper Instance
@@ -31,15 +49,28 @@ namespace ApkInstaller.Helper_classes
             }
         }
 
-        public async Task RunAdbCommandAsync(string arguments, string selectedDevice, bool shell, Action<string> outputHandler, string command = "adb")
+        private bool AreExecutablesInAndroidHome()
+        {
+            if (!string.IsNullOrEmpty(androidHome))
+            {
+                string adbPath = Path.Combine(androidHome, "platform-tools", "adb.exe");
+                string scrcpyPath = Path.Combine(androidHome, "platform-tools", "scrcpy.exe");
+
+                // Retorna true se ambos os arquivos existirem
+                return File.Exists(adbPath) && File.Exists(scrcpyPath);
+            }
+            return false;
+        }
+
+        public async Task RunAdbCommandAsync(string arguments, Action<string> outputHandler, string? selectedDevice = null, bool shell = false, bool generalCommand = false)
         {
             await Task.Run(() =>
             {
                 try
                 {
                     Process process = new Process();
-                    process.StartInfo.FileName = command;
-                    process.StartInfo.Arguments = shell ? "-s " + selectedDevice + " shell " + arguments : "-s " + selectedDevice + " " + arguments;
+                    process.StartInfo.FileName = adbExecutablePath;
+                    process.StartInfo.Arguments = generalCommand ? $" {arguments}" : (shell ? "-s " + selectedDevice + " shell " + arguments : "-s " + selectedDevice + $" {arguments}");
                     process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo.RedirectStandardError = true;
                     process.StartInfo.UseShellExecute = false;
@@ -85,61 +116,6 @@ namespace ApkInstaller.Helper_classes
             return;
         }
 
-
-
-        public async Task StartScreenRecording(MainWindow mainWindow, string selectedDevice, string localFile)
-        {
-            string fileName = DateTime.Now.ToString().Replace("/", "-").Replace(":", "-")
-                .Replace(" ", "_") ?? "";
-            string deviceName = mainWindow.GetDeviceName(selectedDevice);
-            string remotefile = $"{deviceName}_{fileName}";
-            try
-            {
-                await RunAdbCommandAsync($"shell screenrecord /sdcard/{deviceName}_{fileName}.mp4", selectedDevice, false, output => { });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error during screen recording, try again", "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
-                return;
-            }
-
-            await Task.Delay(1500);
-            TransferRecordedFile(mainWindow, remotefile, deviceName, selectedDevice);
-
-        }
-
-        public async void TransferRecordedFile(MainWindow mainWindow, string remoteFile, string deviceName, string selectedDevice)
-        {
-            string directoryPath = $"{appPath}\\ScreenRecords\\{deviceName}\\{remoteFile}";
-            string fullPath = Path.Combine(directoryPath, remoteFile + ".mp4");
-            string fileName = remoteFile + ".mp4";
-
-            try
-            {
-                Directory.CreateDirectory(directoryPath);
-                await RunAdbCommandAsync($"pull /sdcard/{fileName} \"{fullPath}\"", selectedDevice, shell: false, output =>
-                {
-                    mainWindow.UpdateStatusText(output);
-                });
-                await Task.Delay(500);
-                MessageBoxResult result = MessageBox.Show($"Screen recording saved to: {fullPath}\nDo you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
-                if (result == MessageBoxResult.Yes)
-                {
-                    Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = directoryPath,
-                        UseShellExecute = true,
-                        Verb = "open"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error transferring recorded file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
-            }
-        }
-
-
         public async Task RunCommandAsync(string command, string arguments, Action<string> outputHandler)
         {
             await Task.Run(() =>
@@ -153,28 +129,42 @@ namespace ApkInstaller.Helper_classes
                     process.StartInfo.RedirectStandardError = true;
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.CreateNoWindow = true;
+
                     process.OutputDataReceived += (sender, e) =>
                     {
-                        if (!string.IsNullOrEmpty(e.Data))
-                        {
-                            outputHandler(e.Data);
-                        }
+                        outputHandler(e.Data);  // Notify UI with the output
                     };
+
                     process.ErrorDataReceived += (sender, e) =>
                     {
                         if (!string.IsNullOrEmpty(e.Data))
                         {
-                            outputHandler(e.Data);
+                            outputHandler(e.Data);  // Notify UI with the error
                         }
                     };
+
+                    lock (processes)
+                    {
+                        processes.Add(process);
+                    }
+
                     process.Start();
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
                     process.WaitForExit();
+
+                    lock (processes)
+                    {
+                        processes.Remove(process);
+                    }
                 }
-                catch (Exception ex)
+                catch (OperationCanceledException)
                 {
-                    outputHandler("Error executing command: " + ex.Message);
+                    throw;
+                }
+                catch (Exception ex2)
+                {
+                    outputHandler("Error executing command: " + ex2.Message);  // Notify UI with the error
                 }
             });
         }
@@ -195,55 +185,120 @@ namespace ApkInstaller.Helper_classes
             }
         }
 
-        public async Task<bool> UninstallFunction(MainWindow _mainWindow, string _selectedDevice, string appPkg)
+        public async Task StartScreenRecording(string selectedDevice, string localFile)
         {
-            _mainWindow.StatusText.Foreground = Brushes.White;
+            string fileName = DateTime.Now.ToString().Replace("/", "-").Replace(":", "-")
+                .Replace(" ", "_") ?? "";
+            string deviceName = await mainWindow.GetDeviceName(selectedDevice);
+            string remotefile = $"{deviceName}_{fileName}";
+            try
+            {
+                await RunAdbCommandAsync($"screenrecord /sdcard/{deviceName}_{fileName}.mp4", output => { }, selectedDevice, true);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Error during screen recording, try again", "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
+                return;
+            }
+
+            await Task.Delay(1500);
+            TransferRecordedFile(remotefile, deviceName, selectedDevice);
+
+        }
+
+        public async void TransferRecordedFile(string remoteFile, string deviceName, string selectedDevice)
+        {
+            string directoryPath = $"{appPath}\\ScreenRecords\\{deviceName}\\{remoteFile}";
+            string fullPath = Path.Combine(directoryPath, remoteFile + ".mp4");
+            string fileName = remoteFile + ".mp4";
+
+            try
+            {
+                Directory.CreateDirectory(directoryPath);
+                await RunAdbCommandAsync($"pull /sdcard/{fileName} \"{fullPath}\"", output =>
+                {
+                    mainWindow.UpdateStatusText(output);
+                }, selectedDevice);
+                await Task.Delay(500);
+                MessageBoxResult result = MessageBox.Show($"Screen recording saved to: {fullPath}\nDo you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+                if (result == MessageBoxResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = directoryPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error transferring recorded file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Hand);
+            }
+        }
+
+        public async Task RealTimeScreen(string selectedDevice)
+        {
+            await AdbHelper.Instance.RunCommandAsync($"{scrcpyExecutablePath}", $"-s {selectedDevice}", output =>
+            {
+                mainWindow.UpdateStatusText(output);
+            });
+        }
+
+        private void EndRealTimeScreen()
+        {
+            AdbHelper.Instance.StopCommand();
+        }
+
+        public async Task<bool> UninstallFunction(string _selectedDevice, string appPkg)
+        {
+            mainWindow.StatusText.Foreground = Brushes.White;
             string result = "";
             string appName = await GetAppName(appPkg, _selectedDevice);
-            await RunAdbCommandAsync($"uninstall {appPkg}", _selectedDevice, false, output =>
+            await RunAdbCommandAsync($"uninstall {appPkg}", output =>
             {
 #if DEBUG
-                _mainWindow.UpdateStatusText(output);
+                mainWindow.UpdateStatusText(output);
 #endif
                 result += output;
-            });
+            }, _selectedDevice);
             if (result.Contains("Success"))
             {
                 appName = Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(appName));
-                _mainWindow.UpdateStatusText($"The app {appName} was succesfully uninstalled");
-                _mainWindow.StatusText.Foreground = Brushes.Green;
+                mainWindow.UpdateStatusText($"The app {appName} was succesfully uninstalled");
+                mainWindow.StatusText.Foreground = Brushes.Green;
                 Directory.Delete($"{appPath}/apk", true);
                 return true;
             }
             else
             {
-                _mainWindow.UpdateStatusText($"The app {appPkg} was not uninstalled, check the package's name and try again");
-                _mainWindow.StatusText.Foreground = Brushes.Red;
+                mainWindow.UpdateStatusText($"The app {appPkg} was not uninstalled, check the package's name and try again");
+                mainWindow.StatusText.Foreground = Brushes.Red;
                 Directory.Delete($"{appPath}/apk", true);
                 return false;
             }
         }
 
-        public async Task ClearAppFunction(MainWindow _mainWindow, string _selectedDevice, string appPkg)
+        public async Task ClearAppFunction(string _selectedDevice, string appPkg)
         {
-            _mainWindow.StatusText.Foreground = Brushes.White;
+            mainWindow.StatusText.Foreground = Brushes.White;
             string result = "";
             string appName = await GetAppName(appPkg, _selectedDevice);
-            await RunAdbCommandAsync($"pm clear {appPkg}", _selectedDevice, true, output =>
+            await RunAdbCommandAsync($"pm clear {appPkg}", output =>
             {
-                _mainWindow.UpdateStatusText(output);
+                mainWindow.UpdateStatusText(output);
                 result += output;
-            });
+            }, _selectedDevice, true);
             if (result.Contains("Success"))
             {
                 appName = Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(appName));
-                _mainWindow.UpdateStatusText($"The app {appName} was succesfully cleared");
-                _mainWindow.StatusText.Foreground = Brushes.Green;
+                mainWindow.UpdateStatusText($"The app {appName} was succesfully cleared");
+                mainWindow.StatusText.Foreground = Brushes.Green;
             }
             else
             {
-                _mainWindow.UpdateStatusText($"The app {appPkg} was not cleared, check the package's name and try again");
-                _mainWindow.StatusText.Foreground = Brushes.Red;
+                mainWindow.UpdateStatusText($"The app {appPkg} was not cleared, check the package's name and try again");
+                mainWindow.StatusText.Foreground = Brushes.Red;
             }
             Directory.Delete($"{appPath}/apk", true);
         }
@@ -255,16 +310,16 @@ namespace ApkInstaller.Helper_classes
             string apkName = "";
             string appName = "";
             string outputCommand = "";
-            await RunAdbCommandAsync($"pm list package -f {appPkg}", _selectedDevice, true, output =>
+            await RunAdbCommandAsync($"pm list package -f {appPkg}", output =>
             {
                 apkFilePath += output;
-            });
+            }, _selectedDevice, true);
             appName = RegexFunction($@"package:(/data/app/~~.*?)/base\.apk={appPkg}", apkFilePath);
             if (!string.IsNullOrEmpty(appName))
             {
                 apkName = appName + "/base.apk";
-                await RunAdbCommandAsync($"pull {apkName} {appPath}/apk/base.apk", _selectedDevice, false, output => { });
-                await RunCommandAsync("aapt", $"d badging {appPath}/apk/base.apk", output => { outputCommand += output; });
+                await RunAdbCommandAsync($"pull {apkName} {appPath}/apk/base.apk", output => { }, _selectedDevice, false);
+                await RunCommandAsync($"{aaptExecutablePath}", $"d badging {appPath}/apk/base.apk", output => { outputCommand += output; });
 
                 appName = RegexFunction(@"application-label-en(?:-[a-zA-Z]{2})*:'(.*?)'(?:application-label|$)", Encoding.UTF8.GetString(Encoding.GetEncoding("ISO-8859-1").GetBytes(outputCommand)));
             }
