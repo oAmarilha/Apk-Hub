@@ -8,8 +8,8 @@
         ResizeMode="CanMinimize"
         Title="" Height="100" Width="500">
     <Grid>
-        <TextBlock x:Name="TextTitle" Text="" TextAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,5,0,0" Width="75" Height="30"/>
-        <TextBox x:Name="App_Pkg" Padding="0,5,0,0" Height="30" Width="380" HorizontalAlignment="Left" Margin="10,20,0,0" BorderThickness="1,1,1,1" MaxLength="50" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="TextBox_TextChanged" KeyDown="Enter_Key"/>
+        <TextBlock x:Name="TextTitle" TextAlignment="Left" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,5,0,0" Padding="5,0" Width="100" Height="30"><Run Language="pt-br"/></TextBlock>
+        <TextBox x:Name="App_Pkg" Padding="0,5,0,0" Height="30" Width="380" HorizontalAlignment="Left" Margin="10,20,0,0" BorderThickness="1,1,1,1" MaxLength="100" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" KeyDown="Enter_Key"/>
         <Button x:Name="Send_Command" Content="" VerticalAlignment="Center" HorizontalAlignment="Right" Width="80" Height="30" Margin="0,20,10,0" Click="Action_Button_Click"/>
     </Grid>
 </Window>

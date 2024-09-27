@@ -3,6 +3,7 @@ using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Media;
 using System.Windows;
@@ -503,7 +504,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
             if (!string.IsNullOrEmpty(message))
             {
-                StatusText.Text += message + Environment.NewLine;
+                //Add time in terminal log?
+                //string currentDateTime = DateTime.Now.ToString("[MM-dd HH:mm:ss.fff]");
+                StatusText.Text += /* $"{currentDateTime}\n" + */ message + Environment.NewLine;
             }
 
             StatusText.ScrollToEnd();
@@ -586,6 +589,30 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             {
                 button.IsEnabled = action;
             }
+        }
+    }
+
+    private void Save_Click(object sender, RoutedEventArgs e)
+    {
+        string output = StatusText.Text;
+        if (!string.IsNullOrEmpty(output))
+        {
+            string path = $"{appPath}\\Output";
+            Directory.CreateDirectory(path);
+            File.WriteAllText($"{path}\\StatusOutputText.txt", output);
+            if (ShowMessage($"File Saved in: {path}\\StatusOutputText.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
+            {
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = $"{path}\\StatusOutputText.txt",
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+        }
+        else
+        {
+            ShowMessage("There is no output available", "Output empty");
         }
     }
 }

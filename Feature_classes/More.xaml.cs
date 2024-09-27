@@ -154,5 +154,17 @@ namespace ApkInstaller
                 pkgActionWindow.Show();
             }
         }
+
+        private void Run_Adb_Click(object sender, RoutedEventArgs e)
+        {
+            if ((pkgActionWindow == null || !pkgActionWindow.IsVisible) && _mainWindow.DevicesComboBox.SelectedItem != null)
+            {
+                pkgActionWindow = new PkgAction(_mainWindow, this, _selectedDevice);
+                pkgActionWindow.Title = "Run your adb command";
+                pkgActionWindow.TextTitle.Text = "Adb command:";
+                pkgActionWindow.Send_Command.Content = "Run";
+                pkgActionWindow.Show();
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ApkInstaller.Helper_classes;
 using System.ComponentModel;
+using System.Media;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -67,8 +68,29 @@ namespace ApkInstaller
         private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             Regex regex = new Regex("^[a-zA-Z.]+$");
-            e.Handled = !regex.IsMatch(e.Text);
+            e.Handled = !regex.IsMatch(e.Text);   
         }
+
+        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            TextBox textBox = App_Pkg;
+
+            // Verifica se a tecla de espaço foi pressionada
+            if (e.Key == Key.Space)
+            {
+                // Bloqueia espaço no início do TextBox
+                if (textBox.Text.Length == 0)
+                {
+                    e.Handled = true;
+                }
+                // Bloqueia dois espaços consecutivos
+                else if (textBox.Text.EndsWith(" "))
+                {
+                    e.Handled = true;
+                }
+            }
+        }
+
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -76,7 +98,7 @@ namespace ApkInstaller
             string text = textBox.Text;
 
             // Convert the text to lowercase
-            //textBox.Text = text.ToLower();
+            textBox.Text = text.ToLower();
 
             // Set the caret index back to its original position
             textBox.CaretIndex = caretIndex;
@@ -146,6 +168,45 @@ namespace ApkInstaller
             else
             {
                 _mainWindow.ShowMessage("You need inform the package to be cleared", "App not informed", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            Send_Command.IsEnabled = true;
+            App_Pkg.IsEnabled = true;
+            App_Pkg.Focus();
+        }
+
+        private async void Run_Action()
+        {
+            object? command_output = null;
+            _mainWindow.UpdateStatusText(clear: true);
+
+            if (App_Pkg.Text != string.Empty)
+            {
+                string input = App_Pkg.Text.Trim();
+                if (input != "shell" && !input.Contains("logcat"))
+                {
+                    _mainWindow.UpdateStatusText($"Executing '{App_Pkg.Text.Trim()}' command\n", clear: true);
+                    Send_Command.IsEnabled = false;
+                    App_Pkg.IsEnabled = false;
+                    await AdbHelper.Instance.RunAdbCommandAsync(App_Pkg.Text.Trim(), output =>
+                    {
+                        _mainWindow.UpdateStatusText(output);
+                        command_output += output;
+                    }, _selectedDevice);
+                    if (command_output is string str && (str.ToLower().Contains("unknown command") || str.ToLower().Contains("inaccessible or not found") || str.ToLower().Contains("error:")))
+                    {
+                        command_output = null;
+                    }
+                }
+                if (command_output == null)
+                {
+                    _mainWindow.UpdateStatusText("Invalid command",isError: true);
+                    SystemSounds.Exclamation.Play();
+                }
+            }
+            else
+            {
+                _mainWindow.ShowMessage("You need inform the command to be executed", "Command not informed", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             Send_Command.IsEnabled = true;
