@@ -40,9 +40,9 @@
             <ColumnDefinition Width="*"/>
             <!-- Ajustado para ocupar o restante do espaço -->
         </Grid.ColumnDefinitions>
-
+    
         <!-- Título -->
-        <Label Name="Title" Content="Select APK Files:" Margin="20" FontWeight="SemiBold" FontSize="16" Height="35" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+        <Label Name="SelectAPk" Content="Select APK Files:" Margin="20" FontWeight="SemiBold" FontSize="16" Height="35" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
 
         <!-- Lista de APKs -->
         <ListBox Name="ApkFilesList" AllowDrop="True" FontSize="15" Padding="5,5" Margin="20,0,20,0" Height="160" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" DragOver="Grid_DragOver" Drop="Grid_Drop" d:ItemsSource="{d:SampleData ItemCount=5}" BorderThickness="1" BorderBrush="Gray">

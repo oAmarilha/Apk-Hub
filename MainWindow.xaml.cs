@@ -600,7 +600,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             string path = $"{appPath}\\Output";
             Directory.CreateDirectory(path);
             File.WriteAllText($"{path}\\StatusOutputText.txt", output);
-            if (ShowMessage($"File Saved in: {path}\\StatusOutputText.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
+            if (ShowMessage($"File Saved at: {path}\\StatusOutputText.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
             {
                 Process.Start(new ProcessStartInfo()
                 {

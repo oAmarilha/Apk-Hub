@@ -6,20 +6,23 @@
         xmlns:local="clr-namespace:ApkInstaller" 
         ResizeMode="CanMinimize" 
         Title="Kids" 
-        Height="180" 
+        Height="240" 
         Width="250">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <Button Name="ClearPKG" Grid.Row="0" Grid.Column="0" Content="Clear Pkg" Height="35" Width="90" Click="ClearPkg_Button" />
-        <Button Name="Uninstall" Grid.Row="1" Grid.Column="0" Content="Uninstall" Height="35" Width="90" Click="Uninstall_Button" />
-        <Button Name="Clear_Logcat" Grid.Row="0" Grid.Column="1" Content="Logcat Clear" Height="35" Width="90" Click="LogcatClear_Button" />
+        <Button Name="Automation" Grid.Row="0" Grid.Column="0" Content="Automation" Height="35" Width="90" Click="Automation_Click" />
+        <Button Name="ClearPKG" Grid.Row="0" Grid.Column="1" Content="Clear Pkg" Height="35" Width="90" Click="ClearPkg_Button" />
+        <Button Name="Clear_Logcat" Grid.Row="1" Grid.Column="0" Content="Logcat Clear" Height="35" Width="90" Click="LogcatClear_Button" />
         <Button Name="Logcat_View" Grid.Row="1" Grid.Column="1" Content="Logcat View" Height="35" Width="90" Click="LogcatView_Button" />
+        <Button Name="Uninstall" Grid.Row="2" Grid.Column="0" Content="Uninstall" Height="35" Width="90" Click="Uninstall_Button" />
+        <Button Name="TBD" Grid.Row="2" Grid.Column="1" Content="TBD" Height="35" Width="90" IsEnabled="False" />
     </Grid>
 </Window>

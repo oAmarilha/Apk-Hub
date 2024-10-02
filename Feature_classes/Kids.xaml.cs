@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -18,6 +19,8 @@ public partial class Kids : Window, IComponentConnector
 	private CancellationTokenSource _cancellationTokenSource;
 
 	private AppWindow? _appWindow;
+
+	private Automation? _automationWindow;
 
 	public Kids(MainWindow mainWindow, string selectedDevice)
 	{
@@ -106,4 +109,13 @@ public partial class Kids : Window, IComponentConnector
 	{
 		OpenAppWindow("logcat", shell: false);
 	}
+
+    private void Automation_Click(object sender, RoutedEventArgs e)
+    {
+		if (_automationWindow == null)
+		{
+			_automationWindow = new Automation();
+			_automationWindow.Show();
+		}
+    }
 }

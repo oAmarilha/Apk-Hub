@@ -7,6 +7,9 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Feature_classes\Automation.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Feature_classes\AppWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -27,6 +30,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Feature_classes\Automation.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Feature_classes\AppWindow.xaml">
       <SubType>Designer</SubType>
     </Page>

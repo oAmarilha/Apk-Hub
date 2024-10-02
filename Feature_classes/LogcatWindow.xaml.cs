@@ -157,7 +157,7 @@ public partial class LogcatWindow : Window, IComponentConnector
             string contents = LogcatTextBox.Text.ToString();
             string text = $"{appPath}\\Logcat\\{_filter}\\{value}";
             File.WriteAllText($"{text}\\{_filter}_{value}.txt", contents);
-            if (_mainWindow.ShowMessage($"File Saved in: {text}\\{_filter}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
+            if (_mainWindow.ShowMessage($"File Saved at: {text}\\{_filter}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
             {
                 Process.Start(new ProcessStartInfo()
                 {

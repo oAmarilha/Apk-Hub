@@ -1,9 +1,5 @@
-﻿using System.Configuration;
-using System.Data;
-using System;
-using System.IO;
+﻿using System.IO;
 using System.Windows;
-using System.Threading.Tasks;
 
 namespace ApkInstaller
 {
@@ -18,6 +14,8 @@ namespace ApkInstaller
         {
             fileNamePath = Path.Combine(logFilePath, "crash_log.txt");
             base.OnStartup(e);
+            Automation window = new Automation();
+            window.Show();
 
             // Registrar manipulação de exceções não tratadas para o AppDomain
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
