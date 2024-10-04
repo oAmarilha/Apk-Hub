@@ -18,7 +18,7 @@
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <Button Name="Automation" Grid.Row="0" Grid.Column="0" Content="Automation" Height="35" Width="90" Click="Automation_Click" />
+        <Button Name="AutomationButton" Grid.Row="0" Grid.Column="0" Content="Automation" Height="35" Width="90" Click="Automation_Click" />
         <Button Name="ClearPKG" Grid.Row="0" Grid.Column="1" Content="Clear Pkg" Height="35" Width="90" Click="ClearPkg_Button" />
         <Button Name="Clear_Logcat" Grid.Row="1" Grid.Column="0" Content="Logcat Clear" Height="35" Width="90" Click="LogcatClear_Button" />
         <Button Name="Logcat_View" Grid.Row="1" Grid.Column="1" Content="Logcat View" Height="35" Width="90" Click="LogcatView_Button" />

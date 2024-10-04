@@ -1,3 +1,5 @@
 **/.vs/
 **/bin/
 ***/obj/
+**./Python/scripts/__pycache__/**
+**./Python/scripts/apps/__pycache__/**

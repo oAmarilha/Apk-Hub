@@ -30,6 +30,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
     public static MainWindow Instance { get; private set; } = null!;
 
+    private List<Window> childWindows = new List<Window>();
+
     public MainWindow()
     {
         InitializeComponent();
@@ -38,9 +40,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         base.Loaded += MainWindow_Loaded;
         Instance = this;
         Install_Button.Content = "Install APKs";
-#if !DEBUG
         base.Closing += MainWindow_Closing;
-#endif
+
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -85,6 +86,13 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 }
             }
         });
+    }
+
+    private T OpenChildWindow<T>(T childWindow) where T : Window
+    {
+        childWindows.Add(childWindow); // Adiciona a janela filha à lista
+        childWindow.Closed += (s, e) => childWindows.Remove(childWindow); // Remove da lista quando fechada
+        return childWindow;
     }
 
     private string? CheckDeviceComboBox()
@@ -426,7 +434,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
         else if (kidsWindow == null || !kidsWindow.IsVisible)
         {
-            kidsWindow = new Kids(this, GetDeviceSerialByName(device));
+            kidsWindow = OpenChildWindow(new Kids(this, GetDeviceSerialByName(device)));
             ShowWindow(kidsWindow, 250, moreWindow, settingsWindow);
             Button_Status([Install_Button, ParentalCare_Button, Browse_Button], [false, false, false]);
             DevicesComboBox.IsEnabled = false;
@@ -459,7 +467,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
         else if (settingsWindow == null || !settingsWindow.IsVisible)
         {
-            settingsWindow = new Settings(this, GetDeviceSerialByName(device));
+            settingsWindow = OpenChildWindow(new Settings(this, GetDeviceSerialByName(device)));
             ShowWindow(settingsWindow, 220, moreWindow, kidsWindow);
             ApkFilesList.IsEnabled = false;
             Button_Status([Install_Button, Kids_Button, Browse_Button], [false, false, false]);
@@ -528,7 +536,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
         else if (moreWindow == null)
         {
-            moreWindow = new More(this, GetDeviceSerialByName(device), settingsWindow, kidsWindow);
+            moreWindow = OpenChildWindow(new More(this, GetDeviceSerialByName(device), settingsWindow, kidsWindow));
             ShowWindow(moreWindow, 250, settingsWindow, kidsWindow);
             DevicesComboBox.IsEnabled = false;
             moreWindow.Closed += MoreWindow_Closed;
@@ -571,9 +579,24 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         this.Activate();
     }
 
-    private async void MainWindow_Closing(object? sender, CancelEventArgs e)
+    private void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
+#if !DEBUG
         await AdbHelper.Instance.RunAdbCommandAsync("kill-server", output => { }, generalCommand: true);
+#endif
+        // Cria uma lista temporária para armazenar as janelas a serem fechadas
+        var windowsToClose = new List<Window>(childWindows);
+
+        // Itera sobre a lista temporária
+        foreach (var child in windowsToClose)
+        {
+            // Verifica se a janela está aberta antes de chamá-la
+            if (child.IsVisible)
+            {
+                child.Close(); // Fecha a janela filha
+            }
+        }
+        Application.Current.Shutdown();
     }
 
     /// <summary>

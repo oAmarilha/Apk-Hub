@@ -20,9 +20,10 @@ public partial class Kids : Window, IComponentConnector
 
 	private AppWindow? _appWindow;
 
-	private Automation? _automationWindow;
+	public Automation? _automationWindow;
 
-	public Kids(MainWindow mainWindow, string selectedDevice)
+    private List<Window> childWindows = new List<Window>();
+    public Kids(MainWindow mainWindow, string selectedDevice)
 	{
 		InitializeComponent();
 		_mainWindow = mainWindow;
@@ -32,8 +33,27 @@ public partial class Kids : Window, IComponentConnector
         base.Closing += ClosingWindow;
 	}
 
-	private void ClosingWindow(object? sender, CancelEventArgs e)
+    private T OpenChildWindow<T>(T childWindow) where T : Window
     {
+        childWindows.Add(childWindow); // Adiciona a janela filha à lista
+        childWindow.Closed += (s, e) => childWindows.Remove(childWindow); // Remove da lista quando fechada
+        return childWindow;
+    }
+
+    private void ClosingWindow(object? sender, CancelEventArgs e)
+    {
+        // Cria uma lista temporária para armazenar as janelas a serem fechadas
+        var windowsToClose = new List<Window>(childWindows);
+
+        // Itera sobre a lista temporária
+        foreach (var child in windowsToClose)
+        {
+            // Verifica se a janela está aberta antes de chamá-la
+            if (child.IsVisible)
+            {
+                child.Close(); // Fecha a janela filha
+            }
+        }
         _mainWindow.ActivateDevicesBox();
 		_cancellationTokenSource.Cancel();
 		_mainWindow.ParentalCare_Button.IsEnabled = true;
@@ -49,7 +69,7 @@ public partial class Kids : Window, IComponentConnector
 			_appWindow.Close();
 			_appWindow = null;
 		}
-		_appWindow = new AppWindow(this, _selectedDevice, _mainWindow, actionType, shell);
+		_appWindow = OpenChildWindow(new AppWindow(this, _selectedDevice, _mainWindow, actionType, shell));
 		_appWindow.Closing += AppWindow_Closing;
 		_appWindow.Owner = this;
 		_appWindow.Left = base.Left;
@@ -114,8 +134,18 @@ public partial class Kids : Window, IComponentConnector
     {
 		if (_automationWindow == null)
 		{
-			_automationWindow = new Automation();
+			_automationWindow = OpenChildWindow(new Automation());
 			_automationWindow.Show();
+            Hide();
+			_mainWindow.Hide();
+            _automationWindow.Closing += _automationWindow_Closing;
 		}
+    }
+
+    private void _automationWindow_Closing(object? sender, CancelEventArgs e)
+    {
+        _automationWindow = null;
+        Show();
+		_mainWindow.Show() ;
     }
 }

@@ -14,8 +14,6 @@ namespace ApkInstaller
         {
             fileNamePath = Path.Combine(logFilePath, "crash_log.txt");
             base.OnStartup(e);
-            Automation window = new Automation();
-            window.Show();
 
             // Registrar manipulação de exceções não tratadas para o AppDomain
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;

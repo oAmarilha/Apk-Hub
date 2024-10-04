@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Title="Automation" Height="700" Width="750">
-    <Grid>
+    <Grid Name="AutomationGrid">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -22,17 +22,17 @@
         </Grid.ColumnDefinitions>
 
         <!-- Apk List -->
-        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <StackPanel x:Name="AppsStackPanel" Orientation="Vertical" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Stretch">
             <Label Name="AppSelector" Content="Select an App:" Grid.Row="0" Grid.Column="0" FontSize="15" HorizontalAlignment="Center" FontWeight="Bold" Margin="10"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Bobby's Canvas" />
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Crocro's Adventure"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Crocro's Friends Village"/>
+            <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Lisa's Music Band"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Art Studio"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Browser"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Camera"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Gallery"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Magic Voice"/>
-            <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Music Band"/>
             <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="My Phone"/>
 
         </StackPanel>
@@ -65,17 +65,17 @@
                 <TextBlock Text="UI Mode:" Foreground="Black" VerticalAlignment="Center" FontSize="15" Height="20" Margin="10,5,10,10"/>
                 <TextBlock Text="Resolution:" Foreground="Black" VerticalAlignment="Center" FontSize="15" Height="20" Margin="10,5,10,10"/>
             </StackPanel>
-            <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0,10,0,10"> 
-                    <TextBox Name="DeviceModelText" Text="SM-S908E" IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
-                    <TextBox Name="AndroidVersionText" Text="14" IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
-                    <TextBox Name="BuildModeText" Text="Engineering" IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
-                    <TextBox Name="UiModeText" Text="Light Theme" IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
-                    <TextBox Name="ResolutionText" Text="1800 x 2316" IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
+            <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0,10,0,10">
+                <TextBox Name="DeviceModelText" Text="Loading..." IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
+                    <TextBox Name="AndroidVersionText" Text="Loading..." IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
+                    <TextBox Name="BuildModeText" Text="Loading..." IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
+                    <TextBox Name="UiModeText" Text="Loading..." IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
+                    <TextBox Name="ResolutionText" Text="Loading..." IsReadOnly="True" BorderThickness="0" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Height="20" MinHeight="20" Margin="5,5,5,10" Padding="0"/>
             </StackPanel>
         </Grid>
         <!-- Control Buttons -->
-        <UniformGrid Grid.ColumnSpan="3" Grid.Row="1" Columns="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,10">
-            <Button Name="Start_Stop" Content="Start" Height="30" Margin="10" Background="Green" Foreground="White"/>
+        <UniformGrid x:Name="Buttons" Grid.ColumnSpan="3" Grid.Row="1" Columns="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,10">
+            <Button Name="Start_Stop" Content="Start" Height="30" Margin="10" Background="Green" Foreground="White" Click="Start_Stop_Click"/>
             <Button Name="Visualize" Content="Visualize" Height="30" Margin="10" Background="Blue" Foreground="White"/>
             <Button Name="Clear" Content="Clear" Height="30" Margin="10"/>
             <Button Name="Open_Report" Content="Open Report" Height="30" Margin="10"/>

@@ -46,10 +46,14 @@
 	<None Update="adb\**\*">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
+	<None Update="Python\**\*">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="adb\" />
+    <Folder Include="Python\reports\" />
   </ItemGroup>
 
 </Project>
