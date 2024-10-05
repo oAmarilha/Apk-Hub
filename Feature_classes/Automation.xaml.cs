@@ -9,6 +9,8 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System.Windows.Media;
 using System.Windows.Controls.Primitives;
+using System.Text;
+using System.Windows.Threading;
 
 namespace ApkInstaller
 {
@@ -17,6 +19,9 @@ namespace ApkInstaller
         MainWindow mainWindow = MainWindow.Instance;
         private dynamic executorInstance;
         private dynamic sys;
+        private DispatcherTimer outputTimer;
+        private StringBuilder outputBuffer = new StringBuilder();
+        private bool isScrollingToEnd = true; // Controle para saber se devemos rolar para o fim
 
         // Fila de tarefas para garantir que tudo seja processado na mesma thread do Python
         private readonly BlockingCollection<Action> pythonTaskQueue = new BlockingCollection<Action>();
@@ -81,26 +86,30 @@ namespace ApkInstaller
                     {
                         StatusText.Text = "Initializing Python AirTest, please wait...";
                     });
+
                     sys = Py.Import("sys");
                     sys.path.append(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Python\\scripts"));
 
                     dynamic pythonScript = Py.Import("executor");
                     executorInstance = pythonScript.Executor();
+
+                    // Obtém informações do executor
                     string model = executorInstance.model.ToString();
                     string androidVersion = executorInstance.osVersion.ToString();
                     string buildMode = executorInstance.build.ToString();
                     string themeMode = executorInstance.themeMode.ToString();
                     PyTuple res = executorInstance.res;
                     string resolution = $"{res[0].ToString()} x {res[1].ToString()}";
-                    // Atualizar a UI com o modelo do dispositivo
+
+                    // Atualiza a UI com o modelo do dispositivo
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         DeviceModelText.Text = model;
                         AndroidVersionText.Text = androidVersion;
                         BuildModeText.Text = buildMode;
-                        UiModeText.Text= themeMode;
+                        UiModeText.Text = themeMode;
                         ResolutionText.Text = resolution;
-                        StatusText.Text = "Initializing Finished";
+                        StatusText.Text = "Python Airtest correctly initialized";
                         StatusText.Foreground = Brushes.Green;
                         ToogleElements(AutomationGrid, true);
                     });
@@ -118,6 +127,24 @@ namespace ApkInstaller
             });
 
             pythonThread.Start();
+        }
+
+        private void UpdateOutput()
+        {
+            // Lê a saída do log e atualiza a TextBox
+            string log_output = executorInstance.log_stream.getvalue(); // Lê o valor do StringIO
+            if (!string.IsNullOrEmpty(log_output))
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    StatusText.Text += log_output; // Atualiza a TextBox
+                    StatusText.ScrollToEnd();
+                });
+
+                // Limpa o log_stream para evitar repetição
+                executorInstance.log_stream.truncate(0);
+                executorInstance.log_stream.seek(0);
+            }
         }
 
         private void Automation_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -152,10 +179,23 @@ namespace ApkInstaller
         // Função que roda o script Python de maneira assíncrona
         private async Task RunPythonScriptAsync(List<string> appInstance)
         {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ToogleElements(AutomationGrid, false);
+                StatusText.Text = string.Empty;
+                    StatusText.Foreground = Brushes.White;
+            });
+            // Inicie o timer para capturar a saída em tempo real
+            outputTimer = new DispatcherTimer();
+            outputTimer.Interval = TimeSpan.FromMilliseconds(100); // Atualiza a cada 100 ms
+            outputTimer.Tick += (s, e) => UpdateOutput();
+            outputTimer.Start();
+
             await ExecutePythonActionAsync(() =>
             {
                 using (Py.GIL())
                 {
+
                     executorInstance.app_instance = appInstance;
                     try
                     {
@@ -166,9 +206,14 @@ namespace ApkInstaller
                         Console.WriteLine(ex.ToString());
                     }
 
-                    string output = executorInstance.log_stream.getvalue().ToString();
-                    File.WriteAllText(".\\Python\\output.txt", output);
+                    //string output = executorInstance.log_stream.getvalue().ToString();
+                    //File.WriteAllText(".\\Python\\output.txt", output);
                 }
+            });
+            outputTimer.Stop();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ToogleElements(AutomationGrid, true);
             });
         }
 

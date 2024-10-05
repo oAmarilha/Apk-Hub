@@ -81,6 +81,6 @@
             <Button Name="Open_Report" Content="Open Report" Height="30" Margin="10"/>
             <Button Name="Export_Report" Content="Export Report" Height="30" Margin="10"/>
         </UniformGrid>
-        <TextBox Name="StatusText" Margin="20,0,20,20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" TextWrapping="Wrap" FontSize="20" FontFamily="Consolas" Foreground="#FFFFFFFF" Background="#FF000000" VerticalScrollBarVisibility="Auto" FontWeight="Bold" BorderThickness="1" BorderBrush="Gray" Padding="10,10" Grid.Row="3" Grid.ColumnSpan="3"/>
+        <TextBox Name="StatusText" Margin="20,0,20,20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" TextWrapping="Wrap" FontSize="20" FontFamily="Consolas" Foreground="#FFFFFFFF" Background="#FF000000" VerticalScrollBarVisibility="Auto" FontWeight="Bold" BorderThickness="1" BorderBrush="Gray" Padding="10,10" Grid.Row="3" Grid.ColumnSpan="3" Focusable="False"/>
     </Grid>
 </Window>

@@ -28,7 +28,7 @@ class KidsGallery(Application):
                     result(res, osVer, uiMode, buildMode)
                 except:
                     print(f"error executing {str(result)}")
-                    #self.stopRecording() #end recording
+                    self.stopRecording() #end recording
                     return
                 
         self.stopRecording() #end recording
