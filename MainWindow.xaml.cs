@@ -579,7 +579,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         this.Activate();
     }
 
-    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    private async void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
 #if !DEBUG
         await AdbHelper.Instance.RunAdbCommandAsync("kill-server", output => { }, generalCommand: true);

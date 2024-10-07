@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Controls.Primitives;
 using System.Text;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace ApkInstaller
 {
@@ -21,11 +22,12 @@ namespace ApkInstaller
         private dynamic sys;
         private DispatcherTimer outputTimer;
         private StringBuilder outputBuffer = new StringBuilder();
-        private bool isScrollingToEnd = true; // Controle para saber se devemos rolar para o fim
+        private bool isRunning = false;
 
         // Fila de tarefas para garantir que tudo seja processado na mesma thread do Python
         private readonly BlockingCollection<Action> pythonTaskQueue = new BlockingCollection<Action>();
 
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         // Thread dedicada ao Python
         private Thread pythonThread;
 
@@ -49,7 +51,7 @@ namespace ApkInstaller
             this.Owner = mainWindow;
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
-            Runtime.PythonDLL = @"C:\Users\v.amarilha\appdata\local\Programs\Python\Python312\python312.dll";
+            Runtime.PythonDLL = @$"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Programs\Python\Python312\python312.dll";
 
             // Inicializar a thread Python
             InitializePythonThread();
@@ -75,6 +77,8 @@ namespace ApkInstaller
         // Inicializa a thread dedicada ao Python
         private void InitializePythonThread()
         {
+            cancellationTokenSource = new CancellationTokenSource(); // Inicializa o token de cancelamento
+
             ToogleElements(AutomationGrid, false);
             pythonThread = new Thread(() =>
             {
@@ -92,6 +96,7 @@ namespace ApkInstaller
 
                     dynamic pythonScript = Py.Import("executor");
                     executorInstance = pythonScript.Executor();
+                    executorInstance.new_request();
 
                     // Obtém informações do executor
                     string model = executorInstance.model.ToString();
@@ -116,14 +121,23 @@ namespace ApkInstaller
                 }
 
                 // Fila de tarefas: processa as tarefas enviadas à fila
-                while (!pythonTaskQueue.IsCompleted)
+                while (!pythonTaskQueue.IsCompleted && !cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    if (pythonTaskQueue.TryTake(out var task))
+                    if (pythonTaskQueue.TryTake(out var task, Timeout.Infinite, cancellationTokenSource.Token))
                     {
-                        task(); // Executa a tarefa Python
+                        try
+                        {
+                            task(); // Executa a tarefa Python
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // A operação foi cancelada, saia do loop
+                            break;
+                        }
                     }
                 }
                 PythonEngine.Shutdown();
+                Application.Current.Dispatcher.Invoke(() => StatusText.Text = "Python stopped");
             });
 
             pythonThread.Start();
@@ -149,9 +163,7 @@ namespace ApkInstaller
 
         private void Automation_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            // Fecha a fila e aguarda o término da thread Python
-            pythonTaskQueue.CompleteAdding();
-            pythonThread.Join();
+            StopPythonExecution();
         }
 
         // Função para executar código Python na thread Python
@@ -179,15 +191,20 @@ namespace ApkInstaller
         // Função que roda o script Python de maneira assíncrona
         private async Task RunPythonScriptAsync(List<string> appInstance)
         {
+            var report = string.Empty;
+            bool isError = false;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                ToogleElements(AutomationGrid, false);
+                //ToogleElements(AutomationGrid, false);
                 StatusText.Text = string.Empty;
-                    StatusText.Foreground = Brushes.White;
+                StatusText.Foreground = Brushes.White;
             });
-            // Inicie o timer para capturar a saída em tempo real
-            outputTimer = new DispatcherTimer();
-            outputTimer.Interval = TimeSpan.FromMilliseconds(100); // Atualiza a cada 100 ms
+
+            // Inicia o timer para capturar a saída em tempo real
+            outputTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
             outputTimer.Tick += (s, e) => UpdateOutput();
             outputTimer.Start();
 
@@ -195,49 +212,111 @@ namespace ApkInstaller
             {
                 using (Py.GIL())
                 {
+                    if (cancellationTokenSource.Token.IsCancellationRequested) return; // Verifica se o cancelamento foi solicitado
 
                     executorInstance.app_instance = appInstance;
                     try
                     {
                         var result = executorInstance.initialSetup();
+                        report = executorInstance.logname.ToString();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Console.WriteLine(ex.ToString());
+                        isError = true;
                     }
-
-                    //string output = executorInstance.log_stream.getvalue().ToString();
-                    //File.WriteAllText(".\\Python\\output.txt", output);
                 }
             });
+
             outputTimer.Stop();
+            isRunning = false;
+            Start_Stop.Content = "Start";
+            Start_Stop.Background = Brushes.Green;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                ToogleElements(AutomationGrid, true);
+                //ToogleElements(AutomationGrid, true);
             });
+
+            if (!isError && !report.Contains("None"))
+            {
+                MessageBoxResult result = MessageBox.Show("Do you want to check the results", "Automation Finished", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                if (result == MessageBoxResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = $"{report}\\log.html",
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+            }
+            else
+            {
+                MessageBox.Show("For some reason the automation was not executed, check the log for more info",
+                    "Error found",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            ToogleElements(AutomationGrid, true);
+        }
+
+        // Função para parar a execução da thread Python
+        private void StopPythonExecution()
+        {
+            // Interrompe o timer de saída, se estiver ativo
+            outputTimer?.Stop();
+            using (Py.GIL())
+            {
+                executorInstance.cancellation_request();
+            }
+            // Solicita o cancelamento da execução Python
+            cancellationTokenSource.Cancel();
+            ToogleElements(AutomationGrid, false);
+            StatusText.Text = "Waiting python to be stopped...";
+            StatusText.Foreground = Brushes.Red;
+            StatusText.ScrollToEnd();
+            isRunning = false;
         }
 
         private async void Start_Stop_Click(object sender, RoutedEventArgs e)
         {
-            List<string> selectedAppValues = new List<string>();
-            List<string> selectedAppNames = new List<string>();
-            List<string> selectedAppInstance = new List<string>();
-
-            foreach (object child in AppsStackPanel.Children)
+            Button? button = sender as Button;
+            if (isRunning)
             {
-                if (child is CheckBox { IsChecked: true } checkBox)
+                // Se a execução estiver em andamento, interrompa-a e altere o conteúdo do botão para "Start"
+                StopPythonExecution();
+                button!.Content = "Start";
+                button!.Background = Brushes.Green;
+            }
+            else
+            {
+                if (cancellationTokenSource.IsCancellationRequested)
                 {
-                    string checkBoxContent = checkBox.Content.ToString();
-                    if (appStringMap.TryGetValue(checkBoxContent, out (string, string, string) value))
+                    InitializePythonThread();
+                }
+                List<string> selectedAppValues = new List<string>();
+                List<string> selectedAppNames = new List<string>();
+                List<string> selectedAppInstance = new List<string>();
+
+                foreach (object child in AppsStackPanel.Children)
+                {
+                    if (child is CheckBox { IsChecked: true } checkBox)
                     {
-                        selectedAppValues.Add(value.Item1);
-                        selectedAppNames.Add(value.Item2);
-                        selectedAppInstance.Add(value.Item3);
+                        string checkBoxContent = checkBox.Content.ToString();
+                        if (appStringMap.TryGetValue(checkBoxContent, out (string, string, string) value))
+                        {
+                            selectedAppValues.Add(value.Item1);
+                            selectedAppNames.Add(value.Item2);
+                            selectedAppInstance.Add(value.Item3);
+                        }
                     }
                 }
-            }
 
-            await RunPythonScriptAsync(selectedAppInstance); // Executa o script Python de forma assíncrona
+                button!.Content = "Stop";  // Altera o conteúdo do botão para "Stop"
+                button!.Background = Brushes.Red;
+                isRunning = true;
+
+                await RunPythonScriptAsync(selectedAppInstance); // Executa o script Python de forma assíncrona
+            }
         }
     }
 }

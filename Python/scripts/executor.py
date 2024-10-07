@@ -34,8 +34,10 @@ class StreamToLogger:
 
 class Executor:
     def __init__(self):
-        if not Path("Python\\reports").exists():
-            os.mkdir("Python\\reports")
+        self.base_path = os.path.join(os.environ["USERPROFILE"], "Documents", "ApkHub", "Log", "Automation")
+        if not Path(f"{self.base_path}").exists():
+            os.mkdir(f"{self.base_path}")
+            os.mkdir(f"{self.base_path}\\reports")
         self.cmdpmt = airtest.cmdpmt
         self.cmdandroid = airtest.cmdandroid
         self.buildMode = self.setBuildMode()
@@ -68,6 +70,7 @@ class Executor:
         logging.basicConfig(stream=self.log_stream, level=logging.DEBUG)
         self.logger = logging.getLogger(__name__)
         sys.stdout = StreamToLogger(self.logger, level=logging.INFO)
+        sys.stderr = StreamToLogger(self.logger, level=logging.ERROR)
         #self.interface()
 
     def initialSetup(self):
@@ -238,6 +241,8 @@ class Executor:
         Get coords from 0 button both portrait and landscape.
         """
         self.cmdpmt.unlock()
+        self.cmdpmt.start_shell("am force-stop com.sec.android.app.kidshome")
+        self.cmdpmt.start_shell("input keyevent KEYCODE_HOME")
         self.changeOrient(0)
         self.cmdpmt.start_shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.parentalcontrol.pin.ui.PinActivity")
         Application.coord.append(("Password_Portrait", self.getPassword()))
@@ -247,6 +252,14 @@ class Executor:
         self.cmdpmt.start_shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity")
         return
     
+    def cancellation_request(self):
+        Application.cancellation_requested = True
+        return
+    
+    def new_request(self):
+        Application.cancellation_requested = False
+        return
+
     #execute all tests of apps in the list
     def execute(self):
 
@@ -254,22 +267,23 @@ class Executor:
         Execute all the test cases in each app added to the queue.
         """
         self.reports = []
-
+        self.logname = None
         for i in self.appList:
-            self.base_path = Path(__file__).resolve().parents[2]
-            self.logname = f"{self.base_path}\\Python\\reports\\log_{self.getDateTime()}_{i.appPkg}"
-            os.mkdir(self.logname)
+            if not Application.cancellation_requested:
+                self.logname = f"{self.base_path}\\reports\\log_{self.getDateTime()}_{i.appPkg}"
+                os.mkdir(self.logname)
 
-            auto_setup(__file__, logdir=self.logname) #init log 
+                auto_setup(__file__, logdir=self.logname) #init log 
 
-            i.res = self.res
+                i.res = self.res
+                
+                
+                i.executeTest(res = self.res, osVer = self.osVersion, uiMode = self.uiMode, buildMode = self.buildMode)
 
-            i.executeTest(res = self.res, osVer = self.osVersion, uiMode = self.uiMode, buildMode = self.buildMode)
+                simple_report(__file__, logpath = False , logfile = f"{self.logname}\\log.txt",output = f"{self.logname}/log.html") #dump log
 
-            simple_report(__file__, logpath = False , logfile = f"{self.logname}\\log.txt",output = f"{self.logname}/log.html") #dump log
-
-            self.file_path = (f"{self.logname}/log.html")
-            self.reports.append(self.logname)
+                self.file_path = (f"{self.logname}/log.html")
+                self.reports.append(self.logname)
         return
     
     def changeHtml(self, conteudo, busca, substituicao):

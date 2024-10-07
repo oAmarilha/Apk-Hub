@@ -23,6 +23,10 @@ class KidsCanvas(Application):
         self.recordScreen(orientation=2) #start recording 123
         
         for i in dir(self):
+           if self.cancellation_requested:
+                LOGGING.info("Cancellation requested, stopping test case execution.")
+                self.stopRecording()  # Para a gravação de tela
+                return
            if i.startswith('tc_'):
                 result = getattr(self, i) #takes method name starting with self.tc_
                 try:

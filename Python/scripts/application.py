@@ -4,6 +4,7 @@ from pathlib import Path
 
 class Application:
     coord = []
+    cancellation_requested = False
     def __init__(self, appPkg, appName, numTest):
         self.appPkg = appPkg
         self.appName = appName
