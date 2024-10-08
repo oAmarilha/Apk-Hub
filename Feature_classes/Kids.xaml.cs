@@ -23,6 +23,8 @@ public partial class Kids : Window, IComponentConnector
 	public Automation? _automationWindow;
 
     private List<Window> childWindows = new List<Window>();
+
+    private bool isClosing = false;
     public Kids(MainWindow mainWindow, string selectedDevice)
 	{
 		InitializeComponent();
@@ -142,10 +144,15 @@ public partial class Kids : Window, IComponentConnector
 		}
     }
 
-    private void _automationWindow_Closing(object? sender, CancelEventArgs e)
+    private async void _automationWindow_Closing(object? sender, CancelEventArgs e)
     {
+		if (isClosing) return;
+		isClosing = true;
+        await _automationWindow!.StopPythonExecution();
+        _automationWindow.Close();
+		isClosing = false;
         _automationWindow = null;
         Show();
-		_mainWindow.Show() ;
+		_mainWindow.Show();
     }
 }

@@ -64,12 +64,11 @@ namespace ApkInstaller
                 Runtime.PythonDLL = $"{localapp}Python310\\python310.dll";
             }
 
-            Runtime.PythonDLL = @$"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Programs\Python\Python312\python312.dll";
+            //Runtime.PythonDLL = @$"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Programs\Python\Python312\python312.dll";
 
             // Inicializar a thread Python
             InitializePythonThread();
 
-            this.Closing += Automation_Closing;
         }
 
         // Função para habilitar/desabilitar todos os botões
@@ -96,7 +95,6 @@ namespace ApkInstaller
             pythonThread = new Thread(() =>
             {
                 PythonEngine.Initialize();
-
                 using (Py.GIL())
                 {
                     Application.Current.Dispatcher.Invoke(() =>
@@ -134,25 +132,25 @@ namespace ApkInstaller
                 }
 
                 // Fila de tarefas: processa as tarefas enviadas à fila
-                while (!pythonTaskQueue.IsCompleted && !cancellationTokenSource.Token.IsCancellationRequested)
+                while (!pythonTaskQueue.IsCompleted)
                 {
-                    if (pythonTaskQueue.TryTake(out var task, Timeout.Infinite, cancellationTokenSource.Token))
+                    try
                     {
-                        try
+                        if (pythonTaskQueue.TryTake(out var task, Timeout.Infinite, cancellationTokenSource.Token))
                         {
                             task(); // Executa a tarefa Python
                         }
-                        catch (OperationCanceledException)
-                        {
-                            // A operação foi cancelada, saia do loop
-                            break;
-                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Operação cancelada, saia do loop
+                        break;
                     }
                 }
                 PythonEngine.Shutdown();
-                Application.Current.Dispatcher.Invoke(() => StatusText.Text = "Python stopped");
+                bool test2 = PythonEngine.IsInitialized;
+                if (this.IsVisible) Application.Current.Dispatcher.Invoke(() => StatusText.Text = "Python stopped");
             });
-
             pythonThread.Start();
         }
 
@@ -172,11 +170,6 @@ namespace ApkInstaller
                 executorInstance.log_stream.truncate(0);
                 executorInstance.log_stream.seek(0);
             }
-        }
-
-        private void Automation_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
-        {
-            StopPythonExecution();
         }
 
         // Função para executar código Python na thread Python
@@ -249,7 +242,7 @@ namespace ApkInstaller
                 //ToogleElements(AutomationGrid, true);
             });
 
-            if (!isError && !report.Contains("None"))
+            if (!isError && !report.Contains("None") && this.IsVisible)
             {
                 MessageBoxResult result = MessageBox.Show("Do you want to check the results", "Automation Finished", MessageBoxButton.YesNo, MessageBoxImage.Information);
                 if (result == MessageBoxResult.Yes)
@@ -262,7 +255,7 @@ namespace ApkInstaller
                     });
                 }
             }
-            else
+            else if (this.IsVisible)
             {
                 MessageBox.Show("For some reason the automation was not executed, check the log for more info",
                     "Error found",
@@ -273,20 +266,27 @@ namespace ApkInstaller
         }
 
         // Função para parar a execução da thread Python
-        private void StopPythonExecution()
+        public async Task StopPythonExecution()
         {
-            // Interrompe o timer de saída, se estiver ativo
-            outputTimer?.Stop();
-            using (Py.GIL())
+            if (isRunning)
             {
-                executorInstance.cancellation_request();
+                outputTimer.Stop();
+                using (Py.GIL())
+                {
+                    executorInstance.cancellation_request();
+                }
             }
-            // Solicita o cancelamento da execução Python
-            cancellationTokenSource.Cancel();
-            ToogleElements(AutomationGrid, false);
-            StatusText.Text = "Waiting python to be stopped...";
-            StatusText.Foreground = Brushes.Red;
-            StatusText.ScrollToEnd();
+            await Task.Run(() =>
+            {
+                pythonTaskQueue.CompleteAdding();
+                cancellationTokenSource.Cancel();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ToogleElements(AutomationGrid, false);
+                    StatusText.Text = "Waiting python to be stopped...";
+                    StatusText.Foreground = Brushes.Red;
+                });
+            });
             isRunning = false;
         }
 
@@ -295,8 +295,12 @@ namespace ApkInstaller
             Button? button = sender as Button;
             if (isRunning)
             {
+                using (Py.GIL())
+                {
+                    executorInstance.cancellation_request();
+                }
                 // Se a execução estiver em andamento, interrompa-a e altere o conteúdo do botão para "Start"
-                StopPythonExecution();
+                await StopPythonExecution();
                 button!.Content = "Start";
                 button!.Background = Brushes.Green;
             }
