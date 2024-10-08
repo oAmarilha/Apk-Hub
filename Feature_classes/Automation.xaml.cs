@@ -50,6 +50,19 @@ namespace ApkInstaller
             InitializeComponent();
             this.Owner = mainWindow;
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            string localapp = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Programs\\Python\\";
+            if (Directory.Exists($"{localapp}Python312\\"))
+            {
+                Runtime.PythonDLL = $"{localapp}Python312\\python312.dll";
+            }
+            else if (Directory.Exists($"{localapp}Python311\\"))
+            {
+                Runtime.PythonDLL = $"{localapp}Python311\\python311.dll";
+            }
+            else if (Directory.Exists($"{localapp}Python310\\"))
+            {
+                Runtime.PythonDLL = $"{localapp}Python310\\python310.dll";
+            }
 
             Runtime.PythonDLL = @$"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Programs\Python\Python312\python312.dll";
 
