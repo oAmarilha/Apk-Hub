@@ -75,7 +75,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             int count = deviceList.Count;
             UpdateStatusText(count > 0 ? $"{count} Device(s) Connected" : "No Device Connected", count == 0, count > 0, true);
 
-            Install_Button.IsEnabled = ApkFilesList.Items.Count > 0 && count > 0;
+            AllowInstall();
             DevicesComboBox.IsEnabled = count > 1;
 
             if (DevicesComboBox.SelectedItem == null)
@@ -115,7 +115,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             }
         }
 
-        Install_Button.IsEnabled = DevicesComboBox.Items.Count > 0 && change && ApkFilesList.Items.Count > 0;
+        Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && change && ApkFilesList.Items.Count > 0;
     }
 
     public MessageBoxResult ShowMessage(string message, string? title = null, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Warning)
@@ -223,6 +223,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 }
             }
             CheckDuplicatedFiles(errorMessages, addedFiles);
+            AllowInstall();
         }
     }
 
@@ -637,5 +638,15 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         {
             ShowMessage("There is no output available", "Output empty");
         }
+    }
+
+    private void DevicesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        AllowInstall();
+    }
+
+    private void AllowInstall()
+    {
+        Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && ApkFilesList.Items.Count > 0;
     }
 }
