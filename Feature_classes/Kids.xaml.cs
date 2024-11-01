@@ -136,7 +136,7 @@ public partial class Kids : Window, IComponentConnector
     {
 		if (_automationWindow == null)
 		{
-			_automationWindow = OpenChildWindow(new Automation());
+			_automationWindow = OpenChildWindow(new Automation(_selectedDevice));
 			_automationWindow.Show();
             Hide();
 			_mainWindow.Hide();

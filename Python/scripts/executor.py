@@ -19,6 +19,9 @@ from PySimpleGUI import Window
 from io import StringIO
 import sys
 import logging
+import os
+import time
+import re
 
 class StreamToLogger:
     """Classe que redireciona prints para um logger."""
@@ -33,13 +36,15 @@ class StreamToLogger:
             self.logger.log(self.level, message.strip())
 
 class Executor:
-    def __init__(self):
+    def __init__(self, serialno):
         self.base_path = os.path.join(os.environ["USERPROFILE"], "Documents", "ApkHub", "Log", "Automation")
         if not Path(f"{self.base_path}").exists():
             os.mkdir(f"{self.base_path}")
             os.mkdir(f"{self.base_path}\\reports")
-        self.cmdpmt = airtest.cmdpmt
-        self.cmdandroid = airtest.cmdandroid
+        self.initAirtest = InitAirtest(serialno=serialno)
+        self.airtest = self.initAirtest.airtest
+        self.cmdpmt = self.initAirtest.airtest.cmdpmt
+        self.cmdandroid = self.initAirtest.airtest.cmdandroid
         self.buildMode = self.setBuildMode()
         self.androidVersion = self.setAndroidVersion()
         self.uiMode = self.setMode() 
@@ -71,7 +76,7 @@ class Executor:
         self.logger = logging.getLogger(__name__)
         sys.stdout = StreamToLogger(self.logger, level=logging.INFO)
         sys.stderr = StreamToLogger(self.logger, level=logging.ERROR)
-        #self.interface()
+        # self.interface()
 
     def initialSetup(self):
         """
@@ -229,7 +234,7 @@ class Executor:
         for className in classNames:
             if className in self.appMappings:
                 appClass, appPkg, appName, numTest = self.appMappings[className]
-                application = appClass(appPkg, appName, numTest)
+                application = appClass(appPkg, appName, numTest, self.initAirtest)
                 self.addApp(application)
             else:
                 logging.debug(f"Classe '{className}' inválida. Verifique o nome da classe e tente novamente.")

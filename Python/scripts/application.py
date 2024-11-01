@@ -2,10 +2,17 @@ from airtestInstance import *
 import random
 from pathlib import Path 
 
+class InitAirtest:
+    def __init__(self, serialno):
+        self.serialno = serialno
+        self.airtest = AirTest(serialno=self.serialno)
+        self.cmdpmt = self.airtest.cmdpmt
+        self.cmdandroid = self.airtest.cmdandroid
+
 class Application:
     coord = []
     cancellation_requested = False
-    def __init__(self, appPkg, appName, numTest):
+    def __init__(self, appPkg, appName, numTest, airtestinstance):
         self.appPkg = appPkg
         self.appName = appName
         self.numTest = numTest
@@ -14,8 +21,9 @@ class Application:
         self.imgPATH = ""
         self.orient = 0
         self.res = (int(0),int(0))
-        self.cmdpmt = airtest.cmdpmt
-        self.cmdandroid = airtest.cmdandroid
+        self.airtest = airtestinstance.airtest
+        self.cmdpmt = airtestinstance.cmdpmt
+        self.cmdandroid = airtestinstance.cmdandroid
         self.defaultpath = Path(__file__).resolve().parents[1]
         
     #Getters and setters
@@ -302,7 +310,7 @@ class Application:
     def oldPassword(self):
         "to press the 0 button 4 times"    
         self.passold = self.getCoord("pin_button_0")
-        touch(self.passold, times=4)
+        self.airtest.touch(self.passold, times=4)
         time.sleep(3)
         return
     

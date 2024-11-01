@@ -11,10 +11,10 @@ class AirTest:
     """
     Setup current connected device.
     """
-    def __init__(self):
-        self.serialno = Android().serialno
+    def __init__(self, serialno):
+        self.serialno = serialno
         self.cmdpmt = ADB(serialno=self.serialno, server_addr= None)
         self.cmdandroid = Android(serialno=self.serialno)
         init_device(platform="Android", uuid= self.serialno)
 
-airtest = AirTest()
+# airtest = AirTest()
