@@ -1,8 +1,8 @@
 from application import *
 
 class KidsGallery(Application):
-    def __init__(self, appPkg, appName, numTest):
-        super().__init__(appPkg, appName, numTest)
+    def __init__(self, appPkg, appName, numTest, airtestinstance):
+        super().__init__(appPkg, appName, numTest, airtestinstance)
         self.permissions = ["READ_EXTERNAL_STORAGE",
                             "POST_NOTIFICATIONS",
                             "CAMERA",

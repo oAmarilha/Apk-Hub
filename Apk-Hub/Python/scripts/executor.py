@@ -521,8 +521,8 @@ class Executor:
         This function allows permissions that it were previously set inside each class.
             Example:: 
             >>> class KidsHome(Application):
-                    def __init__(self, appPkg, appName, numTest):
-                        super().__init__(appPkg, appName, numTest)
+                    def __init__(self, appPkg, appName, numTest, airtestinstance):
+                        super().__init__(appPkg, appName, numTest, airtestinstance)
                         self.permissions = ['POST_NOTIFICATIONS',
                                             'READ_CONTACTS',
                                             'READ_MEDIA_VIDEO',

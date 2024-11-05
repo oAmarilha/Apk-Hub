@@ -8,9 +8,16 @@
     <UseWPF>true</UseWPF>
     <PackageIcon>bobby.jpg</PackageIcon>
     <ApplicationIcon>bobby.ico</ApplicationIcon>
-    <Version>3.0.8</Version>
+    <Version>3.0.9</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Python\reports\**" />
+    <EmbeddedResource Remove="Python\reports\**" />
+    <None Remove="Python\reports\**" />
+    <Page Remove="Python\reports\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="bobby.ico" />
@@ -53,7 +60,6 @@
 
   <ItemGroup>
     <Folder Include="adb\" />
-    <Folder Include="Python\reports\" />
   </ItemGroup>
 
 </Project>
