@@ -246,15 +246,15 @@ class Executor:
         Get coords from 0 button both portrait and landscape.
         """
         self.cmdpmt.unlock()
-        self.cmdpmt.start_shell("am force-stop com.sec.android.app.kidshome")
-        self.cmdpmt.start_shell("input keyevent KEYCODE_HOME")
+        self.cmdpmt.shell("am force-stop com.sec.android.app.kidshome")
+        self.cmdpmt.shell("input keyevent KEYCODE_HOME")
         self.changeOrient(0)
-        self.cmdpmt.start_shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.parentalcontrol.pin.ui.PinActivity")
+        self.cmdpmt.shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.parentalcontrol.pin.ui.PinActivity")
         Application.coord.append(("Password_Portrait", self.getPassword()))
         self.changeOrient(1)
         Application.coord.append(("Password_Landscape", self.getPassword()))
         self.changeOrient(0)
-        self.cmdpmt.start_shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity")
+        self.cmdpmt.shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity")
         return
     
     def cancellation_request(self):

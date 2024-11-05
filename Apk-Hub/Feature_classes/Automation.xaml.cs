@@ -25,9 +25,11 @@ namespace ApkInstaller
         private bool isRunning = false;
 
         // Fila de tarefas para garantir que tudo seja processado na mesma thread do Python
-        private readonly BlockingCollection<Action> pythonTaskQueue = new BlockingCollection<Action>();
+        private BlockingCollection<Action> pythonTaskQueue = new BlockingCollection<Action>();
 
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private TaskCompletionSource<bool> initializationCompletionSource;
+
         // Thread dedicada ao Python
         private Thread pythonThread;
         private string serialno;
@@ -90,9 +92,12 @@ namespace ApkInstaller
         // Inicializa a thread dedicada ao Python
         private void InitializePythonThread()
         {
-            cancellationTokenSource = new CancellationTokenSource(); // Inicializa o token de cancelamento
+            cancellationTokenSource = new CancellationTokenSource();
+            pythonTaskQueue = new BlockingCollection<Action>(); // Reinicializa a fila de tarefas para nova execução
+            initializationCompletionSource = new TaskCompletionSource<bool>();
 
-            ToogleElements(AutomationGrid, false);
+            Application.Current.Dispatcher.Invoke(() => ToogleElements(AutomationGrid, false));
+
             pythonThread = new Thread(() =>
             {
                 PythonEngine.Initialize();
@@ -110,7 +115,6 @@ namespace ApkInstaller
                     executorInstance = pythonScript.Executor(serialno);
                     executorInstance.new_request();
 
-                    // Obtém informações do executor
                     string model = executorInstance.model.ToString();
                     string androidVersion = executorInstance.osVersion.ToString();
                     string buildMode = executorInstance.build.ToString();
@@ -118,7 +122,6 @@ namespace ApkInstaller
                     PyTuple res = executorInstance.res;
                     string resolution = $"{res[0].ToString()} x {res[1].ToString()}";
 
-                    // Atualiza a UI com o modelo do dispositivo
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         DeviceModelText.Text = model;
@@ -132,7 +135,9 @@ namespace ApkInstaller
                     });
                 }
 
-                // Fila de tarefas: processa as tarefas enviadas à fila
+                // Inicialização completa, sinalize a TaskCompletionSource
+                initializationCompletionSource.TrySetResult(true);
+
                 while (!pythonTaskQueue.IsCompleted)
                 {
                     try
@@ -144,16 +149,24 @@ namespace ApkInstaller
                     }
                     catch (OperationCanceledException)
                     {
-                        // Operação cancelada, saia do loop
-                        break;
+                        break; // Operação cancelada, saia do loop
                     }
                 }
+
                 PythonEngine.Shutdown();
                 bool test2 = PythonEngine.IsInitialized;
-                if (this.IsVisible) Application.Current.Dispatcher.Invoke(() => StatusText.Text = "Python stopped");
+
+                if (this.IsVisible)
+                {
+                    Application.Current.Dispatcher.Invoke(() => StatusText.Text = "Python stopped");
+                }
+
+                isRunning = false;
             });
+
             pythonThread.Start();
         }
+
 
         private async void UpdateOutput()
         {
@@ -205,7 +218,7 @@ namespace ApkInstaller
 
         private async Task RunWithTimeoutAsync(Func<Task> action, TimeSpan timeout)
         {
-            using (var cancellationTokenSource = new CancellationTokenSource())
+            while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
                 var task = action();
 
@@ -329,7 +342,10 @@ namespace ApkInstaller
             }
             await Task.Run(() =>
             {
-                pythonTaskQueue.CompleteAdding();
+                if (!pythonTaskQueue.IsAddingCompleted)
+                {
+                    pythonTaskQueue.CompleteAdding(); // Finaliza a adição de novas tarefas
+                }
                 cancellationTokenSource.Cancel();
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -338,7 +354,7 @@ namespace ApkInstaller
                     StatusText.Foreground = Brushes.Red;
                 });
             });
-            isRunning = false;
+
         }
 
         private async void Start_Stop_Click(object sender, RoutedEventArgs e)
@@ -350,7 +366,6 @@ namespace ApkInstaller
                 {
                     executorInstance.cancellation_request();
                 }
-                // Se a execução estiver em andamento, interrompa-a e altere o conteúdo do botão para "Start"
                 await StopPythonExecution();
                 button!.Content = "Start";
                 button!.Background = Brushes.Green;
@@ -361,6 +376,10 @@ namespace ApkInstaller
                 {
                     InitializePythonThread();
                 }
+
+                // Aguarde a inicialização completa antes de prosseguir
+                await initializationCompletionSource.Task;
+
                 List<string> selectedAppValues = new List<string>();
                 List<string> selectedAppNames = new List<string>();
                 List<string> selectedAppInstance = new List<string>();
@@ -379,12 +398,13 @@ namespace ApkInstaller
                     }
                 }
 
-                button!.Content = "Stop";  // Altera o conteúdo do botão para "Stop"
+                button!.Content = "Stop";
                 button!.Background = Brushes.Red;
                 isRunning = true;
 
-                await RunPythonScriptAsync(selectedAppInstance); // Executa o script Python de forma assíncrona
+                await RunPythonScriptAsync(selectedAppInstance);
             }
         }
+
     }
 }

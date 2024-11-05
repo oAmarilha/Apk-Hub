@@ -24,7 +24,7 @@ class Application:
         self.airtest = airtestinstance.airtest
         self.cmdpmt = airtestinstance.cmdpmt
         self.cmdandroid = airtestinstance.cmdandroid
-        self.defaultpath = Path(__file__).resolve().parents[1]
+        self.defaultpath = str(Path(__file__).resolve().parents[1])
         
     #Getters and setters
     def getAppPkg(self):
@@ -94,7 +94,7 @@ class Application:
         """
         Set the path to image repository with the actual python filename.
         """
-        return f"{self.defaultpath}\\images/{str(filename)[:-3]}/"
+        return f"{self.defaultpath}\\images\\{str(filename)[:-3]}\\"
 
     
     def hierarchyDump(self):
