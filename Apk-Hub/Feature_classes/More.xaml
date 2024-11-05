@@ -1,0 +1,34 @@
+﻿<Window 
+    x:Class="ApkInstaller.More" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:local="clr-namespace:ApkInstaller" 
+    ResizeMode="CanMinimize" 
+    Title="More" 
+    Height="300"
+    Width="250">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Button Name="Run_Adb" IsEnabled="True" Grid.Row="0" Grid.Column="0" Content="ADB" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Run_Adb_Click"/>
+        <Button Name="ClearPKG_Button" IsEnabled="True" Grid.Row="0" Grid.Column="1" Content="Clear APK" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ClearAPK_Button_Click"/>
+        <Button Name="Log_Button" Grid.Row="1" Grid.Column="0" Content="Logcat" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Logcat_Button_Click" />
+        <Button Name="ScreenRecordButton" Grid.Row="1" Grid.Column="1" Content="Record" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FF008000" Click="ScreenRecordButton_Click" />
+        <Button Name="Share_Button" Grid.Row="2" Grid.Column="0" Content="Screen" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
+        <Button Name="UninstallApp_Button" Grid.Row="2" Grid.Column="1" Content="Uninstall Pkg" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="UninstallApp_Button_Click"/>
+        <Button Name="TBD1" IsEnabled="False" Grid.Row="3" Grid.Column="0" Content="TBD" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        <Button Name="TBD2" IsEnabled="False" Grid.Row="3" Grid.Column="1" Content="TBD" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" />
+    </Grid>
+</Window>
