@@ -101,39 +101,39 @@ namespace ApkInstaller
             pythonThread = new Thread(() =>
             {
                 PythonEngine.Initialize();
-                using (Py.GIL())
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    using (Py.GIL())
                     {
-                        StatusText.Text = "Initializing Python AirTest, please wait...";
-                    });
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            StatusText.Text = "Initializing Python AirTest, please wait...";
+                        });
 
-                    sys = Py.Import("sys");
-                    sys.path.append(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Python\\scripts"));
+                        sys = Py.Import("sys");
+                        sys.path.append(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Python\\scripts"));
 
-                    dynamic pythonScript = Py.Import("executor");
-                    executorInstance = pythonScript.Executor(serialno);
-                    executorInstance.new_request();
+                        dynamic pythonScript = Py.Import("executor");
+                        executorInstance = pythonScript.Executor(serialno);
+                        executorInstance.new_request();
 
-                    string model = executorInstance.model.ToString();
-                    string androidVersion = executorInstance.osVersion.ToString();
-                    string buildMode = executorInstance.build.ToString();
-                    string themeMode = executorInstance.themeMode.ToString();
-                    PyTuple res = executorInstance.res;
-                    string resolution = $"{res[0].ToString()} x {res[1].ToString()}";
+                        string model = executorInstance.model.ToString();
+                        string androidVersion = executorInstance.osVersion.ToString();
+                        string buildMode = executorInstance.build.ToString();
+                        string themeMode = executorInstance.themeMode.ToString();
+                        PyTuple res = executorInstance.res;
+                        string resolution = $"{res[0].ToString()} x {res[1].ToString()}";
 
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        DeviceModelText.Text = model;
-                        AndroidVersionText.Text = androidVersion;
-                        BuildModeText.Text = buildMode;
-                        UiModeText.Text = themeMode;
-                        ResolutionText.Text = resolution;
-                        StatusText.Text = "Python Airtest correctly initialized";
-                        StatusText.Foreground = Brushes.Green;
-                        ToogleElements(AutomationGrid, true);
-                    });
-                }
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            DeviceModelText.Text = model;
+                            AndroidVersionText.Text = androidVersion;
+                            BuildModeText.Text = buildMode;
+                            UiModeText.Text = themeMode;
+                            ResolutionText.Text = resolution;
+                            StatusText.Text = "Python Airtest correctly initialized";
+                            StatusText.Foreground = Brushes.Green;
+                            ToogleElements(AutomationGrid, true);
+                        });
+                    }
 
                 // Inicialização completa, sinalize a TaskCompletionSource
                 initializationCompletionSource.TrySetResult(true);
@@ -179,7 +179,7 @@ namespace ApkInstaller
                 // A operação foi cancelada devido ao timeout
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    StatusText.Text += "No output return.\n";
+                    StatusText.Text += "...\n";
                     StatusText.ScrollToEnd();
                 });
             }
@@ -260,7 +260,7 @@ namespace ApkInstaller
         }
 
         // Função que roda o script Python de maneira assíncrona
-        private async Task RunPythonScriptAsync(List<string> appInstance)
+        private async Task RunPythonScriptAsync(List<string> appInstance, List<string>? selectedSettings)
         {
             var report = string.Empty;
             bool isError = false;
@@ -288,6 +288,10 @@ namespace ApkInstaller
                     executorInstance.app_instance = appInstance;
                     try
                     {
+                        if (selectedSettings != null)
+                        {
+                            executorInstance.selected_settings = selectedSettings;
+                        }
                         var result = executorInstance.initialSetup();
                         report = executorInstance.logname.ToString();
                     }
@@ -337,9 +341,9 @@ namespace ApkInstaller
                 outputTimer.Stop();
                 using (Py.GIL())
                 {
-                    executorInstance.cancellation_request();
-                }
-            }
+                        executorInstance.cancellation_request();
+                    }
+                        }
             await Task.Run(() =>
             {
                 if (!pythonTaskQueue.IsAddingCompleted)
@@ -383,6 +387,7 @@ namespace ApkInstaller
                 List<string> selectedAppValues = new List<string>();
                 List<string> selectedAppNames = new List<string>();
                 List<string> selectedAppInstance = new List<string>();
+                List<string>? selectedSettings = GetSettingsSelected(Stack_Settings);
 
                 foreach (object child in AppsStackPanel.Children)
                 {
@@ -402,9 +407,23 @@ namespace ApkInstaller
                 button!.Background = Brushes.Red;
                 isRunning = true;
 
-                await RunPythonScriptAsync(selectedAppInstance);
+                await RunPythonScriptAsync(selectedAppInstance, selectedSettings);
             }
         }
 
+        public List<string>? GetSettingsSelected(StackPanel container)
+        {
+            List<string> selectedSettings = new List<string>();
+
+            foreach (var child in container.Children)
+            {
+                if (child is CheckBox checkBox && checkBox.IsChecked == true)
+                {
+                    selectedSettings.Add(checkBox.Name);
+                }
+            }
+
+            return selectedSettings.Count > 0 ? selectedSettings : null;
+        }
     }
 }

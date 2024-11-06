@@ -51,6 +51,7 @@ class Executor:
         self.appList = []
         self.app_instance = []
         self.res = self.setRes()
+        self.selected_settings = []
         self.model = str(self.cmdpmt.shell('getprop ro.product.model')).replace('\n', '')
         self.output = True
         self.appMappings = {"KidsHome": (KidsHome, "com.sec.android.app.kidshome", "Samsung Kids", 19),
@@ -84,12 +85,12 @@ class Executor:
         """
         self.clearAppList()
         self.addAppFromInput()
-        #self.setSettings()
+        self.setSettings()
         self.getPasswordOrientation()
         self.execute()   
         return
     
-    def outputUpdate(self):
+    # def outputUpdate(self):
         """
         Update the GUI output with the stdout data.
         """
@@ -99,14 +100,14 @@ class Executor:
             time.sleep(1)
         return
     
-    def screenShare(self):
+    # def screenShare(self):
         """
         This function calls the screen share while the test is executed.
         """
         os.system('scrcpy')
         return
         
-    def interface(self):
+    # def interface(self):
         """
         Init the GUI.
         """
@@ -211,9 +212,15 @@ class Executor:
         """
         Set test run settings based on GUI options chooses.
         """
+        app_settings = {'Clear_Media': self.deleteFiles,
+                        'Clear_Data': self.closeApps,
+                        'Add_Contact': self.addContact,
+                        'Instalar o Apk': self.installApk,
+                        'Grant_Permission': self.grantPermissions
+                        }
         for selected_setting in self.selected_settings:
-            if selected_setting in self.app_settings:
-                metodo = self.app_settings[selected_setting]
+            if selected_setting in app_settings:
+                metodo = app_settings[selected_setting]
                 metodo()
         return
 
@@ -260,14 +267,13 @@ class Executor:
     def cancellation_request(self):
         Application.cancellation_requested = True
         return
-    
+
     def new_request(self):
         Application.cancellation_requested = False
         return
 
     #execute all tests of apps in the list
     def execute(self):
-
         """
         Execute all the test cases in each app added to the queue.
         """
@@ -281,8 +287,8 @@ class Executor:
                 auto_setup(__file__, logdir=self.logname) #init log 
 
                 i.res = self.res
-                
-                
+                    
+                    
                 i.executeTest(res = self.res, osVer = self.osVersion, uiMode = self.uiMode, buildMode = self.buildMode)
 
                 simple_report(__file__, logpath = False , logfile = f"{self.logname}\\log.txt",output = f"{self.logname}/log.html") #dump log

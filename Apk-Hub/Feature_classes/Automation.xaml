@@ -38,12 +38,12 @@
         </StackPanel>
 
         <!-- Settings -->
-        <StackPanel IsEnabled="False" Orientation="Vertical" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <StackPanel x:Name="Stack_Settings" IsEnabled="False" Orientation="Vertical" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top">
             <Label Name="SettingsOptions" Content="Choose settings:" Grid.Row="0" Grid.Column="0" FontSize="15" HorizontalAlignment="Center" FontWeight="Bold" Margin="10"/>
-            <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Delete device media"/>
-            <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Clear app data"/>
-            <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Add a test contact"/>
-            <CheckBox FontSize="15" Margin="5,5,5,10" Height="20" Content="Grant app permissions"/>
+            <CheckBox x:Name="Clear_Media" FontSize="15" Margin="5,5,5,10" Height="20" Content="Delete device media"/>
+            <CheckBox x:Name="Clear_Data" FontSize="15" Margin="5,5,5,10" Height="20" Content="Clear app data"/>
+            <CheckBox x:Name="Add_Contact" FontSize="15" Margin="5,5,5,10" Height="20" Content="Add a test contact"/>
+            <CheckBox x:Name="Grant_Permission" FontSize="15" Margin="5,5,5,10" Height="20" Content="Grant app permissions"/>
         </StackPanel>
 
         <Grid Grid.Column="2" Grid.Row="0">
