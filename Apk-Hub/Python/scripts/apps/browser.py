@@ -17,7 +17,7 @@ class KidsBrowser(Application):
 
         for i in dir(self):
             if self.cancellation_requested:
-                LOGGING.info("Cancellation requested, stopping test case execution.")
+                logging.info("Cancellation requested, stopping test case execution.")
                 self.stopRecording()  # Para a gravação de tela
                 return
             if i.startswith('tc_'):
@@ -25,7 +25,7 @@ class KidsBrowser(Application):
                 try:
                     result(res, osVer, uiMode, buildMode)
                 except:
-                    print(f"error executing {str(result)}")
+                    logging.error(f"error executing {str(result)}")
                     self.stopRecording() #end recording
                     return
                 
@@ -129,7 +129,7 @@ class KidsBrowser(Application):
         assert_is_not_none(self.getCoord('Todos'), msg= 'TC 5 - Open History')
         #checkHistory = exists(Template(f"{self.imgPATH}historypage.png", resolution=res))
         #if checkHistory:
-        #    print("History page detected")
+        #    logging.info("History page detected")
         # Then the browser history is shown
         return
     
@@ -143,7 +143,7 @@ class KidsBrowser(Application):
         assert_is_not_none(self.getCoord('Samsung'), msg= 'TC 6 - Manage allowed websites')
         #checkSites = exists(Template(f"{self.imgPATH}checksites.png", resolution=res))
         #if checkSites:
-        #    print("Manage Sites page detected")
+        #    logging.info("Manage Sites page detected")
         # Then the websites allowed screen is shown
         return
     

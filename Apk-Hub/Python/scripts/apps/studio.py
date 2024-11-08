@@ -24,7 +24,7 @@ class KidsStudio(Application):
         
         for i in dir(self):
            if self.cancellation_requested:
-                LOGGING.info("Cancellation requested, stopping test case execution.")
+                logging.info("Cancellation requested, stopping test case execution.")
                 self.stopRecording()  # Para a gravação de tela
                 return
            if i.startswith('tc_'):
@@ -32,7 +32,7 @@ class KidsStudio(Application):
                 try:
                     result(res, osVer, uiMode, buildMode)
                 except:
-                    print(f"error executing {str(result)}")
+                    logging.error(f"error executing {str(result)}")
                     self.stopRecording() #end recording
                     return
                 

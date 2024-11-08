@@ -15,7 +15,7 @@ class KidsHome(Application):
         
         for i in dir(self):
            if self.cancellation_requested:
-                LOGGING.info("Cancellation requested, stopping test case execution.")
+                logging.info("Cancellation requested, stopping test case execution.")
                 self.stopRecording()  # Para a gravação de tela
                 return
            if i.startswith('tc_'):
@@ -23,7 +23,7 @@ class KidsHome(Application):
                 try:
                     result(res = res)
                 except:
-                    print(f"error executing {str(result)}")
+                    logging.error(f"error executing {str(result)}")
                     self.stopRecording() #end recording
                     return
                 
@@ -58,11 +58,11 @@ class KidsHome(Application):
     def tc_04_downloadTravelBuddies(self, res):
         if self.testMinus1 == 's':    
             try:
-                print("Verificando se o Travel Buddies está instalado")
+                logging.info("Verificando se o Travel Buddies está instalado")
                 self.cmdandroid.uninstall_app("br.org.sidi.kidsplat.travel")
-                print("Travel Buddies encontrado e desinstalado")
+                logging.info("Travel Buddies encontrado e desinstalado")
             except:
-                print("Travel Buddies não está instalado")    
+                logging.info("Travel Buddies não está instalado")    
             self.swipeBellow()
             touch(self.getCoord("Todas as escolhas"))
             wait(Template(f"{self.defaultpath}\\images/{self.imgPATH}download_apps.png"))
@@ -76,11 +76,11 @@ class KidsHome(Application):
     def tc_05_downloadCookisCollection(self, res):
         if self.testMinus1 == 's':
             try:
-                print("Verificando se o Cooki's Collection está instalado")
+                logging.info("Verificando se o Cooki's Collection está instalado")
                 self.cmdandroid.uninstall_app("br.org.sidi.kidsplat.collection")
-                print("Cooki's Collection encontrado e desinstalado")
+                logging.info("Cooki's Collection encontrado e desinstalado")
             except:
-                print("Cooki's Collection não está instalado")
+                logging.info("Cooki's Collection não está instalado")
             self.cmdpmt.keyevent("KEYCODE_BACK")
             touch(self.getCoord("Cooki's Collection"))
             time.sleep(1)
@@ -91,11 +91,11 @@ class KidsHome(Application):
     def tc_06_downloadMyArtStudio(self, res):
         if self.testMinus1 == 's':
             try:
-                print("Verificando se o My Art Studio está instalado")
+                logging.info("Verificando se o My Art Studio está instalado")
                 self.cmdandroid.uninstall_app("br.org.sidi.kidsplat.artstudio")
-                print("My Art Studio encontrado e desinstalado")
+                logging.info("My Art Studio encontrado e desinstalado")
             except:
-                print("My Art Studio não está instalado")
+                logging.info("My Art Studio não está instalado")
             self.cmdpmt.keyevent("KEYCODE_BACK")
             touch(self.getCoord("My Art Studio"))
             time.sleep(1)
@@ -106,11 +106,11 @@ class KidsHome(Application):
     def tc_07_downloadSweetJump(self, res):
         if self.testMinus1 == 's':
             try:
-                print("Verificando se o Sweet Jump está instalado")
+                logging.info("Verificando se o Sweet Jump está instalado")
                 self.cmdandroid.uninstall_app("com.SRUKRRnDInstituteUkraine.SweetJump")
-                print("Sweet Jump encontrado e desinstalado")
+                logging.info("Sweet Jump encontrado e desinstalado")
             except:
-                print("Sweet Jump não está instalado")
+                logging.info("Sweet Jump não está instalado")
             self.cmdpmt.keyevent("KEYCODE_BACK")
             if self.getCoord("Sweet Jump") is None:
                 self.swipeBellow()
@@ -123,11 +123,11 @@ class KidsHome(Application):
     def tc_08_downloadMessengerKids(self, res):
         if self.testMinus1 == 's':
             try:
-                print("Verificando se o Messenger Kids está instalado")
+                logging.info("Verificando se o Messenger Kids está instalado")
                 self.cmdandroid.uninstall_app("com.facebook.talk")
-                print("Messenger Kids encontrado e desinstalado")
+                logging.info("Messenger Kids encontrado e desinstalado")
             except:
-                print("Messenger Kids não está instalado")
+                logging.info("Messenger Kids não está instalado")
             self.cmdpmt.keyevent("KEYCODE_BACK")
             touch(self.getCoord("Messenger Kids"))
             time.sleep(1)

@@ -23,7 +23,7 @@ class KidsGallery(Application):
         
         for i in dir(self):
            if self.cancellation_requested:
-                LOGGING.info("Cancellation requested, stopping test case execution.")
+                logging.info("Cancellation requested, stopping test case execution.")
                 self.stopRecording()  # Para a gravação de tela
                 return
            if i.startswith('tc_'):
@@ -31,7 +31,7 @@ class KidsGallery(Application):
                 try:
                     result(res, osVer, uiMode, buildMode)
                 except:
-                    print(f"error executing {str(result)}")
+                    logging.error(f"error executing {str(result)}")
                     self.stopRecording() #end recording
                     return
                 
@@ -43,7 +43,7 @@ class KidsGallery(Application):
         #When the user tap the icon “My Gallery” 
         #Then the application will be open 
         self.cmdpmt.cmd(f'push {self.defaultpath}\\rep\\Gallery\\ /sdcard/Pictures')
-        self.cmdpmt.start_shell(r'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/')
+        self.cmdpmt.shell(r'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/')
         touch(self.getCoord('Minha galeria')) 
         return
     

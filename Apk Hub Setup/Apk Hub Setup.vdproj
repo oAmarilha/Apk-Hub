@@ -197,7 +197,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Apk Hub"
         "ProductCode" = "8:{78F07DF4-4323-4E23-BAB1-2978CAE571CB}"
-        "PackageCode" = "8:{C13BA9C4-7A39-41BC-ADF0-F62444BDC49D}"
+        "PackageCode" = "8:{C56B57C9-BB91-42E0-AA4D-51B359450CEE}"
         "UpgradeCode" = "8:{C4472BC4-F32A-4D3F-B649-4CF433DC727C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -327,7 +327,7 @@
             "Transitive" = "11:FALSE"
             "Target" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
             "Folder" = "8:_2209493A37B24F1C922AE68869AE2B09"
-            "WorkingFolder" = "8:"
+            "WorkingFolder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
             "Icon" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
             "Feature" = "8:"
             }
@@ -341,7 +341,7 @@
             "Transitive" = "11:FALSE"
             "Target" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
             "Folder" = "8:_8E4181C431C94F44AE7DEED1B1904F8D"
-            "WorkingFolder" = "8:"
+            "WorkingFolder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
             "Icon" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
             "Feature" = "8:"
             }

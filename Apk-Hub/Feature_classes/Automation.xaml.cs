@@ -396,7 +396,7 @@ namespace ApkInstaller
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                StatusText.Text += texto + "\n";
+                StatusText.Text += texto;
                 StatusText.ScrollToEnd();
             });
         }

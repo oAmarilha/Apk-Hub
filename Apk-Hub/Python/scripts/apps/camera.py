@@ -21,7 +21,7 @@ class KidsCamera(Application):
         
         for i in dir(self):
            if self.cancellation_requested:
-                LOGGING.info("Cancellation requested, stopping test case execution.")
+                logging.info("Cancellation requested, stopping test case execution.")
                 self.stopRecording()  # Para a gravação de tela
                 return
            if i.startswith('tc_'):
@@ -29,7 +29,7 @@ class KidsCamera(Application):
                 try:
                     result(res, osVer, uiMode, buildMode)
                 except:
-                    print(f"error executing {str(result)}")
+                    logging.error(f"error executing {str(result)}")
                     self.stopRecording() #end recording
                     return
                 
@@ -80,15 +80,15 @@ class KidsCamera(Application):
         getMode = self.hierarchyDump()
         cameraMode = re.search('frontal', getMode)
         if cameraMode:
-            print("Câmera no modo traseira")
+            logging.info("Câmera no modo traseira")
             touch(self.getCoord("Alternar", False))
             assert_is_not_none(self.getCoord("Alternar para câmera traseira"), msg= 'TC 04 - Change to back camera')
-            print("Câmera alterada corretamente para o modo frontal")
+            logging.info("Câmera alterada corretamente para o modo frontal")
         else:
-            print("Câmera no modo frontal")
+            logging.info("Câmera no modo frontal")
             touch(self.getCoord("Alternar", False))
             assert_is_not_none(self.getCoord("Alternar para câmera frontal"), msg= 'TC 04 - Change to front camera')
-            print("Câmera alterada corretamente para o modo traseiro")               
+            logging.info("Câmera alterada corretamente para o modo traseiro")               
         return   
     
     def tc_05_accessGallery(self, res, osVer, uiMode, buildMode):
