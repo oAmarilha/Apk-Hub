@@ -16,5 +16,3 @@ class AirTest:
         self.cmdpmt = ADB(serialno=self.serialno, server_addr= None)
         self.cmdandroid = Android(serialno=self.serialno)
         init_device(platform="Android", uuid= self.serialno)
-
-# airtest = AirTest()

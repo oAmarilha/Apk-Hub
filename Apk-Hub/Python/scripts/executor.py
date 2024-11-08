@@ -14,29 +14,15 @@ from apps.magicvoice import KidsMagicVoice
 from apps.house import KidsHouse
 from apps.studio import KidsStudio
 from datetime import datetime #pegar data
-import PySimpleGUI as sg
-from PySimpleGUI import Window
-from io import StringIO
-import sys
+import io
 import logging
 import os
 import time
 import re
 
-class StreamToLogger:
-    """Classe que redireciona prints para um logger."""
-
-    def __init__(self, logger, level=logging.INFO):
-        self.logger = logger
-        self.level = level
-
-    def write(self, message):
-        # Verifica se a mensagem não está vazia
-        if message.strip():
-            self.logger.log(self.level, message.strip())
-
 class Executor:
     def __init__(self, serialno):
+        self.log_stream = io.StringIO()  # Garante um novo StringIO a cada instância
         self.base_path = os.path.join(os.environ["USERPROFILE"], "Documents", "ApkHub", "Log", "Automation")
         if not Path(f"{self.base_path}").exists():
             os.mkdir(f"{self.base_path}")
@@ -71,143 +57,20 @@ class Executor:
         self.cmdpmt.start_shell("am force-stop com.sec.android.app.kidshome")
         self.cmdpmt.start_shell("svc power stayon true") #Keeps the screen awake when connected
         self.cmdpmt.start_shell("settings put system accelerometer_rotation 0") #Blocks the rotation via accelerometer
-        self.log_stream = StringIO()
         self.defaultpath = Path(__file__).resolve().parents[1]
-        logging.basicConfig(stream=self.log_stream, level=logging.DEBUG)
-        self.logger = logging.getLogger(__name__)
-        sys.stdout = StreamToLogger(self.logger, level=logging.INFO)
-        sys.stderr = StreamToLogger(self.logger, level=logging.ERROR)
-        # self.interface()
 
     def initialSetup(self):
         """
         Triggered by the user when pressing the INICIAR button. Makes the initial setup of the system and execute the tests.
         """
+        self.new_request()
         self.clearAppList()
         self.addAppFromInput()
         self.setSettings()
         self.getPasswordOrientation()
-        self.execute()   
+        self.execute()
         return
-    
-    # def outputUpdate(self):
-        """
-        Update the GUI output with the stdout data.
-        """
-        self.updateLog = True
-        while self.updateLog == True:
-            self.window['-OUTPUT-'].update(value = self.log_stream.getvalue())
-            time.sleep(1)
-        return
-    
-    # def screenShare(self):
-        """
-        This function calls the screen share while the test is executed.
-        """
-        os.system('scrcpy')
-        return
-        
-    # def interface(self):
-        """
-        Init the GUI.
-        """
-        sg.theme('BlueMono')
-        app_options = list(self.appMappings.keys())
-        self.app_settings = {'Apagar mídia do dispositivo': self.deleteFiles,
-                        'Limpar os dados': self.closeApps,
-                        'Adicionar contato de teste': self.addContact,
-                        'Instalar o Apk': self.installApk,
-                        'Garantir as permissões': self.grantPermissions
-                        }
 
-        layout =[
-            [sg.Text('Escolha o app:', size=(15,1), justification='center'),  sg.Text('Ajustes: ', size=(30,1), justification='center'), 
-             sg.Text('Informações do dispositivo:',  justification='right')], 
-            [sg.Column([[sg.Checkbox(app, key=f'-{app}-', size=(15,1))] for app in app_options], vertical_alignment='top'), 
-            sg.Column([[sg.Checkbox(settings, key=f'-{settings}-',size=(20,1))] for settings in self.app_settings],vertical_alignment='top'),
-            sg.Column([[sg.Text(f'Device Model: {self.model}', justification='left')],[sg.Text(f'Android Version: {self.osVersion}', justification='left')],
-                       [sg.Text(f'Build Mode: {self.build}', justification='left')],[sg.Text(f'Ui Mode: {self.themeMode}', justification='left')], 
-                       [sg.Text(f'Resolution: {self.res[0]} x {self.res[1]}', justification='left')]],vertical_alignment='top')],
-            [sg.Button('INICIAR', button_color=('green')), sg.Button('VISUALIZAR', button_color='blue'),
-             sg.Button('LIMPAR', disabled=True), sg.Button('ABRIR REPORT', disabled=True), 
-             sg.Button('EXPORTAR REPORT', disabled=True), sg.Button('ABORTAR', disabled=True, button_color=('red'))],
-            [sg.Text('Log de execução:')],
-            [sg.Multiline(size=(78,10), key='-OUTPUT-', disabled= True, autoscroll=True, )]
-        ]
-
-        self.window = sg.Window('Kids Automation', layout ,
-                        icon=f'{self.defaultpath}\\Python/images/ico/icon.ico', grab_anywhere=True)
-        selected_app = []
-        selected_settings = []
-        while True:
-            self.event, self.values =  self.window.read() # type: ignore
-            if self.event == sg.WIN_CLOSED or self.event == 'ABORTAR':
-                self.cmdpmt.cmd('kill-server')
-                self.updateLog = False
-                break
-            
-            if self.event == 'INICIAR': #When pressing INICIAR button
-                self.window['EXPORTAR REPORT'].update(disabled=True)
-                selected_app = [app for app in app_options if self.values[f'-{app}-']]
-                selected_settings = [settings for settings in self.app_settings if self.values[f'-{settings}-']]
-                self.app_instance = selected_app
-                self.selected_settings = selected_settings
-                if not selected_app:
-                    sg.popup('Nenhum app escolhido, escolha um aplicativo para teste', 
-                             icon=f'{self.defaultpath}\\Python/images/ico/icon.ico', location= self.window.current_location())
-                else:
-                    for app in app_options:
-                        self.window[f'-{app}-'].update(disabled = True)
-                    for setting in self.app_settings:
-                        self.window[f'-{setting}-'].update(disabled = True)
-                    self.window['LIMPAR'].update(disabled = False)
-                    self.window['ABORTAR'].update(disabled=False)
-                    self.window['INICIAR'].update(disabled=True) 
-                    self.window.start_thread(self.outputUpdate, '--')
-                    self.window.start_thread(self.initialSetup, '-FUNCTION COMPLETED-')
-
-            elif self.event== 'VISUALIZAR':
-                self.window.start_thread(self.screenShare, '-CLOSED SCREENMIRROR-')
-                self.window['VISUALIZAR'].update(disabled = True)
-
-            elif self.event== '-CLOSED SCREENMIRROR-':
-                self.window['VISUALIZAR'].update(disabled = False)
-                                                                            
-            elif self.event== 'LIMPAR': #When pressing LIMPAR button
-                    self.log_stream.seek(0)
-                    self.log_stream.truncate(0)
-                    self.window['-OUTPUT-'].update(value = '')
-                    self.window['EXPORTAR REPORT'].update(disabled=True)
-                    self.window['ABRIR REPORT'].update(disabled = True)
-                    if self.updateLog == False:
-                        self.window['LIMPAR'].update(disabled = True)
-
-            elif self.event == '-FUNCTION COMPLETED-': #When tests end
-                for app in app_options:
-                    self.window[f'-{app}-'].update(disabled = False)
-                for setting in self.app_settings:
-                    self.window[f'-{setting}-'].update(disabled = False)
-                self.updateLog = False
-                self.window['ABORTAR'].update(disabled=True)
-                self.window['INICIAR'].update(disabled=False)
-                self.window['EXPORTAR REPORT'].update(disabled=False)
-                self.window['ABRIR REPORT'].update(disabled = False)
-                sg.popup(f'Aplicativo(s) testado(s): {", ".join(selected_app)}', title='Teste finalizado', 
-                        icon= f'{self.defaultpath}\\Python/images/ico/icon.ico')
-                selected_app = []
-                selected_settings = []             
-
-            elif self.event == 'EXPORTAR REPORT': #When pressing EXPORTAR REPORT button
-                for reports in self.reports:
-                    self.fixReport(reports)
-                sg.popup(f'Report(s) exportado(s) em {", ".join(self.reports)}', title='Report exportado', 
-                        icon= f'{self.defaultpath}\\Python/images/ico/icon.ico')
-                
-            elif self.event == 'ABRIR REPORT':
-                for reports in self.reports:
-                    os.startfile(f"{reports}/log.html")
-        return
-                
     def setSettings(self):
         """
         Set test run settings based on GUI options chooses.
@@ -215,7 +78,6 @@ class Executor:
         app_settings = {'Clear_Media': self.deleteFiles,
                         'Clear_Data': self.closeApps,
                         'Add_Contact': self.addContact,
-                        'Instalar o Apk': self.installApk,
                         'Grant_Permission': self.grantPermissions
                         }
         for selected_setting in self.selected_settings:
@@ -269,6 +131,16 @@ class Executor:
         return
 
     def new_request(self):
+        #Definindo o StringIO para capturar os logs
+        logging.basicConfig(stream=self.log_stream, level=logging.DEBUG)
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+        for handler in self.logger.handlers[:]:
+            self.logger.removeHandler(handler)
+        self.stream_handler = logging.StreamHandler(self.log_stream)
+        formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
+        self.stream_handler.setFormatter(formatter)
+        self.logger.addHandler(self.stream_handler)
         Application.cancellation_requested = False
         return
 
@@ -420,98 +292,6 @@ class Executor:
             build = 'user'
             self.build = 'User'
         return build
-    
-    #Install all apks if eng mode
-    def installEngApk(self):
-        """
-        Install selected apks if eng mode.
-        """
-        for apps in self.appList:
-            for apkFile in os.listdir(f"{self.defaultpath}\\/rep/apks/{apps.appPkg}"):
-                    if apkFile.endswith(".apk"):
-                        logging.info(f'Instalando {apkFile} ...')
-                        self.cmdpmt.cmd(f"adb install -r -d {self.defaultpath}\\rep\\apks\\{apps.appPkg}\\{apkFile}") 
-        return
-
-    def installUserApk(self):
-        """
-        Install selected apks if user mode.
-        """
-        for app in self.appList:
-            if not isinstance(app, KidsHome):
-                self.cmdpmt.start_shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity")
-                name = app.appName
-                coordX, coordY = self.regexCoordinates(f"Não instalado, {name}(.|\n)*?bounds=(\"(.|\n)*?\")")
-                if coordX and coordY:
-                    logging.info("achou coord")
-                    self.cmdpmt.shell(f"input tap {coordX} {coordY}")
-                    time.sleep(3)
-                else:
-                    continue
-                
-                coordX, coordY = self.regexCoordinates(r'\"Instalar(.|\n)*?bounds=(\"(.|\n)*?\")')
-
-                if coordX and coordY:
-                    self.cmdpmt.shell(f"input tap {coordX} {coordY}")
-                    for checkDownload in range(10):
-                        time.sleep(15)
-                        self.cmdpmt.shell("uiautomator dump")
-                        dump = str(self.cmdpmt.shell(r"cat storage/emulated/0/window_dump.xml | sed 's/&#10;/ /g'"))
-                        if re.search('com.sec.android.app.samsungapps:id/tv_detail_install_reduce_price', dump):
-                            logging.info("======================\n\tDownload APK OK\n======================")
-                            break
-                        else:
-                            logging.info("======================\n\tDownload APK NOT OK\n\tTRYING TO INSTALL\n======================")
-                            if checkDownload == 9:
-                                logging.info("Maximum tries to check if app is installed, test was aborted")
-                                exit() 
-
-                    self.cmdpmt.shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity")
-                else:
-                    continue
-            else:
-                self.cmdpmt.shell("am start -n com.samsung.android.kidsinstaller/com.samsung.android.kidsinstaller.install.ui.KidsHomeInstallActivity")
-                coordX, coordY = self.regexCoordinates(r"com.samsung.android.kidsinstaller:id/button_start(.|\n)*?bounds=(\"(.|\n)*?\")")
-                self.cmdpmt.shell(f"input tap {coordX} {coordY}")
-                for checkDownload in range(15):
-                    self.cmdpmt.shell("uiautomator dump")
-                    dump = str(self.cmdpmt.shell(r"cat storage/emulated/0/window_dump.xml | sed 's/&#10;/ /g'"))
-                    if re.search('com.sec.android.app.kidshome', dump):
-                        logging.info("======================\nDownload HOME OK\n======================")
-                        coordX, coordY = self.regexCoordinates(r"com.sec.android.app.kidshome:id/setup_wizard_intro_agreement(.|\n)*?bounds=(\"(.|\n)*?\")")   
-                        self.cmdpmt.shell(f"input tap {coordX} {coordY}")
-                        for _ in range(2):
-                            coordX, coordY = self.regexCoordinates(r"Continuar(.|\n)*?bounds=(\"(.|\n)*?\")")   
-                            self.cmdpmt.shell(f"input tap {coordX} {coordY}")   
-                        coordX, coordY = self.regexCoordinates(r"pin_button_0(.|\n)*?bounds=(\"(.|\n)*?\")")
-                        for _ in range(8):
-                            self.cmdpmt.shell(f"input tap {coordX} {coordY}")
-                        break
-                    else:
-                        logging.info("======================\nDownload HOME NOT OK\n======================")
-                        if checkDownload == 9:
-                            logging.info("Maximum tries to check if home is installed, test was aborted")
-                            exit()
-                        time.sleep(2)
-        return
-            
-    #Uninstall all apks
-    def installApk(self):
-        """
-        The app selected to test can be uninstalled before the execution and then installed with the last version in user binary or with the apk selected in rep folder in eng binary
-        """    
-        logging.info("O app será desinstalado")
-        for i in self.appList:
-            try:
-                self.cmdpmt.shell(f"pm clear {i.appPkg}")
-                self.cmdpmt.cmd(f"uninstall {i.appPkg}")
-            except:
-                logging.info("O aplicativo não foi encontrado, seguindo para a instalação...")
-            if self.buildMode == "eng":
-                self.installEngApk()
-            elif self.buildMode == "user":
-                self.installUserApk()
-        return
     
     #Get current date time
     def getDateTime(self):

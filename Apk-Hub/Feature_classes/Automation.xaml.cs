@@ -167,76 +167,6 @@ namespace ApkInstaller
             pythonThread.Start();
         }
 
-
-        private async void UpdateOutput()
-        {
-            try
-            {
-                await RunWithTimeoutAsync(ReadLogOutput, TimeSpan.FromSeconds(5));
-            }
-            catch (OperationCanceledException)
-            {
-                // A operação foi cancelada devido ao timeout
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    StatusText.Text += "...\n";
-                    StatusText.ScrollToEnd();
-                });
-            }
-            catch (Exception ex)
-            {
-                // Lida com outras exceções se necessário
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    StatusText.Text += $"Erro: {ex.Message}\n";
-                    StatusText.ScrollToEnd();
-                });
-            }
-        }
-
-        private Task ReadLogOutput()
-        {
-            return Task.Run(() =>
-            {
-                // Lê a saída do log e atualiza a TextBox
-                string log_output = executorInstance.log_stream.getvalue(); // Lê o valor do StringIO
-                if (!string.IsNullOrEmpty(log_output))
-                {
-                    // Atualiza a TextBox na thread da interface do usuário
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        StatusText.Text += log_output; // Atualiza a TextBox
-                        StatusText.ScrollToEnd();
-                    });
-
-                    // Limpa o log_stream para evitar repetição
-                    executorInstance.log_stream.truncate(0);
-                    executorInstance.log_stream.seek(0);
-                }
-            });
-        }
-
-        private async Task RunWithTimeoutAsync(Func<Task> action, TimeSpan timeout)
-        {
-            while (!cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                var task = action();
-
-                // Verifica qual tarefa termina primeiro
-                if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
-                {
-                    // A tarefa foi concluída dentro do tempo limite
-                    await task; // Repropaga qualquer exceção que ocorreu na tarefa original
-                }
-                else
-                {
-                    // A tarefa demorou mais do que o tempo limite
-                    throw new OperationCanceledException("A operação excedeu o tempo limite.");
-                }
-            }
-        }
-
-
         // Função para executar código Python na thread Python
         private Task ExecutePythonActionAsync(Action pythonAction)
         {
@@ -305,10 +235,6 @@ namespace ApkInstaller
             isRunning = false;
             Start_Stop.Content = "Start";
             Start_Stop.Background = Brushes.Green;
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                //ToogleElements(AutomationGrid, true);
-            });
 
             if (!isError && !report.Contains("None") && this.IsVisible)
             {
@@ -424,6 +350,55 @@ namespace ApkInstaller
             }
 
             return selectedSettings.Count > 0 ? selectedSettings : null;
+        }
+
+        private async void UpdateOutput()
+        {
+            try
+            {
+                var task = ReadLogOutput();
+                var completedTask = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(5)));
+
+                if (completedTask == task)
+                {
+                    await task; // Se `ReadLogOutput` foi concluída a tempo, aguardamos para capturar qualquer exceção
+                }
+                else
+                {
+                    throw new OperationCanceledException("A operação excedeu o tempo limite.");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                StatusTextUpdate("...");
+            }
+            catch (Exception ex)
+            {
+                StatusTextUpdate($"Erro: {ex.Message}");
+            }
+        }
+
+        private Task ReadLogOutput()
+        {
+            return Task.Run(() =>
+            {
+                string log_output = executorInstance.log_stream.getvalue();
+                if (!string.IsNullOrEmpty(log_output))
+                {
+                    StatusTextUpdate(log_output);
+                    executorInstance.log_stream.truncate(0);
+                    executorInstance.log_stream.seek(0);
+                }
+            });
+        }
+
+        private void StatusTextUpdate(string texto)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusText.Text += texto + "\n";
+                StatusText.ScrollToEnd();
+            });
         }
     }
 }
