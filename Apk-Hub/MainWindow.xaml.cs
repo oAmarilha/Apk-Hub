@@ -79,12 +79,18 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     #endregion
 
     #region Device Management
+    /// <summary>
+    /// Manipulador do evento de mudança de dispositivo USB
+    /// </summary>
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
     {
         await Task.Delay(1000);
         PopulateDevices();
     }
 
+    /// <summary>
+    /// Popula a lista de dispositivos conectados
+    /// </summary>
     public async void PopulateDevices()
     {
         DevicesComboBox.ItemsSource = null;
@@ -115,6 +121,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         });
     }
 
+    /// <summary>
+    /// Obtém a lista de dispositivos conectados via ADB
+    /// </summary>
+    /// <returns>Dicionário com o serial e nome dos dispositivos conectados</returns>
     private async Task<Dictionary<string, string>> GetConnectedDevices()
     {
         string? devices = null;
@@ -134,6 +144,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         return dictionary;
     }
 
+    /// <summary>
+    /// Obtém o nome do dispositivo a partir do seu número serial
+    /// </summary>
+    /// <param name="serial">Número serial do dispositivo</param>
+    /// <returns>Nome do dispositivo</returns>
     public async Task<string> GetDeviceName(string serial)
     {
         string name = "";
@@ -144,6 +159,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         return name.Split('\n')[0].Trim();
     }
 
+    /// <summary>
+    /// Obtém o número serial do dispositivo a partir do seu nome
+    /// </summary>
+    /// <param name="name">Nome do dispositivo no formato "nome (serial)"</param>
+    /// <returns>Número serial do dispositivo</returns>
     public string GetDeviceSerialByName(string name)
     {
         foreach (object item3 in (IEnumerable)DevicesComboBox.Items)
@@ -202,6 +222,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Processa os arquivos selecionados
     /// </summary>
+    /// <param name="files">Array com os caminhos dos arquivos selecionados</param>
+    /// <param name="errorMessages">Lista para armazenar mensagens de erro</param>
+    /// <param name="addedFiles">Lista para armazenar arquivos adicionados com sucesso</param>
     private void ProcessSelectedFiles(string[] files, List<string> errorMessages, List<string> addedFiles)
     {
         foreach (var filename in files)
@@ -223,6 +246,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Verifica e reporta arquivos duplicados
     /// </summary>
+    /// <param name="errorMessages">Lista de mensagens de erro dos arquivos duplicados</param>
+    /// <param name="addedFiles">Lista de arquivos adicionados com sucesso</param>
     private void CheckDuplicatedFiles(List<string> errorMessages, List<string> addedFiles)
     {
         if (errorMessages.Any())
@@ -237,6 +262,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Exibe mensagem sobre arquivos duplicados
     /// </summary>
+    /// <param name="errorMessages">Lista de mensagens de erro dos arquivos duplicados</param>
+    /// <param name="addedFiles">Lista de arquivos adicionados com sucesso</param>
     private void ShowDuplicateFilesMessage(List<string> errorMessages, List<string> addedFiles)
     {
         string errorMessage = CreateDuplicateErrorMessage(errorMessages);
@@ -252,6 +279,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Cria mensagem de erro para arquivos duplicados
     /// </summary>
+    /// <param name="errorMessages">Lista de mensagens de erro dos arquivos duplicados</param>
+    /// <returns>Mensagem formatada com os erros</returns>
     private string CreateDuplicateErrorMessage(List<string> errorMessages)
     {
         return errorMessages.Count == 1
@@ -262,6 +291,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Cria mensagem para arquivos adicionados com sucesso
     /// </summary>
+    /// <param name="addedFiles">Lista de arquivos adicionados com sucesso</param>
+    /// <returns>Mensagem formatada com os arquivos adicionados</returns>
     private string CreateAddedFilesMessage(List<string> addedFiles)
     {
         return addedFiles.Count == 1
@@ -272,6 +303,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Adiciona um arquivo APK à lista
     /// </summary>
+    /// <param name="filename">Caminho completo do arquivo APK</param>
+    /// <returns>String vazia se sucesso, ou mensagem de erro se falha</returns>
     private string AddApkFile(string filename)
     {
         if (IsApkAlreadyAdded(filename, out string error))
@@ -286,6 +319,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Verifica se um APK já está na lista
     /// </summary>
+    /// <param name="filename">Caminho completo do arquivo APK</param>
+    /// <param name="error">Mensagem de erro se o arquivo já existir</param>
+    /// <returns>True se o arquivo já existe, False caso contrário</returns>
     private bool IsApkAlreadyAdded(string filename, out string error)
     {
         error = string.Empty;
@@ -306,6 +342,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Adiciona um APK à lista de interface
     /// </summary>
+    /// <param name="filename">Caminho completo do arquivo APK</param>
     private void AddApkToList(string filename)
     {
         var stackPanel = CreateApkListItem(filename);
@@ -316,6 +353,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Cria um item de lista para o APK
     /// </summary>
+    /// <param name="filename">Caminho completo do arquivo APK</param>
+    /// <returns>StackPanel contendo o item da lista</returns>
     private StackPanel CreateApkListItem(string filename)
     {
         var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
@@ -576,6 +615,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         PopulateDevices();
     }
 
+    /// <summary>
+    /// Altera a visibilidade dos botões da interface
+    /// </summary>
+    /// <param name="change">True para habilitar, False para desabilitar</param>
     private void ChangeButtonVisibility(bool change)
     {
         foreach (var child in MainWindowGrid.Children.OfType<StackPanel>())
@@ -595,6 +638,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Abre uma janela filha e gerencia seu ciclo de vida
     /// </summary>
+    /// <typeparam name="T">Tipo da janela filha</typeparam>
+    /// <param name="childWindow">Instância da janela filha</param>
+    /// <returns>A janela filha passada como parâmetro</returns>
     private T OpenChildWindow<T>(T childWindow) where T : Window
     {
         childWindows.Add(childWindow);
@@ -605,6 +651,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Posiciona e exibe uma janela filha
     /// </summary>
+    /// <param name="window">Janela a ser exibida</param>
+    /// <param name="extraWidth">Largura extra para posicionamento</param>
+    /// <param name="otherWindow1">Primeira janela de referência opcional</param>
+    /// <param name="otherWindow2">Segunda janela de referência opcional</param>
     private void ShowWindow(Window window, double extraWidth, Window? otherWindow1 = null, Window? otherWindow2 = null)
     {
         var shouldCenterWindow = base.Left + base.Width + extraWidth >= SystemParameters.PrimaryScreenWidth || 
@@ -626,6 +676,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Manipula o fechamento de uma janela filha
     /// </summary>
+    /// <param name="controlsToEnable">Controles a serem habilitados após o fechamento</param>
     private void HandleWindowClosed(params Control[] controlsToEnable)
     {
         foreach (var control in controlsToEnable)
@@ -711,6 +762,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Habilita ou desabilita botões
     /// </summary>
+    /// <param name="buttons">Lista de botões a serem configurados</param>
+    /// <param name="states">Lista de estados correspondentes aos botões</param>
     private void Button_Status(List<Button> buttons, List<bool> states)
     {
         for (int i = 0; i < buttons.Count && i < states.Count; i++)
@@ -737,6 +790,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     #endregion
 
     #region Other Methods
+    /// <summary>
+    /// Abre a janela Kids e configura seus estados
+    /// </summary>
     private void KidsWindow_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
@@ -759,6 +815,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
     }
 
+    /// <summary>
+    /// Manipula o evento de fechamento da janela Kids
+    /// </summary>
     private void KidsWindow_Closed(object? sender, EventArgs e)
     {
         if (ApkFilesList.Items.Count > 0)
@@ -769,6 +828,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         kidsWindow = null;
     }
 
+    /// <summary>
+    /// Abre a janela de Controle Parental e configura seus estados
+    /// </summary>
     private void PCWindow_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
@@ -792,6 +854,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
     }
 
+    /// <summary>
+    /// Manipula o evento de fechamento da janela de Controle Parental
+    /// </summary>
     private void PcWindow_Closed(object? sender, EventArgs e)
     {
         if (ApkFilesList.Items.Count > 0)
@@ -802,6 +867,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         settingsWindow = null;
     }
 
+    /// <summary>
+    /// Abre a janela More e configura seus estados
+    /// </summary>
     private void More_Button_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
@@ -823,6 +891,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
     }
 
+    /// <summary>
+    /// Manipula o evento de fechamento da janela More
+    /// </summary>
     private void MoreWindow_Closed(object? sender, EventArgs e)
     {
         EnableDevicesBox();
@@ -831,6 +902,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         this.Activate();
     }
 
+    /// <summary>
+    /// Salva o conteúdo da caixa de status em um arquivo de texto
+    /// </summary>
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         string output = StatusText.Text;
@@ -855,11 +929,19 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
     }
 
+    /// <summary>
+    /// Atualiza o estado do botão de instalação quando um dispositivo é selecionado
+    /// </summary>
+    /// <param name="sender">O objeto que disparou o evento</param>
+    /// <param name="e">Argumentos do evento de mudança de seleção</param>
     private void DevicesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         AllowInstall();
     }
 
+    /// <summary>
+    /// Habilita a ComboBox de dispositivos
+    /// </summary>
     public void EnableDevicesBox()
     {
         DevicesComboBox.IsEnabled = true;
