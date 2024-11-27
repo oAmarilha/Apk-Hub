@@ -56,7 +56,7 @@ public partial class Kids : Window, IComponentConnector
                 child.Close(); // Fecha a janela filha
             }
         }
-        _mainWindow.ActivateDevicesBox();
+        _mainWindow.EnableDevicesBox();
 		_cancellationTokenSource.Cancel();
 		_mainWindow.ParentalCare_Button.IsEnabled = true;
 		_mainWindow.Browse_Button.IsEnabled = true;
@@ -149,7 +149,6 @@ public partial class Kids : Window, IComponentConnector
 		if (isClosing) return;
 		isClosing = true;
         await _automationWindow!.StopPythonExecution();
-        _automationWindow.Close();
 		isClosing = false;
         _automationWindow = null;
         Show();

@@ -180,7 +180,7 @@ public partial class Settings : Window, IComponentConnector
 		{
 			logcatWindow.Close();
 		}
-		_mainWindow.ActivateDevicesBox();
+		_mainWindow.EnableDevicesBox();
 		AdbHelper.Instance.StopCommand();
 		_mainWindow.Browse_Button.IsEnabled = true;
 		_mainWindow.Kids_Button.IsEnabled = true;

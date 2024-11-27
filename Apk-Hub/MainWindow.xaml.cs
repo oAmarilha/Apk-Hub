@@ -15,43 +15,70 @@ namespace ApkInstaller;
 
 public partial class MainWindow : MetroWindow, IComponentConnector
 {
+    #region Fields and Properties
     private Settings? settingsWindow;
-
     private Kids? kidsWindow;
-
     private UsbDeviceNotifier? usbDeviceNotifier;
-
     private More? moreWindow;
-
     private bool loopCancelation = false;
-
     private bool success;
-
+    private readonly List<Window> childWindows = new();
+    
+    /// <summary>
+    /// Caminho para o diretório de logs do aplicativo
+    /// </summary>
     public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
+    
+    /// <summary>
+    /// Instância singleton da janela principal
+    /// </summary>
     public static MainWindow Instance { get; private set; } = null!;
+    #endregion
 
-    private List<Window> childWindows = new List<Window>();
-
+    #region Initialization
+    /// <summary>
+    /// Construtor da janela principal
+    /// </summary>
     public MainWindow()
     {
         InitializeComponent();
-        this.WindowTitleBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
-        this.BorderBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
-        base.Loaded += MainWindow_Loaded;
+        ConfigureWindowAppearance();
         Instance = this;
-        Install_Button.Content = "Install APKs";
+        base.Loaded += MainWindow_Loaded;
         base.Closing += MainWindow_Closing;
-
     }
 
+    /// <summary>
+    /// Configura a aparência inicial da janela
+    /// </summary>
+    private void ConfigureWindowAppearance()
+    {
+        this.WindowTitleBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
+        this.BorderBrush = new SolidColorBrush(Color.FromRgb(75, 10, 198));
+        Install_Button.Content = "Install APKs";
+    }
+
+    /// <summary>
+    /// Manipulador do evento Loaded da janela
+    /// </summary>
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         PopulateDevices();
         Directory.CreateDirectory(appPath);
+        InitializeUsbDeviceNotifier();
+    }
+
+    /// <summary>
+    /// Inicializa o notificador de dispositivos USB
+    /// </summary>
+    private void InitializeUsbDeviceNotifier()
+    {
         usbDeviceNotifier = new UsbDeviceNotifier(this);
         usbDeviceNotifier.UsbDeviceChanged += OnUsbDeviceChanged!;
     }
+    #endregion
 
+    #region Device Management
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
     {
         await Task.Delay(1000);
@@ -87,296 +114,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             }
         });
     }
-
-    private T OpenChildWindow<T>(T childWindow) where T : Window
-    {
-        childWindows.Add(childWindow); // Adiciona a janela filha � lista
-        childWindow.Closed += (s, e) => childWindows.Remove(childWindow); // Remove da lista quando fechada
-        return childWindow;
-    }
-
-    private string? CheckDeviceComboBox()
-    {
-        return DevicesComboBox.SelectedItem?.ToString();
-    }
-
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
-    {
-        PopulateDevices();
-    }
-
-    private void ChangeButtonVisibility(bool change)
-    {
-        foreach (var child in MainWindowGrid.Children.OfType<StackPanel>())
-        {
-            foreach (var stackChild in child.Children.OfType<Button>())
-            {
-                stackChild.IsEnabled = change;
-            }
-        }
-
-        Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && change && ApkFilesList.Items.Count > 0;
-    }
-
-    public MessageBoxResult ShowMessage(string message, string? title = null, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Warning)
-    {
-        return MessageBox.Show(message, title, button, icon);
-    }
-
-    private void CheckDuplicatedFiles(List<string> errorMessages, List<string> addedFiles)
-    {
-        if (errorMessages.Any())
-        {
-            string errorMessage = errorMessages.Count() == 1
-                ? $"The following file:\n'{string.Join("', '", errorMessages)}' is already selected, please remove it and try again."
-                : $"The following files:\n'{string.Join("', '", errorMessages)}' are already selected, please remove them and try again.";
-
-            if (addedFiles.Any())
-            {
-                string addedMessage = addedFiles.Count() == 1
-                    ? $"Additionally, the following file was successfully added:\n'{string.Join("', '", addedFiles)}'"
-                    : $"Additionally, the following files were successfully added:\n'{string.Join("', '", addedFiles)}'";
-
-                errorMessage += $"\n\n{addedMessage}";
-            }
-
-            UpdateStatusText("Duplicated file(s)", clear: true, isError: true);
-            ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-            ChangeButtonVisibility(true);
-            return;
-        }
-        UpdateStatusText("Files loaded", clear: true);
-    }
-
-    private void BrowseButton_Click(object sender, RoutedEventArgs e)
-    {
-        ChangeButtonVisibility(false);
-        var errorMessages = new List<string>();
-        var addedFiles = new List<string>();
-
-        var openFileDialog = new OpenFileDialog
-        {
-            Multiselect = true,
-            Filter = "APK files (*.apk)|*.apk"
-        };
-
-        if (openFileDialog.ShowDialog() == true)
-        {
-            UpdateStatusText("Loading file(s) selected", clear: true);
-
-            foreach (var filename in openFileDialog.FileNames)
-            {
-                string error = AddApkFile(filename);
-                string fileNameOnly = System.IO.Path.GetFileName(filename); // Extrai apenas o nome do arquivo
-
-                if (!string.IsNullOrEmpty(error))
-                {
-                    errorMessages.Add(fileNameOnly);
-                }
-                else
-                {
-                    addedFiles.Add(fileNameOnly); // Adiciona apenas o nome do arquivo
-                }
-            }
-            CheckDuplicatedFiles(errorMessages, addedFiles);
-        }
-        ChangeButtonVisibility(true);
-    }
-
-    private void Grid_DragOver(object sender, DragEventArgs e)
-    {
-        // Verifica se os dados do arraste s�o arquivos
-        if (e.Data.GetData(DataFormats.FileDrop, autoConvert: false) is string[] files)
-        {
-            // Verifica se algum arquivo .apk est� presente
-            bool hasApkFile = files.Any(file => file.EndsWith(".apk"));
-
-            // Atualiza AllowDrop e o efeito de arraste
-            ApkFilesList.AllowDrop = true; // Permite o drop independentemente
-            e.Effects = hasApkFile ? DragDropEffects.Copy : DragDropEffects.None;
-        }
-        e.Handled = true; // Marca o evento como tratado
-    }
-
-    private void Grid_Drop(object sender, DragEventArgs e)
-    {
-        var errorMessages = new List<string>();
-        var addedFiles = new List<string>();
-
-        if (e.Data.GetData(DataFormats.FileDrop, autoConvert: false) is string[] files)
-        {
-            foreach (var filename in files)
-            {
-                if (filename.EndsWith(".apk"))
-                {
-                    string error = AddApkFile(filename);
-                    string fileNameOnly = System.IO.Path.GetFileName(filename);
-
-                    if (!string.IsNullOrEmpty(error))
-                    {
-                        errorMessages.Add(fileNameOnly);
-                    }
-                    else
-                    {
-                        addedFiles.Add(fileNameOnly);
-                    }
-                }
-            }
-            CheckDuplicatedFiles(errorMessages, addedFiles);
-            AllowInstall();
-        }
-    }
-
-    private string AddApkFile(string filename)
-    {
-        string appError = "";
-        string fileName = Path.GetFileName(filename);
-        StackPanel stackPanel = new StackPanel
-        {
-            Orientation = Orientation.Horizontal
-        };
-
-        foreach (StackPanel item in ApkFilesList.Items)
-        {
-            foreach (var child in item.Children)
-            {
-                if (child is TextBlock itemText)
-                {
-                    string text = itemText.Text;
-                    if (Path.GetFileName(filename) == itemText.Text)
-                    {
-                        appError = (Path.GetFileName(filename));
-                        return appError;
-                    }
-                }
-            }
-        }
-        ChangeButtonVisibility(true);
-
-        TextBlock element = new TextBlock
-        {
-            Text = fileName,
-            Margin = new Thickness(0.0, 0.0, 10.0, 0.0)
-        };
-        Button button = new Button
-        {
-            Content = "Delete",
-            Tag = filename
-        };
-        button.Click += DeleteButton_Click;
-        stackPanel.Children.Add(element);
-        stackPanel.Children.Add(button);
-        stackPanel.Tag = filename;
-        ApkFilesList.Items.Add(stackPanel);
-        return appError;
-    }
-
-    private void DeleteButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Parent is StackPanel stackPanel)
-        {
-            ApkFilesList.Items.Remove(stackPanel);
-
-            // Habilita ou desabilita o bot�o de instala��o com base na contagem de itens
-            Install_Button.IsEnabled = ApkFilesList.Items.Count > 0;
-        }
-    }
-
-    private async void InstallButton_Click(object sender, RoutedEventArgs e)
-    {
-        string? device = CheckDeviceComboBox();
-        if (device == null)
-        {
-            UpdateStatusText("Please select a device.", isError: true, clear: true);
-        }
-        else if (Install_Button.Content.ToString() == "Install APKs")
-        {
-            ApkFilesList.IsEnabled = false;
-            Install_Button.Content = "Stop";
-            Install_Button.Background = Brushes.Red;
-            List<string> list = new List<string>();
-            foreach (StackPanel item2 in (IEnumerable)ApkFilesList.Items)
-            {
-                string item = item2.Tag.ToString();
-                list.Add(item);
-            }
-            string deviceSerialByName = GetDeviceSerialByName(device);
-            await InstallApks(deviceSerialByName, list);
-        }
-        else
-        {
-            loopCancelation = true;
-            success = false;
-            AdbHelper.Instance.StopCommand();
-            UpdateStatusText("Installation canceled", isError: true);
-            ApkFilesList.IsEnabled = true;
-            Install_Button.Content = "Install APKs";
-            Install_Button.Background = Brushes.Green;
-            return;
-        }
-    }
-
-    private async Task InstallApks(string device, List<string> apkFiles)
-    {
-        string outputResult = "";
-        Dispatcher.Invoke(() =>
-        {
-            UpdateStatusText("Initializing the installation", clear: true);
-        });
-        try
-        {
-            success = true;
-            foreach (string apkFile in apkFiles)
-            {
-                if (loopCancelation == false)
-                {
-                    UpdateStatusText($"\nInstalling \"{apkFile}\"");
-                    await AdbHelper.Instance.RunAdbCommandAsync($"install -r -d \"{apkFile}\"", output =>
-                    {
-                        base.Dispatcher.Invoke(() =>
-                        {
-                            UpdateStatusText(output);
-                            outputResult += output;
-                        });
-                    }, device, shell: false);
-
-                    if (!outputResult.Contains("Success"))
-                    {
-                        loopCancelation = true;
-                        success = false;
-                    }
-                }
-                else
-                {
-                    success = false;
-                    break;
-                }
-            }
-            Dispatcher.Invoke(() =>
-            {
-                if (success)
-                {
-                    UpdateStatusText("Installation complete", isSuccess: true);
-                }
-                else
-                {
-                    UpdateStatusText("Installation not complete.", isError: true);
-                }
-            });
-            Install_Button.Content = "Install APKs";
-            Install_Button.Background = Brushes.Green;
-            ApkFilesList.IsEnabled = true;
-            loopCancelation = false;
-        }
-        catch (Exception ex)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                UpdateStatusText($"Error: {ex.Message}", isError: true);
-            });
-        }
-    }
-
 
     private async Task<Dictionary<string, string>> GetConnectedDevices()
     {
@@ -425,7 +162,581 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         }
         return null!;
     }
+    #endregion
 
+    #region APK File Management
+    /// <summary>
+    /// Manipula o clique no botão de navegação
+    /// </summary>
+    private void BrowseButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeButtonVisibility(false);
+        var (errorMessages, addedFiles) = BrowseAndAddApkFiles();
+        CheckDuplicatedFiles(errorMessages, addedFiles);
+        ChangeButtonVisibility(true);
+    }
+
+    /// <summary>
+    /// Abre o diálogo de seleção de arquivos e adiciona os APKs selecionados
+    /// </summary>
+    private (List<string> errorMessages, List<string> addedFiles) BrowseAndAddApkFiles()
+    {
+        var errorMessages = new List<string>();
+        var addedFiles = new List<string>();
+
+        var openFileDialog = new OpenFileDialog
+        {
+            Multiselect = true,
+            Filter = "APK files (*.apk)|*.apk"
+        };
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            UpdateStatusText("Loading file(s) selected", clear: true);
+            ProcessSelectedFiles(openFileDialog.FileNames, errorMessages, addedFiles);
+        }
+
+        return (errorMessages, addedFiles);
+    }
+
+    /// <summary>
+    /// Processa os arquivos selecionados
+    /// </summary>
+    private void ProcessSelectedFiles(string[] files, List<string> errorMessages, List<string> addedFiles)
+    {
+        foreach (var filename in files)
+        {
+            string error = AddApkFile(filename);
+            string fileNameOnly = Path.GetFileName(filename);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                errorMessages.Add(fileNameOnly);
+            }
+            else
+            {
+                addedFiles.Add(fileNameOnly);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Verifica e reporta arquivos duplicados
+    /// </summary>
+    private void CheckDuplicatedFiles(List<string> errorMessages, List<string> addedFiles)
+    {
+        if (errorMessages.Any())
+        {
+            ShowDuplicateFilesMessage(errorMessages, addedFiles);
+            UpdateStatusText("Duplicated file(s)", clear: true, isError: true);
+            return;
+        }
+        UpdateStatusText("Files loaded", clear: true);
+    }
+
+    /// <summary>
+    /// Exibe mensagem sobre arquivos duplicados
+    /// </summary>
+    private void ShowDuplicateFilesMessage(List<string> errorMessages, List<string> addedFiles)
+    {
+        string errorMessage = CreateDuplicateErrorMessage(errorMessages);
+        
+        if (addedFiles.Any())
+        {
+            errorMessage += $"\n\n{CreateAddedFilesMessage(addedFiles)}";
+        }
+
+        ShowMessage(errorMessage, "File Selection Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
+    /// <summary>
+    /// Cria mensagem de erro para arquivos duplicados
+    /// </summary>
+    private string CreateDuplicateErrorMessage(List<string> errorMessages)
+    {
+        return errorMessages.Count == 1
+            ? $"The following file:\n'{string.Join("', '", errorMessages)}' is already selected, please remove it and try again."
+            : $"The following files:\n'{string.Join("', '", errorMessages)}' are already selected, please remove them and try again.";
+    }
+
+    /// <summary>
+    /// Cria mensagem para arquivos adicionados com sucesso
+    /// </summary>
+    private string CreateAddedFilesMessage(List<string> addedFiles)
+    {
+        return addedFiles.Count == 1
+            ? $"Additionally, the following file was successfully added:\n'{string.Join("', '", addedFiles)}'"
+            : $"Additionally, the following files were successfully added:\n'{string.Join("', '", addedFiles)}'";
+    }
+
+    /// <summary>
+    /// Adiciona um arquivo APK à lista
+    /// </summary>
+    private string AddApkFile(string filename)
+    {
+        if (IsApkAlreadyAdded(filename, out string error))
+        {
+            return error;
+        }
+
+        AddApkToList(filename);
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Verifica se um APK já está na lista
+    /// </summary>
+    private bool IsApkAlreadyAdded(string filename, out string error)
+    {
+        error = string.Empty;
+        string fileName = Path.GetFileName(filename);
+
+        foreach (StackPanel item in ApkFilesList.Items)
+        {
+            if (item.Children.OfType<TextBlock>().FirstOrDefault()?.Text == fileName)
+            {
+                error = fileName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Adiciona um APK à lista de interface
+    /// </summary>
+    private void AddApkToList(string filename)
+    {
+        var stackPanel = CreateApkListItem(filename);
+        ApkFilesList.Items.Add(stackPanel);
+        ChangeButtonVisibility(true);
+    }
+
+    /// <summary>
+    /// Cria um item de lista para o APK
+    /// </summary>
+    private StackPanel CreateApkListItem(string filename)
+    {
+        var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
+        var textBlock = new TextBlock
+        {
+            Text = Path.GetFileName(filename),
+            Margin = new Thickness(0, 0, 10, 0)
+        };
+        var deleteButton = new Button
+        {
+            Content = "Delete",
+            Tag = filename
+        };
+        deleteButton.Click += DeleteButton_Click;
+
+        stackPanel.Children.Add(textBlock);
+        stackPanel.Children.Add(deleteButton);
+        stackPanel.Tag = filename;
+
+        return stackPanel;
+    }
+
+    /// <summary>
+    /// Manipula o arraste de arquivos sobre a lista
+    /// </summary>
+    private void Grid_DragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(DataFormats.FileDrop, autoConvert: false) is string[] files)
+        {
+            bool hasApkFile = files.Any(file => file.EndsWith(".apk"));
+            ApkFilesList.AllowDrop = true;
+            e.Effects = hasApkFile ? DragDropEffects.Copy : DragDropEffects.None;
+        }
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Manipula o soltar de arquivos na lista
+    /// </summary>
+    private void Grid_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(DataFormats.FileDrop, autoConvert: false) is string[] files)
+        {
+            var (errorMessages, addedFiles) = ProcessDroppedFiles(files);
+            CheckDuplicatedFiles(errorMessages, addedFiles);
+            AllowInstall();
+        }
+    }
+
+    /// <summary>
+    /// Processa os arquivos soltos na lista
+    /// </summary>
+    private (List<string> errorMessages, List<string> addedFiles) ProcessDroppedFiles(string[] files)
+    {
+        var errorMessages = new List<string>();
+        var addedFiles = new List<string>();
+
+        foreach (var filename in files.Where(f => f.EndsWith(".apk")))
+        {
+            string error = AddApkFile(filename);
+            string fileNameOnly = Path.GetFileName(filename);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                errorMessages.Add(fileNameOnly);
+            }
+            else
+            {
+                addedFiles.Add(fileNameOnly);
+            }
+        }
+
+        return (errorMessages, addedFiles);
+    }
+
+    /// <summary>
+    /// Manipula o clique no botão de exclusão
+    /// </summary>
+    private void DeleteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Parent is StackPanel stackPanel)
+        {
+            ApkFilesList.Items.Remove(stackPanel);
+            Install_Button.IsEnabled = ApkFilesList.Items.Count > 0;
+        }
+    }
+
+    /// <summary>
+    /// Limpa a lista de APKs e o texto de saída
+    /// </summary>
+    private void EmptyOutput_Button(object sender, RoutedEventArgs e)
+    {
+        ApkFilesList.Items.Clear();
+        UpdateStatusText(clear: true);
+    }
+    #endregion
+
+    #region APK Installation
+    /// <summary>
+    /// Manipula o clique no botão de instalação
+    /// </summary>
+    private async void InstallButton_Click(object sender, RoutedEventArgs e)
+    {
+        string? device = CheckDeviceComboBox();
+        if (device == null)
+        {
+            UpdateStatusText("Please select a device.", isError: true, clear: true);
+            return;
+        }
+
+        if (Install_Button.Content.ToString() == "Install APKs")
+        {
+            await StartInstallation(device);
+        }
+        else
+        {
+            CancelInstallation();
+        }
+    }
+
+    /// <summary>
+    /// Inicia o processo de instalação dos APKs
+    /// </summary>
+    private async Task StartInstallation(string device)
+    {
+        ApkFilesList.IsEnabled = false;
+        UpdateInstallButtonState(true);
+        
+        var apkFiles = GetSelectedApkFiles();
+        string deviceSerial = GetDeviceSerialByName(device);
+        await InstallApks(deviceSerial, apkFiles);
+    }
+
+    /// <summary>
+    /// Cancela o processo de instalação
+    /// </summary>
+    private void CancelInstallation()
+    {
+        loopCancelation = true;
+        success = false;
+        AdbHelper.Instance.StopCommand();
+        UpdateStatusText("Installation canceled", isError: true);
+        ApkFilesList.IsEnabled = true;
+        UpdateInstallButtonState(false);
+    }
+
+    /// <summary>
+    /// Atualiza o estado do botão de instalação
+    /// </summary>
+    private void UpdateInstallButtonState(bool installing)
+    {
+        Install_Button.Content = installing ? "Stop" : "Install APKs";
+        Install_Button.Background = installing ? Brushes.Red : Brushes.Green;
+    }
+
+    /// <summary>
+    /// Obtém a lista de APKs selecionados
+    /// </summary>
+    private List<string> GetSelectedApkFiles()
+    {
+        return ApkFilesList.Items.OfType<StackPanel>()
+                          .Select(panel => panel.Tag.ToString()!)
+                          .ToList();
+    }
+
+    /// <summary>
+    /// Instala os APKs no dispositivo
+    /// </summary>
+    private async Task InstallApks(string device, List<string> apkFiles)
+    {
+        UpdateStatusText("Initializing the installation", clear: true);
+
+        try
+        {
+            success = true;
+            foreach (string apkFile in apkFiles)
+            {
+                if (!loopCancelation)
+                {
+                    var (installSuccess, output) = await InstallSingleApk(device, apkFile);
+                    if (!installSuccess)
+                    {
+                        loopCancelation = true;
+                        success = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    success = false;
+                    break;
+                }
+            }
+
+            UpdateInstallationResult();
+            ResetInstallationState();
+        }
+        catch (Exception ex)
+        {
+            Dispatcher.Invoke(() => UpdateStatusText($"Error: {ex.Message}", isError: true));
+        }
+    }
+
+    /// <summary>
+    /// Instala um único APK
+    /// </summary>
+    private async Task<(bool success, string output)> InstallSingleApk(string device, string apkFile)
+    {
+        string outputResult = "";
+        UpdateStatusText($"\nInstalling \"{apkFile}\"");
+        
+        await AdbHelper.Instance.RunAdbCommandAsync(
+            $"install -r -d \"{apkFile}\"",
+            output =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    UpdateStatusText(output);
+                    outputResult += output;
+                });
+            },
+            device,
+            shell: false
+        );
+
+        return (outputResult.Contains("Success"), outputResult);
+    }
+
+    /// <summary>
+    /// Atualiza o resultado da instalação na UI
+    /// </summary>
+    private void UpdateInstallationResult()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            UpdateStatusText(
+                success ? "Installation complete" : "Installation not complete.",
+                isError: !success,
+                isSuccess: success
+            );
+        });
+    }
+
+    /// <summary>
+    /// Reseta o estado após a instalação
+    /// </summary>
+    private void ResetInstallationState()
+    {
+        UpdateInstallButtonState(false);
+        ApkFilesList.IsEnabled = true;
+        loopCancelation = false;
+    }
+    #endregion
+
+    #region Button Click Events
+    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        PopulateDevices();
+    }
+
+    private void ChangeButtonVisibility(bool change)
+    {
+        foreach (var child in MainWindowGrid.Children.OfType<StackPanel>())
+        {
+            foreach (var stackChild in child.Children.OfType<Button>())
+            {
+                stackChild.IsEnabled = change;
+            }
+        }
+
+        Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && change && ApkFilesList.Items.Count > 0;
+    }
+
+    #endregion
+
+    #region Window Management
+    /// <summary>
+    /// Abre uma janela filha e gerencia seu ciclo de vida
+    /// </summary>
+    private T OpenChildWindow<T>(T childWindow) where T : Window
+    {
+        childWindows.Add(childWindow);
+        childWindow.Closed += (s, e) => childWindows.Remove(childWindow);
+        return childWindow;
+    }
+
+    /// <summary>
+    /// Posiciona e exibe uma janela filha
+    /// </summary>
+    private void ShowWindow(Window window, double extraWidth, Window? otherWindow1 = null, Window? otherWindow2 = null)
+    {
+        var shouldCenterWindow = base.Left + base.Width + extraWidth >= SystemParameters.PrimaryScreenWidth || 
+                               otherWindow1 != null || 
+                               otherWindow2 != null;
+
+        if (shouldCenterWindow)
+        {
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        }
+        else
+        {
+            window.Left = base.Left + base.Width;
+            window.Top = base.Top;
+        }
+        window.Show();
+    }
+
+    /// <summary>
+    /// Manipula o fechamento de uma janela filha
+    /// </summary>
+    private void HandleWindowClosed(params Control[] controlsToEnable)
+    {
+        foreach (var control in controlsToEnable)
+        {
+            control.IsEnabled = true;
+        }
+        this.Activate();
+    }
+
+    /// <summary>
+    /// Manipula o fechamento da janela principal
+    /// </summary>
+    private async void MainWindow_Closing(object sender, CancelEventArgs e)
+    {
+        await CleanupOnClosing();
+        CloseAllChildWindows();
+        AdbHelper.Instance.StopCommand();
+        Application.Current.Shutdown();
+    }
+
+    /// <summary>
+    /// Limpa recursos ao fechar a aplicação
+    /// </summary>
+    private async Task CleanupOnClosing()
+    {
+#if !DEBUG
+        await AdbHelper.Instance.RunAdbCommandAsync("kill-server", output => { }, generalCommand: true);
+#endif
+    }
+
+    /// <summary>
+    /// Fecha todas as janelas filhas
+    /// </summary>
+    private void CloseAllChildWindows()
+    {
+        var windowsToClose = new List<Window>(childWindows);
+        foreach (var child in windowsToClose)
+        {
+            if (child.IsVisible)
+            {
+                child.Close();
+            }
+        }
+    }
+    #endregion
+
+    #region UI Helpers
+    /// <summary>
+    /// Exibe uma mensagem para o usuário
+    /// </summary>
+    public MessageBoxResult ShowMessage(
+        string message, 
+        string? title = null, 
+        MessageBoxButton button = MessageBoxButton.OK, 
+        MessageBoxImage icon = MessageBoxImage.Warning)
+    {
+        return MessageBox.Show(message, title, button, icon);
+    }
+
+    /// <summary>
+    /// Atualiza o texto de status na interface
+    /// </summary>
+    public void UpdateStatusText(string? message = null, bool isError = false, bool isSuccess = false, bool clear = false)
+    {
+        base.Dispatcher.Invoke(() =>
+        {
+            StatusText.Foreground = isError ? Brushes.Red : (isSuccess ? Brushes.Green : Brushes.White);
+            
+            if (clear)
+            {
+                StatusText.Text = string.Empty;
+            }
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                StatusText.Text += $"{message}{Environment.NewLine}";
+            }
+
+            StatusText.ScrollToEnd();
+        });
+    }
+
+    /// <summary>
+    /// Habilita ou desabilita botões
+    /// </summary>
+    private void Button_Status(List<Button> buttons, List<bool> states)
+    {
+        for (int i = 0; i < buttons.Count && i < states.Count; i++)
+        {
+            buttons[i].IsEnabled = states[i];
+        }
+    }
+
+    /// <summary>
+    /// Verifica se o botão de instalação pode ser habilitado
+    /// </summary>
+    private void AllowInstall()
+    {
+        Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && ApkFilesList.Items.Count > 0;
+    }
+
+    /// <summary>
+    /// Verifica o dispositivo selecionado
+    /// </summary>
+    private string? CheckDeviceComboBox()
+    {
+        return DevicesComboBox.SelectedItem?.ToString();
+    }
+    #endregion
+
+    #region Other Methods
     private void KidsWindow_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
@@ -457,7 +768,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         AdbHelper.Instance.StopCommand();
         kidsWindow = null;
     }
-
 
     private void PCWindow_Click(object sender, RoutedEventArgs e)
     {
@@ -492,42 +802,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         settingsWindow = null;
     }
 
-
-    public void ActivateDevicesBox()
-    {
-        if (DevicesComboBox.Items.Count > 1)
-        {
-            DevicesComboBox.IsEnabled = true;
-        }
-    }
-
-    public void UpdateStatusText(string? message = null, bool isError = false, bool isSuccess = false, bool clear = false)
-    {
-        base.Dispatcher.Invoke(delegate
-        {
-            StatusText.Foreground = (isError ? Brushes.Red : (isSuccess ? Brushes.Green : Brushes.White));
-            if (clear == true)
-            {
-                StatusText.Text = string.Empty;
-            }
-
-            if (!string.IsNullOrEmpty(message))
-            {
-                //Add time in terminal log?
-                //string currentDateTime = DateTime.Now.ToString("[MM-dd HH:mm:ss.fff]");
-                StatusText.Text += /* $"{currentDateTime}\n" + */ message + Environment.NewLine;
-            }
-
-            StatusText.ScrollToEnd();
-        });
-    }
-
-    public void EmptyOutput_Button(object sender, RoutedEventArgs e)
-    {
-        ApkFilesList.Items.Clear();
-        UpdateStatusText(clear: true);
-    }
-
     private void More_Button_Click(object sender, RoutedEventArgs e)
     {
         string? device = CheckDeviceComboBox();
@@ -551,69 +825,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private void MoreWindow_Closed(object? sender, EventArgs e)
     {
-        ActivateDevicesBox();
+        EnableDevicesBox();
         moreWindow = null;
         AdbHelper.Instance.StopCommand();
         this.Activate();
-    }
-
-    private void ShowWindow(Window window, double extraWidth, Window? otherWindow1 = null, Window? otherWindow2 = null)
-    {
-        if (base.Left + base.Width + extraWidth >= SystemParameters.PrimaryScreenWidth || otherWindow1 != null || otherWindow2 != null)
-        {
-            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        }
-        else
-        {
-            window.Left = base.Left + base.Width;
-            window.Top = base.Top;
-        }
-        window.Show();
-    }
-
-    private void HandleWindowClosed(params Control[] controlsToEnable)
-    {
-        foreach (var control in controlsToEnable)
-        {
-            control.IsEnabled = true;
-        }
-        this.Activate();
-    }
-
-    private async void MainWindow_Closing(object? sender, CancelEventArgs e)
-    {
-#if !DEBUG
-        await AdbHelper.Instance.RunAdbCommandAsync("kill-server", output => { }, generalCommand: true);
-#endif
-        // Cria uma lista tempor�ria para armazenar as janelas a serem fechadas
-        var windowsToClose = new List<Window>(childWindows);
-
-        // Itera sobre a lista tempor�ria
-        foreach (var child in windowsToClose)
-        {
-            // Verifica se a janela est� aberta antes de cham�-la
-            if (child.IsVisible)
-            {
-                child.Close(); // Fecha a janela filha
-            }
-        }
-        Application.Current.Shutdown();
-    }
-
-    /// <summary>
-    /// Enable or disable buttons.
-    /// </summary>
-    /// <param name="nameButton">Button name that it will be changed.</param>
-    /// <param name="status">New button state true - activated, false - deactivated.</param>
-    private void Button_Status(List<Button> nameButton, List<bool> status)
-    {
-        foreach (var button in nameButton)
-        {
-            foreach (var action in status)
-            {
-                button.IsEnabled = action;
-            }
-        }
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -645,8 +860,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         AllowInstall();
     }
 
-    private void AllowInstall()
+    public void EnableDevicesBox()
     {
-        Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && ApkFilesList.Items.Count > 0;
+        DevicesComboBox.IsEnabled = true;
     }
+    #endregion
 }
