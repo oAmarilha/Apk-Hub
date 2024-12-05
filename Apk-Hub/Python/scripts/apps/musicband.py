@@ -40,7 +40,7 @@ class KidsMusicBand(Application):
         #When the user taps the icon “Lisa's Music Band” 
         #Then the application will be open in landscape mode 
 
-        self.cmdpmt.cmd(f'push {self.defaultpath}\\rep/Musics /sdcard/Music')
+        self.cmdpmt.cmd(f'push "{self.defaultpath}\\rep\\Musics" /sdcard/Music')
         self.cmdpmt.start_shell(r'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Music/')
         touch(self.getCoord("Banda musical da Lisa"))
         return

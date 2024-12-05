@@ -36,7 +36,10 @@
                     Margin="20"
                     VerticalAlignment="Top"
                     Width="180">
-            <TextBlock Text="Account-Token:" FontWeight="Bold" Foreground="Black"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Account-Token:" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                <Button Name="RefreshButton" Content="⟳" MinHeight="0" Height="20" Width="20" Padding="0" Click="RefreshButton_Click" Margin="5,0,0,0" ToolTip="Refresh Values" FontSize="10"/>
+            </StackPanel>
             <TextBox Name="AccountTokenText" Text="null" IsReadOnly="True" BorderThickness="0" Background="Transparent" Foreground="Black"/>
             <TextBlock Text="Device-Id:" FontWeight="Bold" Margin="0,10,0,0" Foreground="Black"/>
             <TextBox Name="DeviceIdText" Text="null" IsReadOnly="True" BorderThickness="0" Background="Transparent" Foreground="Black"/>

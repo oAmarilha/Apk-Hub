@@ -42,7 +42,7 @@ class KidsGallery(Application):
         #Given that the application is allowed on Kids Home 
         #When the user tap the icon “My Gallery” 
         #Then the application will be open 
-        self.cmdpmt.cmd(f'push {self.defaultpath}\\rep\\Gallery\\ /sdcard/Pictures')
+        self.cmdpmt.cmd(f'push "{self.defaultpath}\\rep\\Gallery\\" /sdcard/Pictures')
         self.cmdpmt.shell(r'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/')
         touch(self.getCoord('Minha galeria')) 
         return

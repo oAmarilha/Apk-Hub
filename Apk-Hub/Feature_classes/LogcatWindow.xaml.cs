@@ -32,6 +32,8 @@ public partial class LogcatWindow : Window, IComponentConnector
 
     public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
 
+    StringBuilder? logBuilder;
+
 
     public LogcatWindow(MainWindow mainWindow, Window calledWindow, string selectedDevice, string? filter)
     {
@@ -55,20 +57,39 @@ public partial class LogcatWindow : Window, IComponentConnector
     private async void StartLogcat()
     {
         await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output => { }, _selectedDevice, shell: true);
-        StringBuilder logBuilder = new StringBuilder();
+        logBuilder = new StringBuilder();
         DateTime lastUpdate = DateTime.Now;
-        string logcatCommand = !string.IsNullOrEmpty(_filter) ? $"logcat *:I *:D *:W *:E *:V | grep \"{_filter}\"" : "logcat *:I *:D *:W *:E *:V";
+        string logcatCommand = "logcat *:I *:D *:W *:E *:V";
 
         await AdbHelper.Instance.RunAdbCommandAsync(logcatCommand, output =>
         {
+            if (_filter == "com.samsung.android.app.parentalcare"){
+                ExtractValuesFromLog(output);
+            }
+            
             logBuilder.AppendLine(output);
             if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100) // Atualiza a UI a cada 100ms
             {
                 string logText = logBuilder.ToString();
                 base.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    LogcatTextBox.AppendText(logText);
-                    LogcatTextBox.ScrollToEnd();
+                    // Only show filtered text in the TextBox if filter is set
+                    if (!string.IsNullOrEmpty(_filter))
+                    {
+                        var filteredLines = logText.Split('\n')
+                            .Where(line => line.Contains(_filter))
+                            .ToList();
+                        if (filteredLines.Any())
+                        {
+                            LogcatTextBox.AppendText(string.Join("\n", filteredLines) + "\n");
+                            LogcatTextBox.ScrollToEnd();
+                        }
+                    }
+                    else
+                    {
+                        LogcatTextBox.AppendText(logText);
+                        LogcatTextBox.ScrollToEnd();
+                    }
                 }));
                 logBuilder.Clear();
                 lastUpdate = DateTime.Now;
@@ -123,6 +144,22 @@ public partial class LogcatWindow : Window, IComponentConnector
         {
             _clientId = match5.Groups[1].Value;
             base.Dispatcher.Invoke(() => ClientIdText.Text = _clientId);
+        }
+    }
+
+    private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Reset the stored values so they can be extracted again
+        _accountToken = null;
+        Application.Current.Dispatcher.Invoke(() => AccountTokenText.Text = "null");
+        await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output => { }, _selectedDevice, shell: true);
+
+        await AdbHelper.Instance.RunAdbCommandAsync($"am start -n com.osp.app.signin/com.samsung.android.samsungaccount.setting.ui.family.main.FamilyGroupMainActivity", output => { }, _selectedDevice, shell: true);
+
+        // Get current log content and process it
+        if (logBuilder != null)
+        {
+            ExtractValuesFromLog(logBuilder.ToString());
         }
     }
 

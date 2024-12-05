@@ -1,4 +1,6 @@
 .vs/
+.vscode/
 bin/
 obj/
 __pycache__/
+appium_migration/
