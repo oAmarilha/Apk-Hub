@@ -77,35 +77,76 @@ namespace ApkInstaller
         /// </summary>
         private static void SetupPythonEnvironment()
         {
-            string localapp = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Programs",
-                "Python"
-            );
-
-            string[] pythonVersions = { "Python312", "Python311", "Python310" };
-            bool pythonFound = false;
+            string pythonPath = string.Empty;
             
-            foreach (var version in pythonVersions)
+            // Tentar encontrar Python no registro do Windows
+            using (var baseKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Python\PythonCore"))
             {
-                string pythonPath = Path.Combine(localapp, version);
-                string dllPath = Path.Combine(pythonPath, $"{version.ToLower()}.dll");
-                
-                if (Directory.Exists(pythonPath) && File.Exists(dllPath))
+                if (baseKey != null)
                 {
-                    Runtime.PythonDLL = dllPath;
-                    pythonFound = true;
-                    break;
+                    // Procurar versões do Python em ordem decrescente (mais recente primeiro)
+                    var versions = baseKey.GetSubKeyNames()
+                        .OrderByDescending(v => v)
+                        .Where(v => v.StartsWith("3.")); // Garantir que é Python 3
+
+                    foreach (var version in versions)
+                    {
+                        using var versionKey = baseKey.OpenSubKey($@"{version}\InstallPath");
+                        if (versionKey != null)
+                        {
+                            pythonPath = versionKey.GetValue("ExecutablePath") as string;
+                            if (!string.IsNullOrEmpty(pythonPath))
+                                break;
+                        }
+                    }
                 }
             }
 
-            if (!pythonFound)
+            // Se não encontrou no HKLM, tentar no HKCU
+            if (string.IsNullOrEmpty(pythonPath))
+            {
+                using (var baseKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Python\PythonCore"))
+                {
+                    if (baseKey != null)
+                    {
+                        var versions = baseKey.GetSubKeyNames()
+                            .OrderByDescending(v => v)
+                            .Where(v => v.StartsWith("3."));
+
+                        foreach (var version in versions)
+                        {
+                            using var versionKey = baseKey.OpenSubKey($@"{version}\InstallPath");
+                            if (versionKey != null)
+                            {
+                                pythonPath = versionKey.GetValue("ExecutablePath") as string;
+                                if (!string.IsNullOrEmpty(pythonPath))
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(pythonPath))
             {
                 throw new InvalidOperationException(
-                    "Python runtime não encontrado. Por favor, instale Python 3.10-3.12 em: " +
-                    $"{localapp}\\Python3xx\\"
+                    "Python runtime not found. Please install Python 3.10-3.12"
                 );
             }
+
+            // Converter caminho do python.exe para dll
+            string pythonDir = Path.GetDirectoryName(pythonPath);
+            string folderName = new DirectoryInfo(pythonDir).Name;
+            string dllPath = Path.Combine(pythonDir, $"{folderName.ToLower()}.dll");
+
+            if (!File.Exists(dllPath))
+            {
+                throw new InvalidOperationException(
+                    $"Python DLL not found at expected location: {dllPath}"
+                );
+            }
+
+            Runtime.PythonDLL = dllPath;
         }
         #endregion
 
