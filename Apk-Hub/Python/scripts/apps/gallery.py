@@ -19,6 +19,7 @@ class KidsGallery(Application):
     def executeTest(self, res, osVer, uiMode, buildMode):
         self.imgPATH = self.setImgPATH(os.path.basename(__file__)) #set image path
         self.cmdpmt.start_shell("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity")
+        self.cmdpmt.start_shell(f'settings put system user_rotation 0')
         self.recordScreen() #start recording
         
         for i in dir(self):
@@ -42,7 +43,8 @@ class KidsGallery(Application):
         #Given that the application is allowed on Kids Home 
         #When the user tap the icon “My Gallery” 
         #Then the application will be open 
-        self.cmdpmt.cmd(f'push "{self.defaultpath}\\rep\\Gallery\\" /sdcard/Pictures')
+        source_path = os.path.join(self.defaultpath, "rep", "Gallery")
+        self.cmdpmt.push(f"{source_path}" , "/sdcard/Pictures")
         self.cmdpmt.shell(r'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/')
         touch(self.getCoord('Minha galeria')) 
         return

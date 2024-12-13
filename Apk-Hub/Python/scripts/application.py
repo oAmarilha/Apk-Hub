@@ -1,7 +1,6 @@
 from airtestInstance import *
 import random
-from pathlib import Path 
-import asyncio
+from pathlib import Path
 
 class InitAirtest:
     def __init__(self, serialno):
@@ -231,7 +230,6 @@ class Application:
         """
         It stops the active recording and save it in reports folder.
         """
-        asyncio.run(asyncio.sleep(3))
         self.cmdandroid.stop_recording()
         return    
     
