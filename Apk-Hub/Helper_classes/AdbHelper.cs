@@ -31,7 +31,7 @@ namespace ApkInstaller.Helper_classes
             }
             else
             {
-                // Caso contr�rio, usa os execut�veis da pasta local (adb/adb.exe e adb/scrcpy.exe)
+                // Caso contrário, usa os executáveis da pasta local (adb/adb.exe e adb/scrcpy.exe)
                 adbExecutablePath = Path.Combine(localPath, "adb.exe");
                 scrcpyExecutablePath = Path.Combine(localPath, "scrcpy.exe");
             }
