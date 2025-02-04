@@ -196,15 +196,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Apk Hub"
-        "ProductCode" = "8:{497E53D5-C766-43F5-AD5D-674805D54BD5}"
-        "PackageCode" = "8:{768EBA0B-5C4E-4B49-A6A3-601B318B103E}"
+        "ProductCode" = "8:{8DF60D9C-8E26-4686-B413-C87C87F495DA}"
+        "PackageCode" = "8:{7C6C84EC-4436-4B49-B5D2-07BB594415C6}"
         "UpgradeCode" = "8:{C4472BC4-F32A-4D3F-B649-4CF433DC727C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:3.1.5"
+        "ProductVersion" = "8:3.1.6"
         "Manufacturer" = "8:ApkHub(v.amarilha)"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -746,7 +746,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1B2C1DF76ECD47908A64720F8F784D92"
             {
-            "SourcePath" = "8:..\\Apk-Hub\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\Apk-Hub\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"

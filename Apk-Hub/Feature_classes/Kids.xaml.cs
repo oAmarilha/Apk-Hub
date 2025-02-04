@@ -22,41 +22,41 @@ public partial class Kids : Window, IComponentConnector
 
 	public Automation? _automationWindow;
 
-    private List<Window> childWindows = new List<Window>();
+	private List<Window> childWindows = new List<Window>();
 
-    private bool isClosing = false;
-    public Kids(MainWindow mainWindow, string selectedDevice)
+	private bool isClosing = false;
+	public Kids(MainWindow mainWindow, string selectedDevice)
 	{
 		InitializeComponent();
 		_mainWindow = mainWindow;
 		_selectedDevice = selectedDevice;
 		_cancellationTokenSource = new CancellationTokenSource();
 		base.Owner = _mainWindow;
-        base.Closing += ClosingWindow;
+		base.Closing += ClosingWindow;
 	}
 
-    private T OpenChildWindow<T>(T childWindow) where T : Window
-    {
-        childWindows.Add(childWindow); // Adiciona a janela filha à lista
-        childWindow.Closed += (s, e) => childWindows.Remove(childWindow); // Remove da lista quando fechada
-        return childWindow;
-    }
+	private T OpenChildWindow<T>(T childWindow) where T : Window
+	{
+		childWindows.Add(childWindow); // Adiciona a janela filha ï¿½ lista
+		childWindow.Closed += (s, e) => childWindows.Remove(childWindow); // Remove da lista quando fechada
+		return childWindow;
+	}
 
-    private void ClosingWindow(object? sender, CancelEventArgs e)
-    {
-        // Cria uma lista temporária para armazenar as janelas a serem fechadas
-        var windowsToClose = new List<Window>(childWindows);
+	private void ClosingWindow(object? sender, CancelEventArgs e)
+	{
+		// Cria uma lista temporï¿½ria para armazenar as janelas a serem fechadas
+		var windowsToClose = new List<Window>(childWindows);
 
-        // Itera sobre a lista temporária
-        foreach (var child in windowsToClose)
-        {
-            // Verifica se a janela está aberta antes de chamá-la
-            if (child.IsVisible)
-            {
-                child.Close(); // Fecha a janela filha
-            }
-        }
-        _mainWindow.EnableDevicesBox();
+		// Itera sobre a lista temporï¿½ria
+		foreach (var child in windowsToClose)
+		{
+			// Verifica se a janela estï¿½ aberta antes de chamï¿½-la
+			if (child.IsVisible)
+			{
+				child.Close(); // Fecha a janela filha
+			}
+		}
+		_mainWindow.EnableDevicesBox();
 		_cancellationTokenSource.Cancel();
 		_mainWindow.ParentalCare_Button.IsEnabled = true;
 		_mainWindow.Browse_Button.IsEnabled = true;
@@ -83,7 +83,7 @@ public partial class Kids : Window, IComponentConnector
 
 	public void AppWindow_Closing(object? sender, CancelEventArgs e)
 	{
-        _mainWindow.Kids_Button.IsEnabled = true;
+		_mainWindow.Kids_Button.IsEnabled = true;
 		Show();
 	}
 
@@ -105,17 +105,17 @@ public partial class Kids : Window, IComponentConnector
 			await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output =>
 			{
 				logcat += output;
-            }, _selectedDevice, shell: true);
+			}, _selectedDevice, shell: true);
 
-            if (string.IsNullOrEmpty(logcat))
-            {
-                _mainWindow.UpdateStatusText("Logcat cleared succesfully", isSuccess: true , clear: true);
-            }
-            else
-            {
-                _mainWindow.UpdateStatusText("Logcat not clared", isError: true);
-            }
-        }
+			if (string.IsNullOrEmpty(logcat))
+			{
+				_mainWindow.UpdateStatusText("Logcat cleared succesfully", isSuccess: true , clear: true);
+			}
+			else
+			{
+				_mainWindow.UpdateStatusText("Logcat not clared", isError: true);
+			}
+		}
 		catch (Exception ex4)
 		{
 			Exception ex3 = ex4;
@@ -132,26 +132,39 @@ public partial class Kids : Window, IComponentConnector
 		OpenAppWindow("logcat", shell: false);
 	}
 
-    private void Automation_Click(object sender, RoutedEventArgs e)
-    {
+	private void Automation_Click(object sender, RoutedEventArgs e)
+	{
 		if (_automationWindow == null)
 		{
 			_automationWindow = OpenChildWindow(new Automation(_selectedDevice));
 			_automationWindow.Show();
-            Hide();
+			Hide();
 			_mainWindow.Hide();
-            _automationWindow.Closing += _automationWindow_Closing;
+			_automationWindow.Closing += _automationWindow_Closing;
 		}
-    }
+	}
 
-    private async void _automationWindow_Closing(object? sender, CancelEventArgs e)
-    {
+	private async void _automationWindow_Closing(object? sender, CancelEventArgs e)
+	{
 		if (isClosing) return;
 		isClosing = true;
-        await _automationWindow!.StopPythonExecution();
+		await _automationWindow!.StopPythonExecution();
 		isClosing = false;
-        _automationWindow = null;
-        Show();
+		_automationWindow = null;
+		Show();
 		_mainWindow.Show();
+	}
+
+	private async void Open_Kids_Click(object sender, RoutedEventArgs e)
+	{
+		string output = await AdbHelper.Instance.GetAdbReturn("am start -n com.sec.android.app.kidshome/com.sec.android.app.kidshome.apps.ui.AppsActivity", _selectedDevice, true);
+		if (output?.ToLower() == "starting: intent { cmp=com.sec.android.app.kidshome/.apps.ui.appsactivity }")
+		{
+			Application.Current.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText("Kids Home was opened.", isSuccess: true, clear: true));
+		}
+		else
+		{
+            Application.Current.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText("Kids Home was not opened or it is already opened.", isError: true, clear: true));
+        }
     }
 }

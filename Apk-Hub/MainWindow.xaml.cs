@@ -13,6 +13,15 @@ using System.Windows.Media;
 
 namespace ApkInstaller;
 
+public class DeviceInfo
+{
+    public string SerialNo { get; set; } = "";
+    public string DeviceName { get; set; } = "";
+    public string Manufacturer { get; set; } = "";
+
+    public override string ToString() => $"{DeviceName} ({SerialNo})";
+}
+
 public partial class MainWindow : MetroWindow, IComponentConnector
 {
     #region Fields and Properties
@@ -97,8 +106,22 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         Install_Button.IsEnabled = false;
         UpdateStatusText("Checking devices connected...", clear: true);
 
+        var deviceList = new List<DeviceInfo>();
         var connectedDevices = await Task.Run(GetConnectedDevices);
-        var deviceList = connectedDevices.Select(d => $"{d.Value} ({d.Key})").ToList();
+
+        foreach (var device in connectedDevices)
+        {
+            string manufacturer = await Task.Run(() => 
+                AdbHelper.Instance.GetAdbReturn($"getprop ro.product.manufacturer", device.Key, true)
+            );
+
+            deviceList.Add(new DeviceInfo
+            {
+                SerialNo = device.Key,
+                DeviceName = device.Value,
+                Manufacturer = manufacturer?.Trim() ?? "Unknown"
+            });
+        }
 
         Dispatcher.Invoke(() =>
         {
@@ -151,11 +174,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <returns>Nome do dispositivo</returns>
     public async Task<string> GetDeviceName(string serial)
     {
-        string name = "";
-        await AdbHelper.Instance.RunAdbCommandAsync("getprop ro.product.model", output =>
-        {
-            name += output;
-        }, serial, true);
+        string name = await AdbHelper.Instance.GetAdbReturn("getprop ro.product.model", serial, true);
         return name.Split('\n')[0].Trim();
     }
 
@@ -214,6 +233,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         {
             UpdateStatusText("Loading file(s) selected", clear: true);
             ProcessSelectedFiles(openFileDialog.FileNames, errorMessages, addedFiles);
+            UpdateStatusText("File(s) loaded", clear: true);
+        }
+        else
+        {
+            UpdateStatusText("Action cancelled", clear: true);
         }
 
         return (errorMessages, addedFiles);
@@ -256,7 +280,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             UpdateStatusText("Duplicated file(s)", clear: true, isError: true);
             return;
         }
-        UpdateStatusText("Files loaded", clear: true);
     }
 
     /// <summary>
@@ -385,7 +408,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         if (e.Data.GetData(DataFormats.FileDrop, autoConvert: false) is string[] files)
         {
             bool hasApkFile = files.Any(file => file.EndsWith(".apk"));
-            ApkFilesList.AllowDrop = true;
+            this.AllowDrop = true;
             e.Effects = hasApkFile ? DragDropEffects.Copy : DragDropEffects.None;
         }
         e.Handled = true;
@@ -401,6 +424,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             var (errorMessages, addedFiles) = ProcessDroppedFiles(files);
             CheckDuplicatedFiles(errorMessages, addedFiles);
             AllowInstall();
+            UpdateStatusText("File(s) loaded", clear: true);
         }
     }
 
@@ -628,7 +652,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 stackChild.IsEnabled = change;
             }
         }
-
+        if (DevicesComboBox.SelectedItem is DeviceInfo selectedDevice) DisableEnable_SamsungDevices(selectedDevice);
         Install_Button.IsEnabled = DevicesComboBox.SelectedItem != null && change && ApkFilesList.Items.Count > 0;
     }
 
@@ -936,9 +960,32 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <param name="e">Argumentos do evento de mudança de seleção</param>
     private void DevicesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        var selectedDevice = DevicesComboBox.SelectedItem as DeviceInfo;
+        if (selectedDevice == null)
+        {
+            Install_Button.IsEnabled = false;
+            return;
+        }
+
+        DisableEnable_SamsungDevices(selectedDevice);
         AllowInstall();
     }
 
+    private void DisableEnable_SamsungDevices(DeviceInfo selectedDevice)
+    {
+        string manufacter = selectedDevice.Manufacturer;
+
+        if (manufacter.ToLower() != "samsung")
+        {
+            Kids_Button.IsEnabled = false;
+            ParentalCare_Button.IsEnabled = false;
+        }
+        else
+        {
+            Kids_Button.IsEnabled = true;
+            ParentalCare_Button.IsEnabled = true;
+        }
+    }
     /// <summary>
     /// Habilita a ComboBox de dispositivos
     /// </summary>
