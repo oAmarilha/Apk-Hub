@@ -4,6 +4,38 @@
 <img loading="lazy" src="http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge"/>
 </p>
 
+# Summary:
+
+🚀 Key Features
+
+📱 APK Management
+
+Batch installation via drag-and-drop System package management Intuitive ADB operation interface
+
+🛠️ Development Tools
+
+Custom ADB commands Log monitoring (logcat) Screen recording and mirroring Permission management
+
+🤖 Test Automation
+
+Samsung Kids automated tests Video evidence capture Detailed HTML reports Support for multiple scenarios
+
+⚙️ Parental Care
+
+System app installation Data and settings management Specific log monitoring System file push/pull
+
+🔧 Requirements
+
+Windows 10/11 Python 3.7+ .NET Framework 4.7.2+ ADB (Android Debug Bridge)
+
+📝 Release Notes
+
+Modern and intuitive interface Multiple device support Performance improvements Reported bug fixes
+
+🔄 Compatibility
+
+Android devices in general * Support for tablets and smartphones For Kids or Parental Care functions, Samsung Android 9+ is required
+
 # Installing:
 To install the application, get the [APK Hub Setup.msi](https://github.com/oAmarilha/Apk-Hub/releases) and execute it (Maybe Smart Screen will appear, this occurs because this tool hasn't a paid Microsoft Certificate, if appears, make sure to click on ``More Information`` and ``Run Anyway``). After installing, try to run the app (a shortcut is created on desktop or in start menu), you may need to install .Net Desktop 8.
 
