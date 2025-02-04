@@ -34,6 +34,7 @@ public partial class LogcatWindow : Window, IComponentConnector
 
     StringBuilder? logBuilder;
 
+    CancellationTokenSource? cancellationTokenSource;
 
     public LogcatWindow(MainWindow mainWindow, Window calledWindow, string selectedDevice, string? filter)
     {
@@ -56,11 +57,47 @@ public partial class LogcatWindow : Window, IComponentConnector
 
     private async void StartLogcat()
     {
+        cancellationTokenSource = new CancellationTokenSource();
+        string? appPID = null;
+        if (_filter != null)
+        {
+            appPID = await AdbHelper.Instance.GetAdbReturn($"pidof -s '{_filter}'", _selectedDevice, true);
+            if (string.IsNullOrEmpty(appPID))
+            {
+                MessageBox.Show("Não foi possível encontrar o PID do aplicativo");
+                Closing_Window(null, new CancelEventArgs());
+                Close();
+                return;
+            }
+
+            // Start a background task to monitor PID
+            _ = Task.Run(async () =>
+            {
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(1000); // Check every second
+                    string currentAppPID = await AdbHelper.Instance.GetAdbReturn($"pidof -s '{_filter}'", _selectedDevice, true);
+
+                    if (currentAppPID != appPID)
+                    {
+                        // Restart logcat if PID changed
+                        appPID = currentAppPID;
+                        // Trigger UI to restart logcat
+                        if (!string.IsNullOrEmpty(appPID))
+                        {
+                            base.Dispatcher.Invoke(() => RestartLogcat(appPID));
+                        }
+                    }
+                }
+            }, cancellationTokenSource.Token);
+
+        }
         await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output => { }, _selectedDevice, shell: true);
         logBuilder = new StringBuilder();
         DateTime lastUpdate = DateTime.Now;
-        string logcatCommand = "logcat *:I *:D *:W *:E *:V";
 
+        // Main logcat command
+        string logcatCommand = string.IsNullOrEmpty(_filter) ? "logcat" : $"logcat --pid={appPID}";
         await AdbHelper.Instance.RunAdbCommandAsync(logcatCommand, output =>
         {
             if (_filter == "com.samsung.android.app.parentalcare"){
@@ -68,33 +105,26 @@ public partial class LogcatWindow : Window, IComponentConnector
             }
             
             logBuilder.AppendLine(output);
-            if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100) // Atualiza a UI a cada 100ms
+            if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100)
             {
                 string logText = logBuilder.ToString();
                 base.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    // Only show filtered text in the TextBox if filter is set
-                    if (!string.IsNullOrEmpty(_filter))
-                    {
-                        var filteredLines = logText.Split('\n')
-                            .Where(line => line.Contains(_filter))
-                            .ToList();
-                        if (filteredLines.Any())
-                        {
-                            LogcatTextBox.AppendText(string.Join("\n", filteredLines) + "\n");
-                            LogcatTextBox.ScrollToEnd();
-                        }
-                    }
-                    else
-                    {
-                        LogcatTextBox.AppendText(logText);
-                        LogcatTextBox.ScrollToEnd();
-                    }
+                    LogcatTextBox.AppendText(logText);
+                    LogcatTextBox.ScrollToEnd();
+                    logBuilder.Clear();
+                    lastUpdate = DateTime.Now;
                 }));
-                logBuilder.Clear();
-                lastUpdate = DateTime.Now;
             }
         }, _selectedDevice, shell: true);
+    }
+
+    private async void RestartLogcat(string newPID)
+    {
+        // Stop current logcat and restart with new PID
+        StopLogcat(false);
+        await Task.Delay(100); // Small delay to ensure previous process stops
+        StartLogcat();
     }
 
     private void ExtractValuesFromLog(string logLine)
@@ -177,11 +207,15 @@ public partial class LogcatWindow : Window, IComponentConnector
         StartLogcat();
     }
 
-    private void StopLogcat()
+    private void StopLogcat(bool stopButton = true)
     {
+        cancellationTokenSource?.Cancel();
         AdbHelper.Instance.StopCommand();
-        StartStopButton.Content = "Start";
-        StartStopButton.Background = Brushes.Green;
+        if (stopButton)
+        {
+            StartStopButton.Content = "Start";
+            StartStopButton.Background = Brushes.Green;
+        }
     }
 
     private void SaveLog_Click(object sender, RoutedEventArgs e)
@@ -212,6 +246,7 @@ public partial class LogcatWindow : Window, IComponentConnector
 
     public void Closing_Window(object? sender, CancelEventArgs e)
     {
+        StopLogcat(false);
         _mainWindow.Show();
         _calledWindow.Show();
     }

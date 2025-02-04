@@ -31,7 +31,7 @@ namespace ApkInstaller.Helper_classes
             }
             else
             {
-                // Caso contrário, usa os executáveis da pasta local (adb/adb.exe e adb/scrcpy.exe)
+                // Caso contrï¿½rio, usa os executï¿½veis da pasta local (adb/adb.exe e adb/scrcpy.exe)
                 adbExecutablePath = Path.Combine(localPath, "adb.exe");
                 scrcpyExecutablePath = Path.Combine(localPath, "scrcpy.exe");
             }
@@ -60,6 +60,41 @@ namespace ApkInstaller.Helper_classes
                 return File.Exists(adbPath) && File.Exists(scrcpyPath);
             }
             return false;
+        }
+
+        public async Task<string> GetAdbReturn(string arguments, string? selectedDevice = null, bool shell = false, bool generalCommand = false)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    Process process = new();
+                    process.StartInfo.FileName = adbExecutablePath;
+                    process.StartInfo.Arguments = generalCommand ? $" {arguments}" : (shell ? "-s " + selectedDevice + " shell " + arguments : "-s " + selectedDevice + $" {arguments}");
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    // If there's an error, return the error message
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        return error;
+                    }
+
+                    return output.Trim();
+                }
+                catch (Exception ex)
+                {
+                    return $"Error executing ADB command: {ex.Message}";
+                }
+            });
         }
 
         public async Task RunAdbCommandAsync(string arguments, Action<string> outputHandler, string? selectedDevice = null, bool shell = false, bool generalCommand = false)
