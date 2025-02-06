@@ -102,9 +102,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// </summary>
     public async void PopulateDevices()
     {
-        DevicesComboBox.ItemsSource = null;
+        EnableDevicesBox(false);
+        Button_Status([Browse_Button, More_Button, Kids_Button, ParentalCare_Button], [false, false, false, false]);
+        var deviceSelected = DevicesComboBox.SelectedItem as DeviceInfo;
         Install_Button.IsEnabled = false;
-        UpdateStatusText("Checking devices connected...", clear: true);
+        UpdateStatusText("Checking device(s) connected...", clear: true);
 
         var deviceList = new List<DeviceInfo>();
         var connectedDevices = await Task.Run(GetConnectedDevices);
@@ -122,18 +124,29 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 Manufacturer = manufacturer?.Trim() ?? "Unknown"
             });
         }
+        deviceSelected = deviceList.FirstOrDefault(d =>
+            d.SerialNo == deviceSelected?.SerialNo &&
+            d.DeviceName == deviceSelected.DeviceName
+        ) ?? null;
 
+        DevicesComboBox.SelectedItem = deviceSelected;
+        
         Dispatcher.Invoke(() =>
         {
             DevicesComboBox.ItemsSource = deviceList;
-            DevicesComboBox.SelectedItem = deviceList.Count == 1 ? deviceList[0] : null;
+            DevicesComboBox.SelectedItem = deviceList.Count == 1 ? deviceList[0] : deviceSelected;
+            DisableEnable_SamsungDevices(deviceSelected);
+            Button_Status([Browse_Button, More_Button], [true, true]);
 
             int count = deviceList.Count;
-            UpdateStatusText(count > 0 ? $"{count} Device(s) Connected" : "No Device Connected", count == 0, count > 0, true);
+            UpdateStatusText(count > 0 ? $"{count} Device(s) Connected" : "No Device Connected", count == 0, count > 0, clear: true);
 
             AllowInstall();
-            DevicesComboBox.IsEnabled = count > 1;
-
+            if (count > 1 && !Application.Current.Windows.OfType<Window>().Any(w => 
+            w != Application.Current.MainWindow &&
+            w.GetType().Namespace != "Microsoft.VisualStudio.DesignTools.WpfTap.WpfVisualTreeService.Adorners"
+            )) EnableDevicesBox();
+            
             if (DevicesComboBox.SelectedItem == null)
             {
                 foreach (var window in Application.Current.Windows.OfType<Window>().Where(w => w != Application.Current.MainWindow))
@@ -763,11 +776,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Atualiza o texto de status na interface
     /// </summary>
-    public void UpdateStatusText(string? message = null, bool isError = false, bool isSuccess = false, bool clear = false)
+    public void UpdateStatusText(string? message = null, bool isError = false, bool isSuccess = false, bool isWarning = false, bool clear = false)
     {
         base.Dispatcher.Invoke(() =>
         {
-            StatusText.Foreground = isError ? Brushes.Red : (isSuccess ? Brushes.Green : Brushes.White);
+            StatusText.Foreground = isError ? Brushes.Red : (isSuccess ? Brushes.Green : (isWarning ? Brushes.Yellow : Brushes.White));
             
             if (clear)
             {
@@ -788,7 +801,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// </summary>
     /// <param name="buttons">Lista de botões a serem configurados</param>
     /// <param name="states">Lista de estados correspondentes aos botões</param>
-    private void Button_Status(List<Button> buttons, List<bool> states)
+    private static void Button_Status(List<Button> buttons, List<bool> states)
     {
         for (int i = 0; i < buttons.Count && i < states.Count; i++)
         {
@@ -971,11 +984,11 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         AllowInstall();
     }
 
-    private void DisableEnable_SamsungDevices(DeviceInfo selectedDevice)
+    private void DisableEnable_SamsungDevices(DeviceInfo? selectedDevice)
     {
-        string manufacter = selectedDevice.Manufacturer;
+        string manufacter = selectedDevice?.Manufacturer ?? string.Empty;
 
-        if (manufacter.ToLower() != "samsung")
+        if (!manufacter.Equals("samsung", StringComparison.CurrentCultureIgnoreCase) || selectedDevice == null)
         {
             Kids_Button.IsEnabled = false;
             ParentalCare_Button.IsEnabled = false;
@@ -989,9 +1002,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Habilita a ComboBox de dispositivos
     /// </summary>
-    public void EnableDevicesBox()
+    public void EnableDevicesBox(bool enable = true)
     {
-        DevicesComboBox.IsEnabled = true;
+        DevicesComboBox.IsEnabled = enable;
     }
     #endregion
 }
