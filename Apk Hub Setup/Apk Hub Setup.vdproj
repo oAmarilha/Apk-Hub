@@ -197,7 +197,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Apk Hub"
         "ProductCode" = "8:{8DF60D9C-8E26-4686-B413-C87C87F495DA}"
-        "PackageCode" = "8:{7C6C84EC-4436-4B49-B5D2-07BB594415C6}"
+        "PackageCode" = "8:{2BB27DF6-B07D-46FA-9A58-683F87F1BCCC}"
         "UpgradeCode" = "8:{C4472BC4-F32A-4D3F-B649-4CF433DC727C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -317,21 +317,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_1039A36AAA624D31AA8BFAE1BB4051B8"
-            {
-            "Name" = "8:Apk Hub"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:32512"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
-            "Folder" = "8:_2209493A37B24F1C922AE68869AE2B09"
-            "WorkingFolder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
-            "Icon" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
-            "Feature" = "8:"
-            }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_872049229EAD4D1EBF65561B347B3E6C"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_C687F12A6F944E908330C6E91D3E6BD9"
             {
             "Name" = "8:Apk Hub"
             "Arguments" = "8:"
@@ -341,6 +327,20 @@
             "Transitive" = "11:FALSE"
             "Target" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
             "Folder" = "8:_8E4181C431C94F44AE7DEED1B1904F8D"
+            "WorkingFolder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
+            "Icon" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_C7AC423879DF40BCAF4D700AB8B6555B"
+            {
+            "Name" = "8:Apk Hub"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:32512"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
+            "Folder" = "8:_2209493A37B24F1C922AE68869AE2B09"
             "WorkingFolder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
             "Icon" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
             "Feature" = "8:"
@@ -746,7 +746,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1B2C1DF76ECD47908A64720F8F784D92"
             {
-            "SourcePath" = "8:..\\Apk-Hub\\obj\\Debug\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\Apk-Hub\\obj\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
