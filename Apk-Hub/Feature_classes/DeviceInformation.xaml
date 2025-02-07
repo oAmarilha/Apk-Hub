@@ -1,0 +1,177 @@
+﻿<Window x:Class="ApkInstaller.Feature_classes.DeviceInformation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ApkInstaller.Feature_classes"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        SizeToContent="Width"
+        Title="Device Info" 
+        Height="200">
+    <Grid x:Name="DeviceInfoWindow">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Grid.Row="0" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Android: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+        x:Name="AndroidVersion"
+        Grid.Column="1"
+        Margin="5,0"
+        Background="Transparent" 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+        Height="Auto"
+        Width="Auto"
+        />
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="0" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Build Mode: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+        x:Name="BuildMode"
+        Grid.Column="1"
+        Margin="5,0"
+        Background="Transparent" 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+        Height="Auto"
+        Width="Auto"
+        />
+        </Grid>
+        <Grid Grid.Column="0" Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="CSC: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+                x:Name="CscCode"
+                Grid.Column="1"
+                Margin="5,0"
+                Background="Transparent" 
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Height="Auto"
+                Width="Auto"
+                />
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Model: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+                x:Name="ModelCode"
+                Grid.Column="1"
+                Margin="5,0"
+                Background="Transparent" 
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Height="Auto"
+                Width="Auto"
+                />
+        </Grid>
+        <Grid Grid.Column="0" Grid.Row="2" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="OS Name: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+        x:Name="OsName"
+        Grid.Column="1"
+        Margin="5,0"
+        Background="Transparent" 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+        Height="Auto"
+        Width="Auto"
+        />
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="2" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Manufacturer: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+        x:Name="Manufacturer"
+        Grid.Column="1"
+        Margin="5,0"
+        Background="Transparent" 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+        Height="Auto"
+        Width="Auto"
+        />
+        </Grid>
+        <Grid Grid.Column="0" Grid.Row="3" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="SDK: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+        x:Name="SdkVersion"
+        Grid.Column="1"
+        Margin="5,0"
+        Background="Transparent" 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+        Height="Auto"
+        Width="Auto"
+        />
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="3" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Serial: " VerticalAlignment="Center" Grid.Column="0"/>
+            <TextBlock 
+        x:Name="SerialNo"
+        Grid.Column="1"
+        Margin="5,0"
+        Background="Transparent" 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+        Height="Auto"
+        Width="Auto"
+        />
+        </Grid>
+    </Grid>
+</Window>

@@ -62,7 +62,7 @@ namespace ApkInstaller.Helper_classes
             return false;
         }
 
-        public async Task<string> GetAdbReturn(string arguments, string? selectedDevice = null, bool shell = false, bool generalCommand = false)
+        public async Task<string?> GetAdbReturn(string arguments, string? selectedDevice = null, bool shell = false, bool generalCommand = false)
         {
             return await Task.Run(() =>
             {
@@ -83,10 +83,8 @@ namespace ApkInstaller.Helper_classes
                     process.WaitForExit();
 
                     // If there's an error, return the error message
-                    if (!string.IsNullOrEmpty(error))
-                    {
-                        return error;
-                    }
+                    if (!string.IsNullOrEmpty(error)) return error;
+                    if (string.IsNullOrEmpty(output)) return null;
 
                     return output.Trim();
                 }
