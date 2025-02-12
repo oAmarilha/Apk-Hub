@@ -64,7 +64,7 @@ public partial class LogcatWindow : Window, IComponentConnector
             appPID = await AdbHelper.Instance.GetAdbReturn($"pidof -s '{_filter}'", _selectedDevice, true);
             if (string.IsNullOrEmpty(appPID))
             {
-                MessageBox.Show("Não foi possível encontrar o PID do aplicativo");
+                MessageBox.Show("Não foi possível encontrar o PID do aplicativo, verifique se o App está aberto.");
                 Closing_Window(null, new CancelEventArgs());
                 Close();
                 return;
@@ -108,13 +108,13 @@ public partial class LogcatWindow : Window, IComponentConnector
             if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100)
             {
                 string logText = logBuilder.ToString();
-                base.Dispatcher.BeginInvoke(new Action(() =>
+                base.Dispatcher.Invoke(() =>
                 {
                     LogcatTextBox.AppendText(logText);
                     LogcatTextBox.ScrollToEnd();
                     logBuilder.Clear();
                     lastUpdate = DateTime.Now;
-                }));
+                });
             }
         }, _selectedDevice, shell: true);
     }
@@ -222,13 +222,14 @@ public partial class LogcatWindow : Window, IComponentConnector
     {
         string value = DateTime.Now.ToString().Replace("/", "-").Replace(":", "-")
             .Replace(" ", "_");
-        Directory.CreateDirectory($"{appPath}/Logcat/{_filter}/{value}/");
+        string namePath = _filter ?? "FullLogcat";
+        Directory.CreateDirectory($"{appPath}/Logcat/{namePath}/{value}/");
         try
         {
             string contents = LogcatTextBox.Text.ToString();
-            string text = $"{appPath}\\Logcat\\{_filter}\\{value}";
-            File.WriteAllText($"{text}\\{_filter}_{value}.txt", contents);
-            if (_mainWindow.ShowMessage($"File Saved at: {text}\\{_filter}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
+            string text = $"{appPath}\\Logcat\\{namePath}\\{value}";
+            File.WriteAllText($"{text}\\{namePath}_{value}.txt", contents);
+            if (_mainWindow.ShowMessage($"File Saved at: {text}\\{namePath}_{value}.txt\nDo you want to open it?", "File Saved", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
             {
                 Process.Start(new ProcessStartInfo()
                 {

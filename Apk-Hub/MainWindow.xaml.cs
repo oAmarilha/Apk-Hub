@@ -16,16 +16,17 @@ namespace ApkInstaller;
 
 public class DeviceInfo
 {
-    public string AndroidVersion { get; set; } = "";
-    public string? BuildMode { get; set; } = null;
-    public string? CscCode { get; set; } = null;
-    public string DeviceName { get; set; } = "";
-    public string? Manufacturer { get; set; } = null;
-    public string? SdkVersion { get; set; } = null;
-    public string SerialNo { get; set; } = "";
+    public string AndroidVersion { get; set; } = string.Empty;
+    public string BuildMode { get; set; } = string.Empty;
+    public string CscCode { get; set; } = string.Empty;
+    public string DeviceName { get; set; } = string.Empty;
+    public string Manufacturer { get; set; } = string.Empty;
+    public string SdkVersion { get; set; } = string.Empty;
+    public string DeviceSelected { get; set; } = string.Empty;
+    public string SerialNo {  get; set; } = string.Empty;
 
 
-    public override string ToString() => $"{DeviceName} ({SerialNo})";
+    public override string ToString() => $"{DeviceName} ({DeviceSelected})";
 }
 
 public partial class MainWindow : MetroWindow, IComponentConnector
@@ -121,35 +122,38 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
         foreach (var device in connectedDevices)
         {
-            var tasks = new List<Task<string?>>()
+            var tasks = new List<Task<string>>()
             {
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.build.version.release", device.Key, true)),
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.build.type", device.Key, true)),
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.omc.multi_csc", device.Key, true)),
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.system.build.version.sdk", device.Key, true)),
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.product.manufacturer", device.Key, true)),
+                Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.serialno", device.Key, true))
             };
             var results = await Task.WhenAll(tasks);
             string androidVersion = results[0]!;
-            string? buildMode = results[1];
-            string? cscCode = results[2];
-            string? sdkVersion = results[3];
-            string? manufacturer = results[4];
+            string buildMode = results[1];
+            string cscCode = results[2];
+            string sdkVersion = results[3];
+            string manufacturer = results[4];
+            string serialno = results[5];
 
             deviceList.Add(new DeviceInfo
             {
                 AndroidVersion = androidVersion,
-                BuildMode = buildMode?.ToUpper(),
+                BuildMode = buildMode.ToUpper(),
                 CscCode = !string.IsNullOrEmpty(cscCode) ? cscCode : "Not found",
                 DeviceName = device.Value,
-                Manufacturer = string.IsNullOrEmpty(manufacturer) ? null : char.ToUpper(manufacturer[0]) + manufacturer[1..].ToLower(),
+                Manufacturer = string.IsNullOrEmpty(manufacturer) ? "Not found" : char.ToUpper(manufacturer[0]) + manufacturer[1..].ToLower(),
                 SdkVersion = sdkVersion,
-                SerialNo = device.Key,
+                DeviceSelected = device.Key,
+                SerialNo = serialno
 
             });
         }
         deviceSelected = deviceList.FirstOrDefault(d =>
-            d.SerialNo == deviceSelected?.SerialNo &&
+            d.DeviceSelected == deviceSelected?.DeviceSelected &&
             d.DeviceName == deviceSelected.DeviceName
         ) ?? null;
 
