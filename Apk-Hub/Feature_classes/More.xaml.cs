@@ -1,4 +1,5 @@
-﻿using ApkInstaller.Helper_classes;
+﻿using ApkInstaller.Feature_classes;
+using ApkInstaller.Helper_classes;
 using Microsoft.VisualBasic;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -180,7 +181,19 @@ namespace ApkInstaller
 
         private void GetFile_Button_Click(object sender, RoutedEventArgs e)
         {
-        
+            var fileExplorer = new FileExplorerWindow(_selectedDevice);
+            fileExplorer.Owner = _mainWindow;
+            fileExplorer.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            _mainWindow.Hide();
+            this.Hide();
+            fileExplorer.Closing += FileExplorer_Closing;
+            fileExplorer.ShowDialog();
+        }
+
+        private void FileExplorer_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _mainWindow.Show();
+            this.Show();
         }
     }
 }

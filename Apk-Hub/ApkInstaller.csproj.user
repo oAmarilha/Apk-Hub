@@ -16,6 +16,9 @@
     <Compile Update="Feature_classes\DeviceInformation.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Feature_classes\FileExplorerWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Feature_classes\Kids.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -40,6 +43,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Feature_classes\DeviceInformation.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Feature_classes\FileExplorerWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Feature_classes\Kids.xaml">
