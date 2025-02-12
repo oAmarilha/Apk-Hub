@@ -132,7 +132,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.serialno", device.Key, true))
             };
             var results = await Task.WhenAll(tasks);
-            string androidVersion = results[0]!;
+            string androidVersion = results[0];
             string buildMode = results[1];
             string cscCode = results[2];
             string sdkVersion = results[3];
@@ -146,7 +146,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 CscCode = !string.IsNullOrEmpty(cscCode) ? cscCode : "Not found",
                 DeviceName = device.Value,
                 Manufacturer = string.IsNullOrEmpty(manufacturer) ? "Not found" : char.ToUpper(manufacturer[0]) + manufacturer[1..].ToLower(),
-                SdkVersion = sdkVersion,
+                SdkVersion = string.IsNullOrEmpty(sdkVersion) ? "Not found" : sdkVersion,
                 DeviceSelected = device.Key,
                 SerialNo = serialno
 

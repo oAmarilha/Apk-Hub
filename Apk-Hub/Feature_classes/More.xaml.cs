@@ -1,4 +1,6 @@
 ﻿using ApkInstaller.Helper_classes;
+using Microsoft.VisualBasic;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -165,6 +167,20 @@ namespace ApkInstaller
                 pkgActionWindow.Send_Command.Content = "Run";
                 pkgActionWindow.Show();
             }
+        }
+
+        private async void GetCurrentApp_Button_Click(object sender, RoutedEventArgs e)
+        {
+            string match = Regex.Match(await AdbHelper.Instance.GetAdbReturn("dumpsys window", _selectedDevice, true), @"([a-zA-Z0-9\.]+)/([a-zA-Z0-9\.]+)").Value;
+            string[] regexOutput = match.Split('/');
+            string appPackage = string.IsNullOrEmpty(regexOutput[0]) ? "Not found" : regexOutput[0];
+            string appActivity = string.IsNullOrEmpty(regexOutput[1]) ? "Not found" : regexOutput[1];
+            base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"Package: {appPackage}\nActivity: {appActivity}", clear: true));
+        }
+
+        private void GetFile_Button_Click(object sender, RoutedEventArgs e)
+        {
+        
         }
     }
 }

@@ -24,12 +24,15 @@ namespace ApkInstaller.Feature_classes
         readonly DeviceInfo _selectedDevice;
         private static readonly Dictionary<string, string> androidName = new()
         {
+            {"7", "N" },
+            {"8", "O" },
+            {"9", "P" },
             {"10", "Q" },
             {"11", "R" },
             {"12", "S" },
             {"13", "T" },
             {"14", "U" },
-            {"15", "V" },
+            {"15", "V" }
         };
         public DeviceInformation(MainWindow mainWindow, DeviceInfo selectedDevice)
         {
