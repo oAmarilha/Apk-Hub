@@ -35,7 +35,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     private Settings? settingsWindow;
     private Kids? kidsWindow;
     private UsbDeviceNotifier? usbDeviceNotifier;
-    private More? moreWindow;
+    public More? moreWindow;
     private DeviceInformation? deviceInfoWindow;
     private bool loopCancelation = false;
     private bool success;
@@ -163,7 +163,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         {
             DevicesComboBox.ItemsSource = deviceList;
             DevicesComboBox.SelectedItem = deviceList.Count == 1 ? deviceList[0] : deviceSelected;
-            DisableEnable_SamsungDevices(deviceSelected);
+            DisableEnable_SamsungDevices(DevicesComboBox.SelectedItem as DeviceInfo);
             Button_Status([Browse_Button, More_Button, DeviceInfo_Button], [true, true, true]);
 
             int count = deviceList.Count;
