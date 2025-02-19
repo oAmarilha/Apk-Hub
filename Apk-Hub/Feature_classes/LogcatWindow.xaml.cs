@@ -44,6 +44,7 @@ public partial class LogcatWindow : Window, IComponentConnector
         _calledWindow = calledWindow;
         _filter = filter;
         Owner = _mainWindow;
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
         StartLogcat();
         _mainWindow.Hide();
         _calledWindow.Hide();
@@ -64,7 +65,7 @@ public partial class LogcatWindow : Window, IComponentConnector
             appPID = await AdbHelper.Instance.GetAdbReturn($"pidof -s '{_filter}'", _selectedDevice, true);
             if (string.IsNullOrEmpty(appPID))
             {
-                MessageBox.Show("Não foi possível encontrar o PID do aplicativo, verifique se o App está aberto.");
+                MessageBox.Show("NÃ£o foi possÃ­vel encontrar o PID do aplicativo, verifique se o App estÃ¡ aberto.");
                 Closing_Window(null, new CancelEventArgs());
                 Close();
                 return;
@@ -90,33 +91,53 @@ public partial class LogcatWindow : Window, IComponentConnector
                     }
                 }
             }, cancellationTokenSource.Token);
-
         }
+
+        // Clear previous logs
         await AdbHelper.Instance.RunAdbCommandAsync("logcat -c", output => { }, _selectedDevice, shell: true);
+        
         logBuilder = new StringBuilder();
         DateTime lastUpdate = DateTime.Now;
 
-        // Main logcat command
-        string logcatCommand = string.IsNullOrEmpty(_filter) ? "logcat" : $"logcat --pid={appPID}";
+        // Comprehensive logcat command to capture full logs
+        string logcatCommand = string.IsNullOrEmpty(_filter) 
+            ? "logcat -v threadtime *:V" 
+            : $"logcat -v threadtime --pid={appPID} *:V";
+
         await AdbHelper.Instance.RunAdbCommandAsync(logcatCommand, output =>
         {
+            if (output == null) return;
+
+            // Special handling for specific filter
             if (_filter == "com.samsung.android.app.parentalcare"){
                 ExtractValuesFromLog(output);
             }
             
-            logBuilder.AppendLine(output);
-            if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100)
+            // Append each log line immediately
+            lock (logBuilder)
             {
-                string logText = logBuilder.ToString();
+                logBuilder.AppendLine(output);
+            }
+
+            // Update UI periodically or on significant events
+            if ((DateTime.Now - lastUpdate).TotalMilliseconds > 100 || 
+                output.Contains("FATAL EXCEPTION") || 
+                output.Contains("AndroidRuntime") || 
+                output.Contains("E/"))
+            {
                 base.Dispatcher.Invoke(() =>
                 {
-                    LogcatTextBox.AppendText(logText);
-                    LogcatTextBox.ScrollToEnd();
-                    logBuilder.Clear();
+                    lock (logBuilder)
+                    {
+                        string logText = logBuilder.ToString();
+                        LogcatTextBox.AppendText(logText);
+                        LogcatTextBox.ScrollToEnd();
+                        logBuilder.Clear();
+                    }
                     lastUpdate = DateTime.Now;
                 });
             }
-        }, _selectedDevice, shell: true);
+        }, _selectedDevice, shell: true, continueOnError: true);
     }
 
     private async void RestartLogcat(string newPID)
@@ -249,6 +270,5 @@ public partial class LogcatWindow : Window, IComponentConnector
     {
         StopLogcat(false);
         _mainWindow.Show();
-        _calledWindow.Show();
     }
 }

@@ -40,6 +40,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     private bool loopCancelation = false;
     private bool success;
     private readonly List<Window> childWindows = new();
+    private List<string> ipDevices = [];
 
     /// <summary>
     /// Caminho para o diretório de logs do aplicativo
@@ -79,9 +80,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <summary>
     /// Manipulador do evento Loaded da janela
     /// </summary>
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        PopulateDevices();
+        await PopulateDevices();
         Directory.CreateDirectory(appPath);
         InitializeUsbDeviceNotifier();
     }
@@ -103,16 +104,17 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
     {
         await Task.Delay(1000);
-        PopulateDevices();
+        await PopulateDevices();
     }
 
     /// <summary>
     /// Popula a lista de dispositivos conectados
     /// </summary>
-    public async void PopulateDevices()
+    public async Task PopulateDevices()
     {
+        ipDevices = [];
         EnableDevicesBox(false);
-        Button_Status([Browse_Button, More_Button, Kids_Button, ParentalCare_Button, DeviceInfo_Button], [false, false, false, false, false]);
+        Button_Status([AddIpDevice, Browse_Button, More_Button, Kids_Button, ParentalCare_Button, RemoveIpDevice , DeviceInfo_Button], [false, false, false, false, false, false, false]);
         var deviceSelected = DevicesComboBox.SelectedItem as DeviceInfo;
         Install_Button.IsEnabled = false;
         UpdateStatusText("Checking device(s) connected...", clear: true);
@@ -122,6 +124,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
         foreach (var device in connectedDevices)
         {
+            if (device.Key.Contains(':')) ipDevices.Add(device.Key);
             var tasks = new List<Task<string>>()
             {
                 Task.Run(() => AdbHelper.Instance.GetAdbReturn($"getprop ro.build.version.release", device.Key, true)),
@@ -157,14 +160,12 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             d.DeviceName == deviceSelected.DeviceName
         ) ?? null;
 
-        DevicesComboBox.SelectedItem = deviceSelected;
-
         Dispatcher.Invoke(() =>
         {
             DevicesComboBox.ItemsSource = deviceList;
             DevicesComboBox.SelectedItem = deviceList.Count == 1 ? deviceList[0] : deviceSelected;
             DisableEnable_SamsungDevices(DevicesComboBox.SelectedItem as DeviceInfo);
-            Button_Status([Browse_Button, More_Button, DeviceInfo_Button], [true, true, true]);
+            Button_Status([AddIpDevice , Browse_Button, More_Button, DeviceInfo_Button], [true, true, true, true]);
 
             int count = deviceList.Count;
             UpdateStatusText(count > 0 ? $"{count} Device(s) Connected" : "No Device Connected", count == 0, count > 0, clear: true);
@@ -183,6 +184,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
                 }
             }
         });
+        RemoveIpDevice.IsEnabled = ipDevices.Count > 0;
     }
 
     /// <summary>
@@ -191,10 +193,10 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// <returns>Dicionário com o serial e nome dos dispositivos conectados</returns>
     private async Task<Dictionary<string, string>> GetConnectedDevices()
     {
-        string? devices = null;
-        Dictionary<string, string> dictionary = new Dictionary<string, string>();
+        string devices = string.Empty;
+        Dictionary<string, string> dictionary = [];
         await AdbHelper.Instance.RunAdbCommandAsync("devices", output => { devices += $"\n{output}"; }, generalCommand: true);
-        using StringReader stringReader = new StringReader(devices);
+        using StringReader stringReader = new (devices);
         string? text;
         while ((text = stringReader.ReadLine()) != null)
         {
@@ -241,6 +243,38 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             }
         }
         return null!;
+    }
+
+    private async void ConnectDevice_Click(object sender, RoutedEventArgs e)
+    {
+        string ipDevice = Microsoft.VisualBasic.Interaction.InputBox(
+                "Enter the ip of the device to connect (Ip:Port):\nThe device must be in the same network as the computer.", "Connect an IP device", string.Empty);
+        if (!string.IsNullOrEmpty(ipDevice)) {
+            string response = await AdbHelper.Instance.GetAdbReturn($"connect {ipDevice}",generalCommand: true);
+            if (response.Contains("connected"))
+            {
+                await PopulateDevices();
+            }
+            else
+            {
+                UpdateStatusText($"Device not connected, check the IP:Port address and try again\nResponse: {response}", isError: true, clear: true);
+            }
+        }
+    }
+
+    private async void RemoveIpDevice_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateStatusText(clear: true);
+        foreach (var device in ipDevices)
+        {
+            string result = await AdbHelper.Instance.GetAdbReturn($"disconnect {device}", generalCommand: true);
+            if (result.Contains("disconnected"))
+            {
+                await PopulateDevices();
+                UpdateStatusText($"The device was {result}", isSuccess: true);
+            }
+            else UpdateStatusText(result, isError: true, clear: true);
+        }
     }
     #endregion
 
@@ -675,9 +709,9 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     #endregion
 
     #region Button Click Events
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    private async void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
-        PopulateDevices();
+        await PopulateDevices();
     }
 
     /// <summary>

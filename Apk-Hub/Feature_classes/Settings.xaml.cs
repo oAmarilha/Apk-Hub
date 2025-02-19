@@ -172,6 +172,7 @@ public partial class Settings : Window, IComponentConnector
     private void LogcatWindow_Closing(object? sender, CancelEventArgs e)
     {
 		logcatWindow = null;
+        if (Application.Current.Windows.OfType<Settings>().Any()) this.Show();
     }
 
     private void ClosingSettings(object? sender, CancelEventArgs e)

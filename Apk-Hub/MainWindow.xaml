@@ -87,19 +87,24 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <!-- Botões de Ação -->
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,5,20,5" Grid.RowSpan="2" Grid.Column="0">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,5,10,5" Grid.RowSpan="2" Grid.Column="0">
                 <ComboBox Name="DevicesComboBox" Margin="0,0,0,10" Padding="5,5,0,0" Width="170" Height="35" FontSize="14" IsEnabled="False" SelectionChanged="DevicesComboBox_SelectionChanged"/>
-                <Button Content="Refresh Devices" Height="35" FontSize="15" Padding="10,0,10,0" Width="Auto" Click="RefreshButton_Click" />
+                <Button Content="Refresh Devices" Height="35" FontSize="15" Padding="10,0" Width="Auto" Click="RefreshButton_Click" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal"  Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="10,5,20,5" HorizontalAlignment="Right">
+            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.RowSpan="2" VerticalAlignment="Center">
+                <Button Name="AddIpDevice" Content="+" Margin="0,0,0,20" Height="20" Width="20" Padding="1" Click="ConnectDevice_Click"/>
+                <Button Name="RemoveIpDevice"  Content="-" Height="20" Width="20" Padding="1" IsEnabled="False" Click="RemoveIpDevice_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"  Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="10,5,20,5" HorizontalAlignment="Right">
                 <Button Name="More_Button" Content="More" Margin="0,0,30,0" Height="35" Padding="10,0" FontSize="15" Width="70" Click="More_Button_Click" />
                 <Button Name="Kids_Button" Content="Kids" Margin="0,0,30,0" Height="35" Padding="10,0" FontSize="15" Width="70" Click="KidsWindow_Click" />
                 <Button Name="ParentalCare_Button" Content="Parental Care" Margin="0,0,0,0" Padding="10,0" Height="35" FontSize="15" Width="140" Click="PCWindow_Click" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,5,20,5" Grid.Row="2" Grid.Column="1">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,5,20,5" Grid.Row="2" Grid.Column="2">
                 <Button Name="DeviceInfo_Button" Content="Info" Margin="0,0,30,0" Height="35" Width="70" FontSize="15" Padding="10,0,10,0" Click="InfoDevice_Click" />
                 <Button Content="Clear" Margin="0,0,30,0" Height="35" FontSize="15" Padding="10,0,10,0" Width="70" Click="EmptyOutput_Button" />
                 <Button Name="Install_Button" Content="Install" Height="35" FontSize="15" Background="#FF008000" Padding="5,0,5,0" Width="140" Click="InstallButton_Click" />

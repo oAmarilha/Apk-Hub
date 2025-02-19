@@ -33,7 +33,7 @@ namespace ApkInstaller
 
         private void PkgAction_Closing(object? sender, CancelEventArgs e)
         {
-            _calledWindow.Show();
+            if (Application.Current.Windows.OfType<More>().Any()) _calledWindow.Show();
             if (_mainWindow != null)
             {
                 _mainWindow.Activate();
@@ -154,6 +154,12 @@ namespace ApkInstaller
             Send_Command.IsEnabled = true;
             App_Pkg.IsEnabled = true;
             App_Pkg.Focus();
+            logcatWindow.Closing += LogcatWindow_Closing;
+        }
+
+        private void LogcatWindow_Closing(object? sender, CancelEventArgs e)
+        {
+            if (Application.Current.Windows.OfType<PkgAction>().Any()) this.Show();
         }
 
         private async void ClearPkg_Action()

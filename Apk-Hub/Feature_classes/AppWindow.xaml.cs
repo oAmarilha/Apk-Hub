@@ -265,6 +265,7 @@ public partial class AppWindow : Window, IComponentConnector
     private void _logcatWindow_Closing(object? sender, CancelEventArgs e)
     {
 		_logcatWindow = null;
+        if (Application.Current.Windows.OfType<AppWindow>().Any()) this.Show();
     }
 
     public void Closing_Window(object? sender, CancelEventArgs e)

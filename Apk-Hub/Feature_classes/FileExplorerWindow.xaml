@@ -24,13 +24,18 @@
 
         <!-- File List -->
         <ListView x:Name="FileListView" Grid.Row="1" Margin="10" 
-                  SelectionMode="Single"
-                  MouseDoubleClick="FileListView_MouseDoubleClick"
-                  SelectionChanged="FileListView_SelectionChanged" av:ItemsSource="{av:SampleData ItemCount=5}">
+            SelectionMode="Single"
+            MouseDoubleClick="FileListView_MouseDoubleClick"
+            SelectionChanged="FileListView_SelectionChanged">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="IsEnabled" Value="{Binding IsSelectable}"/>
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock>
+                        <TextBlock FontSize="20">
                             <TextBlock.Style>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Style.Triggers>

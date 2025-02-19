@@ -1,6 +1,8 @@
 ﻿using ApkInstaller.Feature_classes;
 using ApkInstaller.Helper_classes;
 using Microsoft.VisualBasic;
+using System.Diagnostics;
+using System.IO.Packaging;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -121,7 +123,7 @@ namespace ApkInstaller
             {
                 if (logcatWindow == null)
                 {
-                    logcatWindow = new LogcatWindow(_mainWindow, this, _selectedDevice, null);
+                    logcatWindow = new LogcatWindow(_mainWindow, _mainWindow.moreWindow, _selectedDevice, null);
                     if (_mainWindow.Top + _mainWindow.Height + 450.0 >= SystemParameters.PrimaryScreenHeight)
                     {
                         logcatWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -144,6 +146,7 @@ namespace ApkInstaller
         private void LogcatWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             logcatWindow = null;
+            if (Application.Current.Windows.OfType<More>().Any()) this.Show();
         }
 
         private void ClearAPK_Button_Click(object sender, RoutedEventArgs e)
@@ -172,11 +175,24 @@ namespace ApkInstaller
 
         private async void GetCurrentApp_Button_Click(object sender, RoutedEventArgs e)
         {
-            string match = Regex.Match(await AdbHelper.Instance.GetAdbReturn("dumpsys window", _selectedDevice, true), @"([a-zA-Z0-9\.]+)/([a-zA-Z0-9\.]+)").Value;
-            string[] regexOutput = match.Split('/');
-            string appPackage = string.IsNullOrEmpty(regexOutput[0]) ? "Not found" : regexOutput[0];
-            string appActivity = string.IsNullOrEmpty(regexOutput[1]) ? "Not found" : regexOutput[1];
-            base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"Package: {appPackage}\nActivity: {appActivity}", clear: true));
+            _mainWindow.UpdateStatusText(clear: true);
+            string result = await AdbHelper.Instance.GetAdbReturn("dumpsys window", _selectedDevice, true);
+            var currentFocusLine = result.Split('\n')
+                .FirstOrDefault(line => line.Contains("mCurrentFocus"));
+            if (currentFocusLine != null)
+            {
+                var match = Regex.Match(currentFocusLine, @"([a-zA-Z0-9\.]+)/([a-zA-Z0-9\.]+)");
+                if (match.Success)
+                {
+                    string package = match.Groups[1].Value;
+                    string activity = match.Groups[2].Value;
+                    base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"Package: {package}\nActivity: {activity}", clear: true));
+                }
+                else
+                {
+                    base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"App package and activity not found", clear: true));
+                }
+            }
         }
 
         private void GetFile_Button_Click(object sender, RoutedEventArgs e)
@@ -193,7 +209,7 @@ namespace ApkInstaller
         private void FileExplorer_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             _mainWindow.Show();
-            this.Show();
+            if (Application.Current.Windows.OfType<More>().Any()) this.Show();
         }
     }
 }

@@ -95,7 +95,7 @@ namespace ApkInstaller.Helper_classes
             });
         }
 
-        public async Task RunAdbCommandAsync(string arguments, Action<string> outputHandler, string? selectedDevice = null, bool shell = false, bool generalCommand = false)
+        public async Task RunAdbCommandAsync(string arguments, Action<string> outputHandler, string? selectedDevice = null, bool shell = false, bool generalCommand = false, bool continueOnError = false)
         {
             await Task.Run(() =>
             {
@@ -109,9 +109,14 @@ namespace ApkInstaller.Helper_classes
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.CreateNoWindow = true;
 
+                    bool processExited = false;
+
                     process.OutputDataReceived += (sender, e) =>
                     {
-                        outputHandler(e.Data);  // Notify UI with the output
+                        if (e.Data != null)
+                        {
+                            outputHandler(e.Data);  // Notify UI with the output
+                        }
                     };
 
                     process.ErrorDataReceived += (sender, e) =>
@@ -122,6 +127,11 @@ namespace ApkInstaller.Helper_classes
                         }
                     };
 
+                    process.Exited += (sender, e) =>
+                    {
+                        processExited = true;
+                    };
+
                     lock (processes)
                     {
                         processes.Add(process);
@@ -130,7 +140,24 @@ namespace ApkInstaller.Helper_classes
                     process.Start();
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
-                    process.WaitForExit();
+                    process.EnableRaisingEvents = true;
+
+                    // If continueOnError is true, keep trying to restart the process
+                    while (!processExited || continueOnError)
+                    {
+                        process.WaitForExit();
+
+                        if (!continueOnError)
+                            break;
+
+                        // Wait a bit before restarting to avoid rapid restarts
+                        System.Threading.Thread.Sleep(1000);
+
+                        // Restart the process
+                        process.Start();
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+                    }
 
                     lock (processes)
                     {

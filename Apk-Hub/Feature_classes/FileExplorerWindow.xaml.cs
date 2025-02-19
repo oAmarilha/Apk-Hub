@@ -22,10 +22,10 @@ namespace ApkInstaller.Feature_classes
 
         public class FileItem
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
             public bool IsDirectory { get; set; }
-            public string FullPath { get; set; }
-            public BitmapSource PreviewSource { get; set; }
+            public string FullPath { get; set; } = string.Empty;
+            public bool IsSelectable { get; set; } = true;
         }
 
         public FileExplorerWindow(string deviceSerial)
@@ -39,9 +39,12 @@ namespace ApkInstaller.Feature_classes
         {
             var selectedItem = FileListView.SelectedItem as FileItem;
 
+            // Verifica se o item é selecionável
+            bool isSelectableItemSelected = selectedItem != null && selectedItem.IsSelectable;
+
             // Enable/disable buttons based on selection
-            DownloadButton.IsEnabled = selectedItem != null;
-            DeleteButton.IsEnabled = selectedItem != null;
+            DownloadButton.IsEnabled = isSelectableItemSelected;
+            DeleteButton.IsEnabled = isSelectableItemSelected;
         }
 
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)
@@ -71,7 +74,7 @@ namespace ApkInstaller.Feature_classes
                     string pullCommand = $"pull \"{selectedItem.FullPath}\" \"{saveFileDialog.FileName}\"";
                     string result = await AdbHelper.Instance.GetAdbReturn(pullCommand, _currentDevice);
 
-                    if (result.Contains("1 file pulled"))
+                    if (!result.Contains("No such file or directory"))
                     {
                         StatusTextBlock.Text = $"File downloaded to {saveFileDialog.FileName}";
 
@@ -157,10 +160,11 @@ namespace ApkInstaller.Feature_classes
                 string lsCommand = $"ls -la \"{path}\"";
                 string result = await AdbHelper.Instance.GetAdbReturn(lsCommand, _currentDevice, true);
 
-                // Log the raw output for debugging
-                Debug.WriteLine($"ADB LS Output for {path}:");
-                Debug.WriteLine(result);
-
+                if (!result.Contains("total"))
+                {
+                    MessageBox.Show("There is an error while searching the directory", "Check your device connection", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 // Parse and display
                 var fileItems = ParseLsOutput(result, path);
 
@@ -171,7 +175,8 @@ namespace ApkInstaller.Feature_classes
                     {
                         Name = "This directory is empty",
                         IsDirectory = false,
-                        FullPath = path
+                        FullPath = path,
+                        IsSelectable = false  // Nova propriedade para impedir seleção
                     });
                 }
 
@@ -188,6 +193,7 @@ namespace ApkInstaller.Feature_classes
                 StatusTextBlock.Text = "Error loading directory";
             }
         }
+
         private List<FileItem> ParseLsOutput(string lsOutput, string currentPath)
         {
             var fileItems = new List<FileItem>();
