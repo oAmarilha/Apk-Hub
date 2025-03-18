@@ -250,14 +250,15 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         string ipDevice = Microsoft.VisualBasic.Interaction.InputBox(
                 "Enter the ip of the device to connect (Ip:Port):\nThe device must be in the same network as the computer.", "Connect an IP device", string.Empty);
         if (!string.IsNullOrEmpty(ipDevice)) {
+            UpdateStatusText($"Attemping to connect with {ipDevice}", clear: true);
             string response = await AdbHelper.Instance.GetAdbReturn($"connect {ipDevice}",generalCommand: true);
-            if (response.Contains("connected"))
+            if (response.Contains("connected to"))
             {
                 await PopulateDevices();
             }
             else
             {
-                UpdateStatusText($"Device not connected, check the IP:Port address and try again\nResponse: {response}", isError: true, clear: true);
+                UpdateStatusText($"Device not connected, check the IP:Port address and try again.\nResponse: {response}", isError: true, clear: true);
             }
         }
     }
