@@ -1,8 +1,7 @@
 ﻿using ApkInstaller.Feature_classes;
 using ApkInstaller.Helper_classes;
-using Microsoft.VisualBasic;
 using System.Diagnostics;
-using System.IO.Packaging;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -175,6 +174,14 @@ namespace ApkInstaller
 
         private async void GetCurrentApp_Button_Click(object sender, RoutedEventArgs e)
         {
+            List<string> currentApp = await GetCurrentApp();
+            if (currentApp.Count > 0) base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"Package: {currentApp[0]}\nActivity: {currentApp[1]}", clear: true));
+            else base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"App package and activity not found", clear: true));
+        }
+
+        private async Task<List<string>> GetCurrentApp()
+        {
+            List<string> list = [];
             _mainWindow.UpdateStatusText(clear: true);
             string result = await AdbHelper.Instance.GetAdbReturn("dumpsys window", _selectedDevice, true);
             var currentFocusLine = result.Split('\n')
@@ -186,13 +193,11 @@ namespace ApkInstaller
                 {
                     string package = match.Groups[1].Value;
                     string activity = match.Groups[2].Value;
-                    base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"Package: {package}\nActivity: {activity}", clear: true));
-                }
-                else
-                {
-                    base.Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"App package and activity not found", clear: true));
+                    list.Add(package);
+                    list.Add(activity);
                 }
             }
+            return list;
         }
 
         private void GetFile_Button_Click(object sender, RoutedEventArgs e)
@@ -210,6 +215,42 @@ namespace ApkInstaller
         {
             _mainWindow.Show();
             if (Application.Current.Windows.OfType<More>().Any()) this.Show();
+        }
+
+        private async void Screenshot_Button_Click(object sender, RoutedEventArgs e)
+        {
+            List<string> package = await GetCurrentApp();
+            string dirPath = string.Empty;
+            string screenshotsPath = $"{localFile}\\Screenshots";
+            string time = DateTime.Now.ToString().Replace("/", "-").Replace(":", "-")
+            .Replace(" ", "_");
+            string deviceName = await _mainWindow.GetDeviceName(_selectedDevice);
+            if (package.Count > 0) dirPath = Directory.CreateDirectory($"{screenshotsPath}\\{deviceName}\\{package[0]}").ToString();
+            else dirPath = Directory.CreateDirectory($"{screenshotsPath}\\{deviceName}\\AppPackageNotFound").ToString();
+            string screenshotPath = await AdbHelper.Instance.GetAdbReturn("ls /sdcard/apk_hub", _selectedDevice, true);
+            if(screenshotPath.Contains("No such file or directory")) await AdbHelper.Instance.RunAdbCommandAsync("mkdir /sdcard/apk_hub", output => { }, _selectedDevice, true);
+            await AdbHelper.Instance.RunAdbCommandAsync("screencap /sdcard/apk_hub/apkhub_screenshot.png", output => { }, _selectedDevice, true) ;
+            string result = await AdbHelper.Instance.GetAdbReturn($"pull /sdcard/apk_hub/apkhub_screenshot.png {dirPath}\\{package[0]}_{time}.png", _selectedDevice);
+            if (result.Contains("1 file pulled"))
+            {
+                Dispatcher.Invoke(() => _mainWindow.UpdateStatusText("Screenshot taken", isSuccess: true, clear: true));
+                if(_mainWindow.ShowMessage("The screenshot was taken, do you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = dirPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+
+            }
+            else Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"There is an error while the screenshot was being taken: {result}", isError: true, clear: true));
+        }
+
+        private void TBD2_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

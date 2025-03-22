@@ -8,11 +8,12 @@
     xmlns:local="clr-namespace:ApkInstaller" 
     ResizeMode="CanMinimize" 
     Title="More" 
-    Height="280"
+    Height="300"
     Width="220">
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
@@ -29,6 +30,8 @@
         <Button Name="Log_Button" Grid.Row="2" Grid.Column="0" Content="Logcat" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Logcat_Button_Click" />
         <Button Name="ScreenRecordButton" Grid.Row="2" Grid.Column="1" Content="Record" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FF008000" Click="ScreenRecordButton_Click" />
         <Button Name="Share_Button" Grid.Row="3" Grid.Column="0" Content="Screen" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
-        <Button Name="UninstallApp_Button" Grid.Row="3" Grid.Column="1" Content="Uninstall Pkg" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="UninstallApp_Button_Click"/>
+        <Button Name="Screenshot_Button" Grid.Row="3" Grid.Column="1" Content="Screenshot" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Screenshot_Button_Click"/>
+        <Button Name="UninstallApp_Button" Grid.Row="4" Grid.Column="0" Content="Uninstall Pkg" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="UninstallApp_Button_Click"/>
+        <Button Name="TBD2" Grid.Row="4" Grid.Column="1" Content="TBD2" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="TBD2_Click"/>
     </Grid>
 </Window>
