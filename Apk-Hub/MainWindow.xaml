@@ -96,8 +96,8 @@
                 <Button Content="Refresh Devices" Height="35" FontSize="15" Padding="10,0" Width="Auto" Click="RefreshButton_Click" />
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="1" Grid.RowSpan="2" VerticalAlignment="Center">
-                <Button Name="AddIpDevice" Content="+" Margin="0,0,0,20" Height="20" Width="20" Padding="1" Click="ConnectDevice_Click"/>
-                <Button Name="RemoveIpDevice"  Content="-" Height="20" Width="20" Padding="1" IsEnabled="False" Click="RemoveIpDevice_Click"/>
+                <Button Name="AddIpDevice" Content="+" ToolTip="Add a device via IP Connection (You need to have the computer and the mobile in the same network)." Margin="0,0,0,20" Height="20" Width="20" Padding="1" Click="ConnectDevice_Click"/>
+                <Button Name="RemoveIpDevice"  Content="-" Height="20" ToolTip="Remove all connected devices from IP Connection." Width="20" Padding="1" IsEnabled="False" Click="RemoveIpDevice_Click"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal"  Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="10,5,20,5" HorizontalAlignment="Right">
                 <Button Name="More_Button" Content="More" Margin="0,0,30,0" Height="35" Padding="10,0" FontSize="15" Width="70" Click="More_Button_Click" />

@@ -31,7 +31,7 @@ namespace ApkInstaller
         private Thread pythonThread;
         private readonly string serialno;
 
-        private static readonly Dictionary<string, (string PackageName, string DisplayName, string Instance)> appStringMap = new Dictionary<string, (string, string, string)>
+        private static readonly Dictionary<string, (string PackageName, string DisplayName, string Instance)> appStringMap = new()
         {
             { "Bobby's Canvas", ("com.sec.kidsplat.drawing", "Bobby's Canvas", "KidsCanvas") },
             { "Crocro's Friends Village", ("com.sec.android.app.kids3d", "Crocro's Friend Village", "KidsHouse") },

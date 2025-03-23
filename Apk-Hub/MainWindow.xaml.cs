@@ -265,6 +265,12 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
     private async void RemoveIpDevice_Click(object sender, RoutedEventArgs e)
     {
+        await DisconnectIpDevices();
+    }
+
+    public async Task DisconnectIpDevices()
+    {
+
         UpdateStatusText(clear: true);
         foreach (var device in ipDevices)
         {

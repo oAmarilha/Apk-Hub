@@ -2,6 +2,7 @@
 using ApkInstaller.Helper_classes;
 using System.Diagnostics;
 using System.IO;
+using System.Media;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -57,7 +58,7 @@ namespace ApkInstaller
             }
         }
 
-        private void StopScreenRecording()
+        static void StopScreenRecording()
         {
             AdbHelper.Instance.StopCommand();
         }
@@ -234,7 +235,8 @@ namespace ApkInstaller
             if (result.Contains("1 file pulled"))
             {
                 Dispatcher.Invoke(() => _mainWindow.UpdateStatusText("Screenshot taken", isSuccess: true, clear: true));
-                if(_mainWindow.ShowMessage("The screenshot was taken, do you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                SystemSounds.Exclamation.Play();
+                if (_mainWindow.ShowMessage("The screenshot was taken, do you want to open it?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     Process.Start(new ProcessStartInfo()
                     {
@@ -248,7 +250,28 @@ namespace ApkInstaller
             else Dispatcher.Invoke(() => _mainWindow.UpdateStatusText($"There is an error while the screenshot was being taken: {result}", isError: true, clear: true));
         }
 
-        private void TBD2_Click(object sender, RoutedEventArgs e)
+        private async void RebootTurnoff_Button_Click(object sender, RoutedEventArgs e)
+        {
+            Dictionary <string, List<string>> action = new()
+            {
+                {"Turnoff", ["turned off", " -p"] },
+                {"Reboot", ["restarted", ""] }
+            };
+            string command = (sender as Button)!.Content.ToString()!;
+            string resultcommand = await AdbHelper.Instance.GetAdbReturn($"reboot{action[command][1]}", _selectedDevice, true);
+            bool result = string.IsNullOrEmpty(resultcommand) || resultcommand.Contains("Done");
+            await _mainWindow.DisconnectIpDevices();
+            if (result)
+            {
+                _mainWindow.UpdateStatusText($"The device has been {action[command][0]}", isSuccess: true, clear: true);
+            }
+            else
+            {
+                _mainWindow.UpdateStatusText($"The device has not been {action[command][0]}, check it and try again.", isError: true, clear: true);
+            }
+        }
+
+        private void tbd2_Click(object sender, RoutedEventArgs e)
         {
 
         }
