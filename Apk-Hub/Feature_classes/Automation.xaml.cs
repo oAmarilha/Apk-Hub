@@ -77,57 +77,23 @@ namespace ApkInstaller
         /// </summary>
         private static void SetupPythonEnvironment()
         {
-            string pythonPath = string.Empty;
-            
-            // Tentar encontrar Python no registro do Windows
-            using (var baseKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Python\PythonCore"))
-            {
-                if (baseKey != null)
-                {
-                    // Procurar versões do Python em ordem decrescente (mais recente primeiro)
-                    var versions = baseKey.GetSubKeyNames()
-                        .OrderByDescending(v => v)
-                        .Where(v => v.StartsWith("3.")); // Garantir que é Python 3
+            string? pathEnv = Environment.GetEnvironmentVariable("PATH");
+            string pythonExe = string.Empty;
 
-                    foreach (var version in versions)
+            if (!string.IsNullOrEmpty(pathEnv))
+            {
+                string[] paths = pathEnv.Split(';');
+                foreach (string path in paths)
+                {
+                    pythonExe = System.IO.Path.Combine(path.Trim(), "python.exe");
+                    if (System.IO.File.Exists(pythonExe))
                     {
-                        using var versionKey = baseKey.OpenSubKey($@"{version}\InstallPath");
-                        if (versionKey != null)
-                        {
-                            pythonPath = versionKey.GetValue("ExecutablePath") as string;
-                            if (!string.IsNullOrEmpty(pythonPath))
-                                break;
-                        }
+                        break;
                     }
                 }
             }
 
-            // Se não encontrou no HKLM, tentar no HKCU
-            if (string.IsNullOrEmpty(pythonPath))
-            {
-                using (var baseKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Python\PythonCore"))
-                {
-                    if (baseKey != null)
-                    {
-                        var versions = baseKey.GetSubKeyNames()
-                            .OrderByDescending(v => v)
-                            .Where(v => v.StartsWith("3."));
-
-                        foreach (var version in versions)
-                        {
-                            using var versionKey = baseKey.OpenSubKey($@"{version}\InstallPath");
-                            if (versionKey != null)
-                            {
-                                pythonPath = versionKey.GetValue("ExecutablePath") as string;
-                                if (!string.IsNullOrEmpty(pythonPath))
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(pythonPath))
+            if (string.IsNullOrEmpty(pythonExe))
             {
                 throw new InvalidOperationException(
                     "Python runtime not found. Please install Python 3.10-3.12"
@@ -135,7 +101,7 @@ namespace ApkInstaller
             }
 
             // Converter caminho do python.exe para dll
-            string pythonDir = Path.GetDirectoryName(pythonPath);
+            string pythonDir = Path.GetDirectoryName(pythonExe);
             string folderName = new DirectoryInfo(pythonDir).Name;
             string dllPath = Path.Combine(pythonDir, $"{folderName.ToLower()}.dll");
 
@@ -472,10 +438,9 @@ namespace ApkInstaller
         /// <returns>Tarefa que representa a parada do teste</returns>
         public async Task StopPythonExecution()
         {
-            if (!isRunning) return;
-
-            await StopAutomationProcess();
             await CleanupPythonTasks();
+            if (!isRunning) return;
+            await StopAutomationProcess();
         }
 
         /// <summary>
