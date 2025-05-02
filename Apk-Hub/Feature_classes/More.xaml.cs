@@ -186,7 +186,7 @@ namespace ApkInstaller
             _mainWindow.UpdateStatusText(clear: true);
             string result = await AdbHelper.Instance.GetAdbReturn("dumpsys window", _selectedDevice, true);
             var currentFocusLine = result.Split('\n')
-                .FirstOrDefault(line => line.Contains("mCurrentFocus"));
+                .FirstOrDefault(line => line.Contains("mCurrentFocus=Window"));
             if (currentFocusLine != null)
             {
                 var match = Regex.Match(currentFocusLine, @"([a-zA-Z0-9\.]+)/([a-zA-Z0-9\.]+)");
