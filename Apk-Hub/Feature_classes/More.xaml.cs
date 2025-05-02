@@ -254,10 +254,13 @@ namespace ApkInstaller
         {
             Dictionary <string, List<string>> action = new()
             {
-                {"Turnoff", ["turned off", " -p"] },
-                {"Reboot", ["restarted", ""] }
+                {"Turnoff", ["turned off", " -p", "turn the device off"] },
+                {"Reboot", ["restarted", "", "restart the device"] },
+                {"DOWNLOAD MODE", ["restarted to download mode", " download", "restart in download mode"] }
             };
-            string command = (sender as Button)!.Content.ToString()!;
+            var content = (sender as Button)!.Content;
+            string command = content is TextBlock ? (content as TextBlock)!.Text : content.ToString()!;
+            _mainWindow.UpdateStatusText($"Sending command to {action[command][2]}, check your device.", isWarning: true, clear: true);
             string resultcommand = await AdbHelper.Instance.GetAdbReturn($"reboot{action[command][1]}", _selectedDevice, true);
             bool result = string.IsNullOrEmpty(resultcommand) || resultcommand.Contains("Done");
             await _mainWindow.DisconnectIpDevices();
@@ -269,11 +272,6 @@ namespace ApkInstaller
             {
                 _mainWindow.UpdateStatusText($"The device has not been {action[command][0]}, check it and try again.", isError: true, clear: true);
             }
-        }
-
-        private void tbd2_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

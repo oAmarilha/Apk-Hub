@@ -24,16 +24,19 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <Button Name="Run_Adb" IsEnabled="True" Grid.Row="0" Grid.Column="0" Content="ADB" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Run_Adb_Click"/>
-        <Button Name="ClearPKG_Button" IsEnabled="True" Grid.Row="1" Grid.Column="0" Content="Clear APK" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ClearAPK_Button_Click"/>
-        <Button Name="GetCurrentApp_Button" Grid.Row="2" Grid.Column="0" Content="Current App" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="GetCurrentApp_Button_Click"/>
-        <Button Name="GetFile_Button" Grid.Row="3" Grid.Column="0" Content="Get file" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="GetFile_Button_Click"/>
-        <Button Name="Log_Button" Grid.Row="0" Grid.Column="1" Content="Logcat" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Logcat_Button_Click" />
-        <Button Name="ScreenRecordButton" Grid.Row="1" Grid.Column="1" Content="Record" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FF008000" Click="ScreenRecordButton_Click" />
+        <Button Name="ClearPKG_Button" IsEnabled="True" Grid.Row="0" Grid.Column="1" Content="Clear APK" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ClearAPK_Button_Click"/>
+        <Button Name="GetCurrentApp_Button" Grid.Row="0" Grid.Column="2" Content="Current App" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="GetCurrentApp_Button_Click"/>
+        <Button Name="Reboot_Download_Button" Grid.Row="1" Grid.Column="0" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RebootTurnoff_Button_Click">
+            <TextBlock TextWrapping="Wrap" Text="DOWNLOAD MODE" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" FontSize="10" FontWeight="Bold" />
+        </Button>
+        <Button Name="GetFile_Button" Grid.Row="1" Grid.Column="1" Content="Get file" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="GetFile_Button_Click"/>
+        <Button Name="Log_Button" Grid.Row="1" Grid.Column="2" Content="Logcat" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Logcat_Button_Click" />
+        <Button Name="ScreenRecordButton" Grid.Row="2" Grid.Column="0" Content="Record" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FF008000" Click="ScreenRecordButton_Click" />
         <Button Name="Reboot" Grid.Row="2" Grid.Column="1" Content="Reboot" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Yellow" Click="RebootTurnoff_Button_Click"/>
-        <Button Name="Share_Button" Grid.Row="3" Grid.Column="1" Content="Screen" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
-        <Button Name="Screenshot_Button" Grid.Row="0" Grid.Column="3" Content="Screenshot" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Screenshot_Button_Click"/>
-        <Button Name="UninstallApp_Button" Grid.Row="1" Grid.Column="3" Content="Uninstall Pkg" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="UninstallApp_Button_Click"/>
-        <Button Name="Turnoff_Button" Grid.Row="2" Grid.Column="3" Content="Turnoff" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Red" Click="RebootTurnoff_Button_Click"/>
-        <Button Name="tbd2" Grid.Row="3" Grid.Column="3" Content="TBD" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="tbd2_Click"/>
+        <Button Name="Share_Button" Grid.Row="2" Grid.Column="2" Content="Screen" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="RemoteScreen_Click" />
+        <Button Name="Screenshot_Button" Grid.Row="3" Grid.Column="0" Content="Screenshot" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="Screenshot_Button_Click"/>
+        <Button Name="UninstallApp_Button" Grid.Row="3" Grid.Column="1" Content="Uninstall Pkg" FontSize="8.5" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Click="UninstallApp_Button_Click"/>
+        <Button Name="Turnoff_Button" Grid.Row="3" Grid.Column="2" Content="Turnoff" Height="35" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Red" Click="RebootTurnoff_Button_Click"/>
+        
     </Grid>
 </Window>

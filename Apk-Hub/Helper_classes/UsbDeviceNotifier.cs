@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -10,9 +9,9 @@ public class UsbDeviceNotifier
     private const int DbtDeviceArrival = 0x8000;            // Device connected
     private const int DbtDeviceRemoveComplete = 0x8004;      // Device disconnected
     private const int WmDeviceChange = 0x0219;               // Device change event
-
     private const int DbtDevtypDeviceInterface = 5;          // Device type is a device interface
-    private static readonly Guid GuidDevinterfaceUsbDevice = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
+
+    private static readonly Guid GuidDevinterfaceMtpDevice = new Guid("6AC27878-A6FA-4155-BA32-235D98C0DD1D");
 
     private readonly Window _window;
     private nint _notificationHandle;
@@ -50,7 +49,7 @@ public class UsbDeviceNotifier
         {
             dbcc_size = Marshal.SizeOf(typeof(DevBroadcastDeviceinterface)),
             dbcc_devicetype = DbtDevtypDeviceInterface,
-            dbcc_classguid = GuidDevinterfaceUsbDevice
+            dbcc_classguid = GuidDevinterfaceMtpDevice
         };
 
         nint buffer = Marshal.AllocHGlobal(deviceInterface.dbcc_size);

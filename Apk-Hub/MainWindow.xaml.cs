@@ -41,6 +41,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     private bool success;
     private readonly List<Window> childWindows = new();
     private List<string> ipDevices = [];
+    private readonly SemaphoreSlim checkDevicesThread = new SemaphoreSlim(1, 1);
 
     /// <summary>
     /// Caminho para o diretório de logs do aplicativo
@@ -103,7 +104,6 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// </summary>
     private async void OnUsbDeviceChanged(object sender, EventArgs e)
     {
-        await Task.Delay(1000);
         await PopulateDevices();
     }
 
@@ -112,6 +112,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
     /// </summary>
     public async Task PopulateDevices()
     {
+        if (!await checkDevicesThread.WaitAsync(0)) return;
         ipDevices = [];
         EnableDevicesBox(false);
         Button_Status([AddIpDevice, Browse_Button, More_Button, Kids_Button, ParentalCare_Button, RemoveIpDevice , DeviceInfo_Button], [false, false, false, false, false, false, false]);
@@ -121,6 +122,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
 
         var deviceList = new List<DeviceInfo>();
         var connectedDevices = await Task.Run(GetConnectedDevices);
+        await Task.Delay(1500);
 
         foreach (var device in connectedDevices)
         {
@@ -185,6 +187,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
             }
         });
         RemoveIpDevice.IsEnabled = ipDevices.Count > 0;
+        checkDevicesThread.Release();
     }
 
     /// <summary>
