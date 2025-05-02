@@ -10,6 +10,7 @@ namespace ApkInstaller.Helper_classes
     public class AdbHelper
     {
         private static AdbHelper? instance;
+        public static AdbHelper? screenShareInstance;
         private List<Process> processes;
         public string appPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\ApkHub\\Log";
         private string adbExecutablePath;
@@ -41,11 +42,17 @@ namespace ApkInstaller.Helper_classes
         {
             get
             {
-                if (instance == null)
-                {
-                    instance = new AdbHelper();
-                }
+                instance ??= new AdbHelper();
                 return instance;
+            }
+        }
+
+        public static AdbHelper ScreenShareInstance
+        {
+            get
+            {
+                screenShareInstance ??= new AdbHelper();
+                return screenShareInstance;
             }
         }
 
@@ -299,15 +306,15 @@ namespace ApkInstaller.Helper_classes
 
         public async Task RealTimeScreen(string selectedDevice)
         {
-            await AdbHelper.Instance.RunCommandAsync($"{scrcpyExecutablePath}", $"-s {selectedDevice}", output =>
+            await ScreenShareInstance.RunCommandAsync($"{scrcpyExecutablePath}", $"-s {selectedDevice}", output =>
             {
                 mainWindow.UpdateStatusText(output);
             });
         }
 
-        private void EndRealTimeScreen()
+        public void EndRealTimeScreen()
         {
-            AdbHelper.Instance.StopCommand();
+            ScreenShareInstance.StopCommand();
         }
 
         public async Task<bool> UninstallFunction(string _selectedDevice, string appPkg)

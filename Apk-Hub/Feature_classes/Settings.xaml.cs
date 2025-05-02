@@ -42,8 +42,10 @@ public partial class Settings : Window, IComponentConnector
 	{
 		string command = "remount";
 		await SendCommandButton(command, shell: false);
-		await SendCommandButton(command, shell: false);
-		bool status = _mainWindow.StatusText.Text.Contains("Remount succeeded");
+		await Task.Delay(2000);
+        await SendCommandButton(command, shell: false);
+		await Task.Delay(2000);
+        bool status = _mainWindow.StatusText.Text.Contains("Remount succeeded");
         _mainWindow.UpdateStatusText(isError: !status, isSuccess: status);
     }
 
@@ -69,9 +71,12 @@ public partial class Settings : Window, IComponentConnector
 			return;
 		}
 		await SendCommandButton("root", shell: false);
+		await Task.Delay(2000);
 		await SendCommandButton("remount", shell: false);
-		await SendCommandButton("remount", shell: false);
-		string apkName = Path.GetFileName(apkFile);
+		await Task.Delay(2000);
+        await SendCommandButton("remount", shell: false);
+		await Task.Delay(2000);
+        string apkName = Path.GetFileName(apkFile);
 		if (!type.Contains("watch") || (!type.Contains("default")))
 		{
 			await SendCommandButton("rm -r /system/priv-app/ParentalCare", shell: true);
@@ -177,10 +182,7 @@ public partial class Settings : Window, IComponentConnector
 
     private void ClosingSettings(object? sender, CancelEventArgs e)
 	{
-		if (logcatWindow != null)
-		{
-			logcatWindow.Close();
-		}
+		logcatWindow?.Close();
 		_mainWindow.EnableDevicesBox();
 		AdbHelper.Instance.StopCommand();
 		_mainWindow.Browse_Button.IsEnabled = true;

@@ -65,15 +65,15 @@ namespace ApkInstaller
 
         private async void RealTimeScreen()
         {
-            await AdbHelper.Instance.RealTimeScreen(_selectedDevice);
+            await AdbHelper.ScreenShareInstance.RealTimeScreen(_selectedDevice);
             Share_Button.Content = "Screen";
             Share_Button.Background = new SolidColorBrush(Color.FromRgb(247, 247, 247));
             ScreenRecordButton.IsEnabled = true;
         }
 
-        private void EndRealTimeScreen()
+        private static void EndRealTimeScreen()
         {
-            AdbHelper.Instance.StopCommand();
+            AdbHelper.ScreenShareInstance.EndRealTimeScreen();
         }
 
         private void RemoteScreen_Click(object sender, RoutedEventArgs e)

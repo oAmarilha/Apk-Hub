@@ -1010,6 +1010,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         EnableDevicesBox();
         moreWindow = null;
         AdbHelper.Instance.StopCommand();
+        AdbHelper.ScreenShareInstance.StopCommand();
         this.Activate();
     }
 
