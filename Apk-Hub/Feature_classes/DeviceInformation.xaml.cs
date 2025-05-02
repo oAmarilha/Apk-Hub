@@ -32,7 +32,8 @@ namespace ApkInstaller.Feature_classes
             {"12", "S" },
             {"13", "T" },
             {"14", "U" },
-            {"15", "V" }
+            {"15", "V" },
+            {"16", "B" }
         };
         public DeviceInformation(MainWindow mainWindow, DeviceInfo selectedDevice)
         {
