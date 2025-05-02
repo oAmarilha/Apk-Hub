@@ -121,8 +121,8 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         UpdateStatusText("Checking device(s) connected...", clear: true);
 
         var deviceList = new List<DeviceInfo>();
-        var connectedDevices = await Task.Run(GetConnectedDevices);
         await Task.Delay(1500);
+        var connectedDevices = await Task.Run(GetConnectedDevices);
 
         foreach (var device in connectedDevices)
         {
