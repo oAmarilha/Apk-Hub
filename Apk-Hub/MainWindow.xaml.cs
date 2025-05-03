@@ -991,7 +991,7 @@ public partial class MainWindow : MetroWindow, IComponentConnector
         else if (moreWindow == null)
         {
             moreWindow = OpenChildWindow(new More(this, GetDeviceSerialByName(device), settingsWindow, kidsWindow));
-            ShowWindow(moreWindow, 250, moreWindow);
+            ShowWindow(moreWindow, 380, moreWindow);
             DevicesComboBox.IsEnabled = false;
             moreWindow.Closed += MoreWindow_Closed;
         }
