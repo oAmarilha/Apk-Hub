@@ -23,6 +23,6 @@
         <Button Name="Clear_Logcat" Grid.Row="1" Grid.Column="0" Content="Logcat Clear" Height="35" Width="90" Click="LogcatClear_Button" />
         <Button Name="Logcat_View" Grid.Row="1" Grid.Column="1" Content="Logcat View" Height="35" Width="90" Click="LogcatView_Button" />
         <Button Name="Open_Kids" Grid.Row="2" Grid.Column="0" Content="Open Kids" Height="35" Width="90" Click="Open_Kids_Click"/>
-        <Button Name="Uninstall" Grid.Row="2" Grid.Column="1" Content="Uninstall" Height="35" Width="90" Click="Uninstall_Button" />
+        <Button Name="Uninstall" Grid.Row="2" Grid.Column="1" Content="Uninstall" Height="35" Width="90" Background="Red" Click="Uninstall_Button" />
     </Grid>
 </Window>

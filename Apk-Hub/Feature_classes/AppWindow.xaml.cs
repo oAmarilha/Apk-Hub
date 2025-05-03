@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
-using System.Windows.Media;
 using ApkInstaller.Helper_classes;
 
 namespace ApkInstaller;
@@ -107,37 +103,44 @@ public partial class AppWindow : Window, IComponentConnector
 
 	private void CheckBox_Checked(object sender, RoutedEventArgs e)
 	{
-		if (!(_actionType == "logcat"))
-		{
-			Clear_Button.IsEnabled = true;
-			return;
-		}
 		Clear_Button.IsEnabled = true;
+        if (!(_actionType == "logcat")) return;
 		CheckBox? checkBox = sender as CheckBox;
 		foreach (object child in MainGrid.Children)
 		{
 			if (child is CheckBox checkBox2 && checkBox2 != checkBox)
 			{
+				checkBox2.Opacity = 0.5;
 				checkBox2.IsEnabled = false;
-			}
-		}
+            }
+        }
 	}
 
 	private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
 	{
-		if (!(_actionType == "logcat"))
+        foreach (object child in MainGrid.Children)
 		{
-			return;
-		}
-		Clear_Button.IsEnabled= false;
-		foreach (object child in MainGrid.Children)
-		{
-			if (child is CheckBox checkBox)
+			if (child is CheckBox checkBoxSelected && checkBoxSelected.IsChecked == true)
 			{
-				checkBox.IsEnabled = true;
+				Clear_Button.IsEnabled = true;
+				break;
+			}
+			else
+			{
+				Clear_Button.IsEnabled = false;
 			}
 		}
-	}
+		if (!(_actionType == "logcat"))	return;
+
+        foreach (object child in MainGrid.Children)
+        {
+			if (child is CheckBox checkBox)
+            {
+				checkBox.Opacity = 1;
+				checkBox.IsEnabled = true;
+            }
+        }
+    }
 
     private async void ButtonSubmit_Click(object sender, RoutedEventArgs e)
     {
