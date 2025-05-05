@@ -197,7 +197,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Apk Hub"
         "ProductCode" = "8:{FC9CDE60-72EE-423B-9C42-121901C9E19C}"
-        "PackageCode" = "8:{38F319CF-FE7E-4FDC-AE9B-5281A1641F28}"
+        "PackageCode" = "8:{96947D9F-C5E5-4F9B-A381-2A0B800D4F48}"
         "UpgradeCode" = "8:{C4472BC4-F32A-4D3F-B649-4CF433DC727C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -213,7 +213,7 @@
         "ARPCONTACT" = "8:SiDi-VictorAmarilha"
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
-        "ARPURLINFOABOUT" = "8:https://github.com/oAmarilha/Apk-Hub"
+        "ARPURLINFOABOUT" = "8:https://github.ecodesamsung.com/SRBR-SIDI-dev/KIDS23_Hub_Tool"
         "ARPPRODUCTICON" = "8:_1B2C1DF76ECD47908A64720F8F784D92"
         "ARPIconIndex" = "3:32512"
         "SearchPath" = "8:"
@@ -548,7 +548,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:WARNING: This project was made fully by Victor Amarilha (SiDi), and you can access the full project at \"https://github.com/oAmarilha/Apk-Hub\""
+                            "Value" = "8:WARNING: This project was made fully by Victor Amarilha (SiDi), and you can access the full project at \"https://github.ecodesamsung.com/SRBR-SIDI-dev/KIDS23_Hub_Tool\""
                             "DefaultValue" = "8:#1202"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -561,7 +561,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:This program will install all dependencies necessary to run [ProductName] on your computer, if any error occurs please contact v.amarilha. In order to the app works without errors you MUST have adb and scrcpy configured on your environment path."
+                            "Value" = "8:This program will install all dependencies necessary to run [ProductName] on your computer, if any error occurs please contact v.amarilha."
                             "DefaultValue" = "8:#1203"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -746,7 +746,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1B2C1DF76ECD47908A64720F8F784D92"
             {
-            "SourcePath" = "8:..\\Apk-Hub\\obj\\Debug\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\Apk-Hub\\obj\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C7BE1F11DA70482BB10BD44F8C09181F"
