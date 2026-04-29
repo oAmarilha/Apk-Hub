@@ -7,7 +7,6 @@
 ## Status
 
 This repository was converted from the old WPF/.NET application to a Python/PySide6 Qt application.
-The Airtest/PySimpleGUI automation feature and its bundled scripts/assets were removed because they are no longer required.
 
 ## Main Features
 
@@ -97,5 +96,5 @@ Important subfolders:
 ## Notes
 
 - The UI was redesigned as a dark Qt workbench with red action accents, matching the modern visual direction requested.
-- The old WPF solution, Visual Studio installer project, MSI/setup artifacts, and automation scripts were removed from the active codebase.
+- The old WPF solution, Visual Studio installer project, and MSI/setup artifacts were removed from the active codebase.
 - Windows ADB/scrcpy binaries are kept only as packaged vendor tools for Windows runs/builds.
