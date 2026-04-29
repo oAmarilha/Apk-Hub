@@ -53,8 +53,8 @@ QFrame#Card {
     border-radius: 22px;
 }
 QFrame#HeroCard {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2a1115, stop:0.55 #1a1b21, stop:1 #15161b);
-    border: 1px solid #4a2025;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0e2f1e, stop:0.55 #162620, stop:1 #111d18);
+    border: 1px solid #2f6f49;
     border-radius: 24px;
 }
 QLabel#Eyebrow {
@@ -89,11 +89,11 @@ QLineEdit, QComboBox, QTextEdit, QListWidget {
     border: 1px solid #3a3d49;
     border-radius: 14px;
     color: #f7f9ff;
-    selection-background-color: #c91b22;
+    selection-background-color: #3ddc84;
     padding: 8px;
 }
 QLineEdit:focus, QComboBox:focus, QTextEdit:focus, QListWidget:focus {
-    border: 1px solid #e3262e;
+    border: 1px solid #3ddc84;
 }
 QTextEdit#Output {
     background: #101116;
@@ -119,23 +119,23 @@ QPushButton:disabled, QToolButton:disabled {
     border-color: #2c2f39;
 }
 QPushButton[accent="true"] {
-    background: #cf1d24;
-    border-color: #ef3038;
+    background: #2d7d46;
+    border-color: #3aa95f;
 }
 QPushButton[accent="true"]:hover {
-    background: #e3262e;
+    background: #3ddc84;
 }
 QPushButton[danger="true"] {
-    background: #441418;
-    border-color: #b82028;
-    color: #ffb6ba;
+    background: #1a3f2a;
+    border-color: #2f8f50;
+    color: #d6ffe6;
 }
 QPushButton[ghost="true"] {
     background: #131419;
 }
 QToolButton:checked {
-    background: #3a151a;
-    border-color: #e3262e;
+    background: #1d4a31;
+    border-color: #3ddc84;
 }
 QSplitter::handle {
     background: #333743;
@@ -842,6 +842,7 @@ class MainWindow(QMainWindow):
         self.apk_files: list[Path] = []
         self.threads: list[TaskThread] = []
         self.installing = False
+        self.debug_simulated_device = False
         self.setWindowTitle("APK Hub")
         self.setWindowIcon(app_icon())
         self.resize(1240, 780)
@@ -868,6 +869,12 @@ class MainWindow(QMainWindow):
         refresh = QAction("Refresh Devices", self)
         refresh.triggered.connect(lambda: self.refresh_devices(clear_output=True))
         view_menu.addAction(refresh)
+
+        debug_menu = self.menuBar().addMenu("Debug")
+        self.simulate_device_action = QAction("Simulate Android Connection", self)
+        self.simulate_device_action.setCheckable(True)
+        self.simulate_device_action.toggled.connect(self.toggle_debug_device)
+        debug_menu.addAction(self.simulate_device_action)
 
     def _build_ui(self) -> None:
         central = QWidget()
@@ -946,7 +953,7 @@ class MainWindow(QMainWindow):
         apk_layout.addLayout(apk_buttons)
         left_layout.addWidget(apk_card)
 
-        functions_card, functions_layout = make_card("Functions", "Manual tools kept from the WPF version. Automation scripts were intentionally removed.")
+        functions_card, functions_layout = make_card("Functions", "Manual tools kept from the WPF version with modernized Qt workflows.")
         self.install_button = make_button("Install APKs", accent=True)
         self.install_button.clicked.connect(self.toggle_install)
         functions_layout.addWidget(self.install_button)
@@ -1044,6 +1051,12 @@ class MainWindow(QMainWindow):
             file.write(f"[{timestamp()}] Task exception\n{tb}\n{'-' * 80}\n")
         QMessageBox.critical(self, "Error", f"An unexpected error occurred. A log was saved at:\n{crash_dir / 'crash_log.txt'}")
 
+    def toggle_debug_device(self, checked: bool) -> None:
+        self.debug_simulated_device = checked
+        state = "enabled" if checked else "disabled"
+        self.append_output(f"Debug simulated Android connection {state}")
+        self.refresh_devices(clear_output=False)
+
     def refresh_devices(self, *, clear_output: bool = False) -> None:
         if clear_output:
             self.append_output("Checking devices connected...", clear=True)
@@ -1056,6 +1069,8 @@ class MainWindow(QMainWindow):
         def finished(devices: object) -> None:
             self.refresh_button.setEnabled(True)
             device_list = devices if isinstance(devices, list) else []
+            if self.debug_simulated_device:
+                device_list = [("debug-android-5554", "Android Debug Device")] + [d for d in device_list if d[0] != "debug-android-5554"]
             self.device_combo.blockSignals(True)
             self.device_combo.clear()
             for serial, name in device_list:

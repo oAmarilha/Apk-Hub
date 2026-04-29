@@ -4,6 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
+if [[ "${OSTYPE:-}" == linux* ]]; then
+    if ! "$ROOT/scripts/ensure_adb_linux.sh"; then
+        echo "Warning: adb verification/install failed; continuing startup."
+    fi
+fi
+
 if [[ -x "$ROOT/dist/ApkHub" ]]; then
     exec "$ROOT/dist/ApkHub" "$@"
 fi

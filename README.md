@@ -7,7 +7,8 @@
 ## Status
 
 This repository was converted from the old WPF/.NET application to a Python/PySide6 Qt application.
-The Airtest/PySimpleGUI automation feature and its bundled scripts/assets were removed because they are no longer required.
+- Linux launcher now verifies `adb` and attempts package-manager install via `scripts/ensure_adb_linux.sh` when missing.
+The launcher verifies `adb` on Linux, creates `.venv`, installs the package, and starts the Qt app. If a built binary exists at `dist/ApkHub`, the launcher runs that instead.
 
 ## Main Features
 
@@ -70,7 +71,9 @@ Output:
 Run this on Windows, not Linux:
 
 ```powershell
-.\scripts\build_windows.ps1
+- The UI was redesigned as a dark Qt workbench with red action accents, matching the modern visual direction requested with Android-like green accents.
+
+- A new **Debug > Simulate Android Connection** toggle can inject a mock device for UI/debug flows without physical hardware.
 ```
 
 Output:
